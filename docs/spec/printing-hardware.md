@@ -238,18 +238,18 @@ Recommended printer fields include:
 
 ### Menu-item destination setup
 
-Admin must be able to assign a production destination to each menu item.
+Admin assigns a production destination at the menu category level (`MenuCategory.route_type`). Each menu item inherits its fulfillment route from its category (Kitchen, Bar, or None). This simplifies configuration while keeping routing explicit per item at creation time.
 
 Minimum valid values:
 
 - Kitchen.
 - Bar.
 
-A menu item intended for live service should not be sellable unless its production routing is configured.
+A menu item intended for live service should not be sellable unless its parent category has a configured production routing.
 
 ### Cashier printer assignment
 
-Each cashier account or cashier station should be associated with one cashier printer for bill output.
+Each cashier user account is associated with one cashier printer for bill output via `CashierPrinterAssignment`. The system resolves the printer by the authenticated cashier user, falling back to any active `BILL` printer if no explicit assignment exists.
 
 ### Test prints
 

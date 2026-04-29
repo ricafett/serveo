@@ -341,9 +341,10 @@ TicketType examples:
 - VOID
 
 ### ProductionTicketItem
-- ProductionTicketItemId (PK)
-- ProductionTicketId (FK -> ProductionTicket)
-- OrderItemId (FK -> OrderItem)
+Implemented as a pivot table (`production_ticket_items`) between `production_tickets` and `order_items`, managed via Eloquent `belongsToMany` / `sync`. It does not have a dedicated Eloquent model in the current implementation.
+
+- ProductionTicketId (FK -> ProductionTicket, part of composite PK)
+- OrderItemId (FK -> OrderItem, part of composite PK)
 - CreatedAt
 
 Recommended uniqueness:
@@ -438,26 +439,30 @@ Design note:
 
 ## User and authorization entities
 
-### AppUser
-- AppUserId (PK)
+### AppUser (implemented as `User`)
+The implementation uses Laravel's default `users` table for the interactive user account. The `User` model is treated as the canonical `AppUser` entity.
+
+- Id (PK) — Laravel `users.id`
 - Username
-- DisplayName
+- Name (DisplayName)
+- Email
 - PreferredLanguageCode
 - IsActive
 - LastLoginAt nullable
-- PasswordHash or external auth reference
+- PasswordHash (hashed)
 - CreatedAt
 - UpdatedAt
 
 Recommended uniqueness:
 - Unique(Username)
 
-### AppRole
-- AppRoleId (PK)
-- Code
-- DisplayName
-- IsInteractive
-- IsActive
+### AppRole (implemented via Spatie Permission)
+Roles are stored via the Spatie Permission package tables (`roles`, `permissions`, `model_has_roles`). The five MVP roles are created as Spatie `Role` records.
+
+- Id (PK)
+- Code (name in Spatie)
+- DisplayName (name in Spatie)
+- IsActive — derived from the model's active check
 - CreatedAt
 - UpdatedAt
 
@@ -474,13 +479,14 @@ Expected MVP roles:
 Note:
 - KITCHEN_OUTPUT and BAR_OUTPUT may exist for configuration and audit semantics even though they are non-login roles in MVP.
 
-### UserRoleAssignment
-- UserRoleAssignmentId (PK)
-- AppUserId (FK -> AppUser)
-- AppRoleId (FK -> AppRole)
-- AssignedAt
-- AssignedByUserId nullable (FK -> AppUser)
-- IsActive
+### UserRoleAssignment (implemented via Spatie pivot)
+User-to-role assignments are managed through Spatie's `model_has_roles` pivot mechanism. The `User` model uses `HasRoles` trait.
+
+- AppUserId (FK -> users)
+- AppRoleId (FK -> roles)
+- AssignedAt — derived from `created_at`
+- AssignedByUserId nullable — not tracked by Spatie in MVP
+- IsActive — derived from user and role active state
 
 Recommended uniqueness:
 - Unique(AppUserId, AppRoleId)

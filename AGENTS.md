@@ -27,21 +27,26 @@ Core characteristics:
 
 Agents must treat the documentation pack as the source of truth.
 
-Priority order when making implementation decisions:
+The spec files have been moved to `docs/spec/`. Priority order when making implementation decisions:
 
-1. `architecture.md`
-2. `product-scope.md`
-3. `acceptance-criteria.md`
-4. `business-rules.md`
-5. `role-permissions.md`
-6. `screen-flows.md`
-7. `data-model.md`
-8. `api-contract.md`
-9. `printing-hardware.md`
-10. `definition-of-done.md`
-11. `seed-data.md`
+1. `docs/spec/architecture.md`
+2. `docs/spec/product-scope.md`
+3. `docs/spec/acceptance-criteria.md`
+4. `docs/spec/business-rules.md`
+5. `docs/spec/role-permissions.md`
+6. `docs/spec/screen-flows.md`
+7. `docs/spec/data-model.md`
+8. `docs/spec/api-contract.md`
+9. `docs/spec/printing-hardware.md`
+10. `docs/spec/definition-of-done.md`
+11. `docs/spec/seed-data.md`
 
 If a conflict appears between code and docs, align code to docs unless the docs are clearly outdated and the task explicitly includes updating them.
+
+### Tracking done and planned work
+- **GitHub issues** are the source of truth for open and planned work. Check open issues before starting a new task to avoid duplication.
+- **Commit messages** act as the project changelog. Write detailed, descriptive commit titles and messages that explain the *why* and *what* of each change. Future agents (and humans) will read the git history to understand how the codebase evolved.
+- **Decision records** live in `docs/decisions/` and capture intentional deviations from the spec (e.g., why a shortcut was taken, why a doc was updated instead of the code). Read them before reversing a past choice.
 
 ## Required stack
 
