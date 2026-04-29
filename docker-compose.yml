@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
-    image: serveo/app:latest
     container_name: serveo-app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -76,7 +75,9 @@ services:
       - serveo
 
   worker:
-    image: serveo/app:latest
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
     container_name: serveo-worker
     restart: unless-stopped
     working_dir: /var/www/html
@@ -111,7 +112,9 @@ services:
       - serveo
 
   scheduler:
-    image: serveo/app:latest
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
     container_name: serveo-scheduler
     restart: unless-stopped
     working_dir: /var/www/html
