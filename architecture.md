@@ -1,8 +1,5 @@
 # Architecture: Recurring Event Service and Billing App
 
-> **Note:** This is the original pre-implementation architecture document.
-> See the sections marked [AS BUILT] for the updated version reflecting the actual implementation.
-
 ## Purpose
 
 This document defines the recommended MVP architecture for the recurring event service and billing app.
@@ -81,6 +78,67 @@ The MVP should contain these main components:
 5. Optional local USB print agent.
 6. Reverse proxy / local access layer.
 
+### 1. Web application
+
+The Laravel application owns:
+
+- Authentication.
+- Role and permission checks.
+- Floor and occupancy workflows.
+- Billing-group workflows.
+- Order capture.
+- Billing and payment recording.
+- Admin configuration.
+- Audit event creation.
+- Print-job creation.
+
+### 2. Database
+
+PostgreSQL stores:
+
+- Core operational state.
+- Configuration state.
+- Audit events.
+- Print jobs and print results.
+- Queue-linked records and document history.
+
+### 3. Queue worker subsystem
+
+Queue workers handle background tasks such as:
+
+- Production-ticket rendering.
+- Bill rendering.
+- Printer dispatch.
+- Retry scheduling.
+- Accounting export generation.
+- Cleanup or maintenance jobs.
+
+### 4. Print subsystem
+
+The print subsystem is not just a helper; it is a first-class operational subsystem.
+
+It should own:
+
+- Print job records.
+- Printer selection.
+- Payload generation.
+- Delivery to LAN or USB-backed destinations.
+- Retry handling.
+- Final status updates.
+- Audit-linked traceability.
+
+### 5. Optional local USB print agent
+
+A local print agent should exist only where a printer cannot be reached directly over the LAN.
+
+The print agent is a small local service on the PC attached to the USB printer. It receives print jobs from the Laravel app and forwards them to the local printer.
+
+### 6. Reverse proxy / local access layer
+
+A reverse proxy should terminate local HTTP traffic, route requests to the Laravel app, and support a stable hostname on the local network.
+
+This keeps deployment cleaner and makes device access easier for servers, cashiers, and admins.
+
 ## Module boundaries inside the monolith
 
 The Laravel app should be organized into clear modules or domains, even though it remains one deployable application.
@@ -103,6 +161,8 @@ Recommended modules:
 - Localization.
 - Admin Settings.
 
+This structure is especially useful for AI agents because it reduces cross-module confusion and makes prompts easier to scope.
+
 ## UI architecture
 
 ### Primary UI model
@@ -114,6 +174,46 @@ Recommended split:
 - **Livewire:** floor operations, billing-group detail, order entry, cashier workflows, printer status, basic event views.
 - **Filament:** admin setup, printers, routes, statuses, users, roles, exports, and internal management screens.
 - **Blade/Tailwind:** layout shell, navigation, document preview wrappers, and shared visual components.
+
+### Why this UI model fits
+
+This approach reduces client-side state complexity compared with a separate SPA frontend.
+
+That is beneficial for AI-agent-led development because it lowers the number of moving parts, keeps most business behavior near the backend, and avoids a lot of custom frontend/backend synchronization logic.
+
+### Mobile and home-screen behavior
+
+The app should be optimized for mobile browser usability and should support being added to the home screen.
+
+A full offline-first PWA architecture is not required for MVP.
+
+However, the app may still include lightweight installability features later if they do not complicate delivery.
+
+## Data architecture
+
+### Database choice
+
+Use PostgreSQL as the primary database.
+
+### Why PostgreSQL
+
+PostgreSQL is a strong fit because the app depends on relational integrity, range/occupancy validation, auditability, and concurrent writes from multiple operators during service.
+
+### Data categories
+
+The database should clearly separate:
+
+- Configuration data.
+- Operational state.
+- Historical/audit records.
+- Print queue and print result data.
+
+### Recommended persistence principles
+
+- Keep current state in primary domain tables.
+- Keep immutable traceability in audit/event and print records.
+- Avoid destructive deletes for historical entities.
+- Prefer soft disable for configuration referenced by history.
 
 ## Printing architecture
 
@@ -146,11 +246,140 @@ Recommended adapters:
 - `LanEscPosPrinterAdapter`
 - `UsbAgentPrinterAdapter`
 
+Optional future adapters:
+
+- `FilePreviewAdapter`
+- `PdfDebugAdapter`
+
+### Preferred print path
+
+Primary path:
+
+- Direct LAN printing from Laravel workers to networked printers.
+
+Secondary path:
+
+- USB printing through a local print agent running on a PC.
+
+### Existing integration path
+
+For receipt payload generation, use ESC/POS support from a PHP library such as `mike42/escpos-php`.
+
+For local USB bridging, the architecture may use either:
+
+- A custom lightweight print agent.
+- An existing local connector such as QZ Tray.
+
+QZ Tray should be treated as one possible connector implementation, not as the core architecture of the app.
+
 ### Print queue rules
 
 - Every operational print should have a persistent print job record.
 - Failed jobs must remain visible and retryable.
 - Jobs must not disappear silently on printer failure.
+- Queue state should include pending, processing, printed, failed, and retryable-style outcomes.
+- Void slips go to the same destination as the original production ticket.
+- Customer bills print only to the cashier's assigned printer.
+
+## Suggested print-agent architecture
+
+If USB support is needed, a local print agent should be a very small service with a narrow responsibility boundary.
+
+Recommended responsibilities:
+
+- Register one or more attached printers.
+- Receive authenticated print requests from the Laravel app.
+- Forward raw ESC/POS payloads to the local USB printer.
+- Return success/failure results.
+- Expose basic health information.
+
+Recommended non-responsibilities:
+
+- No business-rule decisions.
+- No routing logic.
+- No document templating.
+- No queue ownership beyond optional local buffering.
+
+This keeps the Laravel app as the source of truth for routing, queueing, and auditability.
+
+## Queue and background job design
+
+### Queue strategy
+
+Use Laravel queues for all non-trivial print and export work.
+
+Recommended job types:
+
+- `DispatchProductionTicketJob`
+- `DispatchBillPrintJob`
+- `DispatchVoidSlipJob`
+- `RetryFailedPrintJob`
+- `GenerateAccountingExportJob`
+
+### Queue backend
+
+Preferred MVP choice:
+
+- Redis queue.
+
+Acceptable early fallback:
+
+- Database queue.
+
+### Why queueing matters
+
+Queueing is required because printer operations are inherently slower and less reliable than ordinary database writes.
+
+Moving them into background jobs protects the user workflow and allows persistent retry behavior when a printer or local connector is temporarily unavailable.
+
+## Realtime and refresh strategy
+
+### MVP recommendation
+
+Start with polling or lightweight partial refresh for most live operational screens.
+
+Examples:
+
+- Floor occupancy refresh.
+- Billing-group totals refresh.
+- Printer status refresh.
+- Queue status refresh.
+
+### Optional later enhancement
+
+WebSockets can be added later for live updates if polling is not good enough.
+
+For MVP, do not make WebSockets a hard dependency unless testing shows polling is insufficient.
+
+This reduces delivery risk for AI agents.
+
+## Security model
+
+### Network assumptions
+
+The application runs on a trusted local network.
+
+Even so, the system should still require authentication and role-based authorization.
+
+### Security controls
+
+Recommended MVP controls:
+
+- Authenticated users only.
+- Role-based access checks at UI and backend levels.
+- CSRF protection for web actions.
+- Audit logging for sensitive actions.
+- Restricted admin-only printer route changes and test prints.
+- Restricted cashier-only bill printing.
+
+### Future-hardening options
+
+Later, if needed, add:
+
+- HTTPS on the local network.
+- Device/session restrictions.
+- IP allowlists for admin access.
+- Signed communication between Laravel and local USB print agents.
 
 ## Deployment architecture
 
@@ -167,6 +396,79 @@ Suggested services:
 - `worker`
 - optional `scheduler`
 
+Optional extra service outside the main host:
+
+- `usb-print-agent` on cashier PC or print-hub PC when needed.
+
+### Why this deployment fits
+
+This keeps deployment simple enough for a local environment while preserving clean separation between web traffic, database, queueing, and background workers.
+
+## Observability and supportability
+
+### Minimum operational visibility
+
+The system should expose enough internal visibility for admin troubleshooting.
+
+Recommended admin-visible states:
+
+- Printer list and printer status.
+- Recent print jobs.
+- Failed print jobs.
+- Retry actions.
+- Event log.
+- Queue health summary.
+
+### Logging
+
+Recommended logs:
+
+- Application logs.
+- Queue worker logs.
+- Print-dispatch logs.
+- Print-agent logs where applicable.
+
+## AI-agent implementation guidance
+
+Because this project is intended for AI-agent-led development, the architecture should optimize for explicit conventions and narrow module boundaries.
+
+Recommended guidance for the build process:
+
+- Keep one repository for MVP.
+- Keep modules clearly named and documented.
+- Avoid premature abstraction.
+- Create stable DTOs and form objects where useful.
+- Put print templates and adapters behind clear interfaces.
+- Keep Filament limited to admin/configuration concerns.
+- Keep Livewire focused on operational workflows.
+
+### Suggested implementation order
+
+1. Core Laravel app, auth, and roles.
+2. Venue layout and billing-group modules.
+3. Floor and occupancy workflows.
+4. Order capture and menu routing.
+5. Print job model and queue pipeline.
+6. LAN printing adapter.
+7. Cashier billing workflow.
+8. USB print-agent adapter.
+9. Event log and export.
+10. Admin configuration via Filament.
+
+## Future evolution path
+
+The architecture should allow future additions without changing the core shape.
+
+Likely future additions:
+
+- Interactive kitchen/bar screens.
+- Better live updates.
+- More advanced export and reporting.
+- Reservation subsystem.
+- More printer types or fallback routing.
+
+Even with those additions, the modular monolith should remain the default architecture until real operational complexity proves otherwise.
+
 ## Final recommendation
 
 The recommended MVP architecture is:
@@ -180,3 +482,5 @@ The recommended MVP architecture is:
 - **Direct LAN printing first**
 - **USB printing via optional local print agent**
 - **Docker Compose deployment on a local host**
+
+This architecture is the best match for the current product scope, the printing requirements, and the goal of relying primarily on AI agents for implementation.
