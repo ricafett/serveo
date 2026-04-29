@@ -1,0 +1,44 @@
+# Development override — merges with docker-compose.yml for local development.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Mounts the local source code into the containers so code changes are
+# reflected immediately without rebuilding the image.
+# Also exposes postgres and redis ports for local tooling (TablePlus, Redis Insight, etc.)
+
+services:
+  app:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  web:
+    volumes:
+      - .:/var/www/html
+      - ./docker/web:/etc/nginx/conf.d:ro
+
+  worker:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  scheduler:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"
