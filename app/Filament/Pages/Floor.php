@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Domain\Floor\BillingGroupService;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
@@ -14,11 +17,11 @@ use Filament\Notifications\Notification;
 
 class Floor extends Page
 {
-    protected static ?string $navigationIcon  = 'heroicon-o-squares-2x2';
-    protected static ?string $navigationGroup = 'Operação';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-squares-2x2';
+    protected static string | UnitEnum | null $navigationGroup = 'Operação';
     protected static ?string $navigationLabel = 'Plano de sala';
     protected static ?int $navigationSort = 1;
-    protected static string $view = 'filament.pages.floor';
+    protected string $view = 'filament.pages.floor';
     protected static ?string $title = 'Plano de sala';
 
     public ?int $serviceSessionId = null;

@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\BillingStatusResource\Pages;
 use App\Models\BillingStatus;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,14 +16,14 @@ use Filament\Tables\Table;
 class BillingStatusResource extends Resource
 {
     protected static ?string $model = BillingStatus::class;
-    protected static ?string $navigationGroup = 'Configuração';
-    protected static ?string $navigationIcon  = 'heroicon-o-flag';
+    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-flag';
     protected static ?string $navigationLabel = 'Estados de grupo';
     protected static ?int $navigationSort = 50;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\TextInput::make('code')->required()->unique(ignoreRecord: true)->maxLength(64),
             Forms\Components\TextInput::make('display_name')->required(),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),

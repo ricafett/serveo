@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
@@ -18,12 +21,12 @@ use Illuminate\Support\Facades\Auth;
 
 class BillingGroupDetail extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static bool $shouldRegisterNavigation = false;
-    protected static string $view = 'filament.pages.billing-group-detail';
+    protected string $view = 'filament.pages.billing-group-detail';
     protected static ?string $title = 'Grupo';
 
-    public static function getSlug(): string
+    public static function getSlug(?\Filament\Panel $panel = null): string
     {
         return 'billing-groups/{record}';
     }

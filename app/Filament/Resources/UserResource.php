@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,16 +17,16 @@ use Spatie\Permission\Models\Role;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static ?string $navigationGroup = 'Configuração';
-    protected static ?string $navigationIcon  = 'heroicon-o-users';
+    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Utilizadores';
     protected static ?string $modelLabel      = 'Utilizador';
     protected static ?string $pluralModelLabel = 'Utilizadores';
     protected static ?int $navigationSort = 10;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\TextInput::make('name')->required()->maxLength(120),
             Forms\Components\TextInput::make('username')->required()->unique(ignoreRecord: true)->maxLength(64),
             Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),

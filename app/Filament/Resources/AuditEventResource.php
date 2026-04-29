@@ -5,22 +5,24 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AuditEventResource\Pages;
 use App\Domain\Audit\Audit;
 use App\Models\AuditEvent;
-use Filament\Forms\Form;
+use BackedEnum;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class AuditEventResource extends Resource
 {
     protected static ?string $model = AuditEvent::class;
-    protected static ?string $navigationGroup = 'Auditoria';
-    protected static ?string $navigationIcon  = 'heroicon-o-document-magnifying-glass';
+    protected static string | UnitEnum | null $navigationGroup = 'Auditoria';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-document-magnifying-glass';
     protected static ?string $navigationLabel = 'Eventos de auditoria';
     protected static ?int $navigationSort = 90;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([]);
+        return $schema->schema([]);
     }
 
     public static function canCreate(): bool { return false; }

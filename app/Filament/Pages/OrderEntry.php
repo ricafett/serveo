@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Domain\Orders\OrderService;
 use App\Models\BillingGroup;
 use App\Models\MenuCategory;
@@ -14,12 +17,12 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderEntry extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
     protected static bool $shouldRegisterNavigation = false;
-    protected static string $view = 'filament.pages.order-entry';
+    protected string $view = 'filament.pages.order-entry';
     protected static ?string $title = 'Pedido';
 
-    public static function getSlug(): string
+    public static function getSlug(?\Filament\Panel $panel = null): string
     {
         return 'orders/new/{record}';
     }

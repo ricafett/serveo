@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\RowResource\Pages;
 use App\Models\Row;
 use App\Models\Section;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,14 +17,14 @@ use Filament\Tables\Table;
 class RowResource extends Resource
 {
     protected static ?string $model = Row::class;
-    protected static ?string $navigationGroup = 'Configuração';
-    protected static ?string $navigationIcon  = 'heroicon-o-bars-3';
+    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-bars-3';
     protected static ?string $navigationLabel = 'Linhas (Rows)';
     protected static ?int $navigationSort = 21;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\Select::make('section_id')
                 ->options(Section::query()->orderBy('section_code')->pluck('name', 'id'))
                 ->required(),
