@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -75,9 +73,7 @@ services:
       - serveo
 
   worker:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-worker
     restart: unless-stopped
     working_dir: /var/www/html
@@ -112,9 +108,7 @@ services:
       - serveo
 
   scheduler:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-scheduler
     restart: unless-stopped
     working_dir: /var/www/html
