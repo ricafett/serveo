@@ -28,7 +28,7 @@ services:
       CACHE_STORE: redis
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT:-6379}
       FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
@@ -73,6 +73,8 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - ${REDIS_DATA_PATH:-./data/redis}:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - serveo
 
@@ -101,7 +103,7 @@ services:
       CACHE_STORE: redis
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT:-6379}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
     depends_on:
@@ -136,7 +138,7 @@ services:
       CACHE_STORE: redis
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT:-6379}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
     depends_on:
