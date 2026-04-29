@@ -1,0 +1,124 @@
+name: "\U0001F916 Agent Task"
+description: "A single agent-sized implementation task for Serveo"
+title: "[Task] "
+labels: ["type:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in all sections before triggering the agent. Tasks should be small enough to produce a reviewable diff — if it touches more than 3 modules, split it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which domain of Serveo does this task touch?
+      options:
+        - area:billing
+        - area:events
+        - area:floor-management
+        - area:printing
+        - area:auth-permissions
+        - area:reporting
+        - area:api
+        - area:infra
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - type:feature
+        - type:bug
+        - type:refactor
+        - type:tests
+        - type:docs
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk
+      description: High = touches billing, auth, or data migrations.
+      options:
+        - risk:low
+        - risk:medium
+        - risk:high
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence. What must be true when this task is done?
+      placeholder: "e.g. The billing module must send an email receipt after a bill is closed."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & spec references
+      description: Link to the relevant sections in repo docs so the agent knows where the rules live.
+      placeholder: |
+        - business-rules.md § Billing > Receipt rules
+        - data-model.md § bills table
+        - acceptance-criteria.md § AC-42
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files likely involved
+      description: List files or modules the agent should focus on. Leave blank if unknown.
+      placeholder: |
+        - app/Services/BillingService.php
+        - app/Mail/BillReceipt.php
+        - resources/views/mail/bill-receipt.blade.php
+        - tests/Feature/BillingReceiptTest.php
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Specific, testable conditions. Use a checklist.
+      placeholder: |
+        - [ ] Email is sent when bill status changes to `closed`
+        - [ ] Email contains itemised line items and total amount
+        - [ ] A sending failure is logged and does not roll back the bill close
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Explicitly list what the agent must NOT change.
+      placeholder: |
+        - Do not change the bill close logic itself
+        - Do not add a PDF attachment
+        - Do not modify unrelated controllers
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification steps
+      description: How will you confirm the task is done after the PR lands?
+      placeholder: |
+        1. Run `php artisan test --filter BillReceiptTest`
+        2. Manually close a bill and inspect the mail log in Mailtrap
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **Trigger the agent** once the issue is saved by posting this comment:
+        ```
+        /opencode implement this issue following AGENTS.md and architecture.md; do not expand scope beyond the acceptance criteria above.
+        ```
+        To plan first without writing code, comment `/plan-task` instead.
