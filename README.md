@@ -90,7 +90,7 @@ High-level architecture rules:
 - No browser-as-source-of-truth printing.
 - Clear module boundaries for AI-agent-led development.
 
-See `architecture.md` for the full architecture decision.
+Architectural decisions are documented inline in `event-restaurant-spec.md` and refined in `business-rules.md`. Deployment topology, build, and operational details live in `deployment.md`.
 
 ## Documentation pack
 
@@ -99,31 +99,42 @@ The repository is driven by a documentation-first workflow.
 Important project documents include:
 
 - `product-scope.md`
+- `event-restaurant-spec.md`
 - `user-stories.md`
-- `04-acceptance-criteria.md`
-- `05-screen-flows.md`
-- `06-data-model.md`
-- `07-api-contract.md`
-- `08-business-rules.md`
-- `09-printing-hardware.md`
-- `10-role-permissions.md`
-- `11-seed-data.json`
-- `12-definition-of-done.md`
-- `architecture.md`
-- `AGENTS.md`
+- `acceptance-criteria.md`
+- `screen-flows.md`
+- `data-model.md`
+- `api-contract.md`
+- `business-rules.md`
+- `printing-hardware.md`
+- `role-permissions.md`
+- `seed-data.md`
+- `definition-of-done.md`
+- `deployment.md`
 
 ## AI-agent development
 
 This project is intended to be built primarily by AI coding agents.
 
-`AGENTS.md` defines:
+The canonical source-of-truth document order is:
 
-- The source-of-truth document order.
-- Required stack and architectural constraints.
-- Domain invariants that must not be broken.
-- Role boundaries.
-- Printing and testing rules.
-- How agents should behave when requirements are ambiguous.
+1. `product-scope.md` — what we are building and why.
+2. `event-restaurant-spec.md` — domain spec and architectural intent.
+3. `user-stories.md` and `acceptance-criteria.md` — required behaviour.
+4. `data-model.md`, `api-contract.md`, `business-rules.md` — invariants.
+5. `printing-hardware.md`, `role-permissions.md`, `seed-data.md` — config.
+6. `definition-of-done.md` — exit criteria.
+7. `deployment.md` — how to run it.
+
+Domain invariants (must not be broken by any change):
+
+- A row cannot have two open `OccupiedZone`s whose seat-pair ranges overlap.
+- Customer bills only print on cashier-assigned printers.
+- Production tickets only print on the kitchen/bar printer routed for the
+  item's category; void slips follow the same routing.
+- A `PrintJob` is the source of truth for whether something printed.
+  Failed jobs remain visible and retryable; the browser is never the source.
+- All operational and billing actions append to `audit_events`; no silent edits.
 
 ## Out of scope for MVP
 
@@ -141,21 +152,39 @@ The following are intentionally out of scope unless explicitly added later:
 
 ## Development status
 
-Serveo is currently in specification and architecture-driven build preparation.
+The MVP is implemented:
 
-The repository contains the documentation required for agents to implement the MVP in a controlled way before broader feature expansion.
+- Laravel 11 + Filament 3 + Livewire 3 modular monolith.
+- PostgreSQL data store, Redis-backed `prints` queue.
+- Filament admin (Configuração) and operational pages
+  (`/admin/floor`, `/admin/billing-groups/{id}`, `/admin/orders/new/{id}`,
+  `/admin/cashier-checkout`).
+- Print subsystem with three adapters: `LanEscPosAdapter` (TCP/9100 ESC/POS),
+  `UsbAgentAdapter` (HTTP to print-agent), `NullAdapter` (file-dump for
+  development and tests).
+- Audit logging on every state change via `App\Domain\Audit\Audit`.
+- Pest test suite covering occupancy overlap, order submission, billing
+  flow, print job retry, and role policy.
 
-## Next steps
+## Quick start
 
-Recommended implementation order:
+```bash
+docker compose up -d postgres redis
+docker compose up -d app web worker scheduler
+docker compose exec app composer install --no-dev --optimize-autoloader
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed --force
+open http://localhost:8080/admin/login   # admin / password
+```
 
-1. Bootstrap Laravel app and local Docker environment.
-2. Implement auth, roles, and base admin setup.
-3. Implement venue layout and billing-group domains.
-4. Implement floor workflow and order capture.
-5. Implement printing pipeline and print adapters.
-6. Implement cashier billing workflow.
-7. Implement event log, export, and operational hardening.
+For full deployment, hardening and operational steps, see `deployment.md`.
+
+## Tests
+
+```bash
+./vendor/bin/pest            # all tests
+./vendor/bin/pest tests/Feature
+```
 
 ## Notes
 
