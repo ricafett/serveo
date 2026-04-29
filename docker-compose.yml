@@ -1,0 +1,102 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: serveo/app:latest
+    container_name: serveo-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - serveo
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: serveo-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - serveo
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: serveo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: serveo
+      POSTGRES_USER: serveo
+      POSTGRES_PASSWORD: serveo
+    volumes:
+      - serveo_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - serveo
+
+  redis:
+    image: redis:7-alpine
+    container_name: serveo-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - serveo_redisdata:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - serveo
+
+  worker:
+    image: serveo/app:latest
+    container_name: serveo-worker
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: ["php", "artisan", "queue:work", "redis", "--tries=3", "--timeout=120", "--queue=prints,default"]
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      - app
+      - postgres
+      - redis
+    networks:
+      - serveo
+
+  scheduler:
+    image: serveo/app:latest
+    container_name: serveo-scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: ["sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      - app
+    networks:
+      - serveo
+
+volumes:
+  serveo_pgdata:
+  serveo_redisdata:
+
+networks:
+  serveo:
+    driver: bridge
