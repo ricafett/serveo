@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\ServiceSessionResource\Pages;
 use App\Models\ServiceSession;
 use App\Models\Venue;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,14 +17,14 @@ use Filament\Tables\Table;
 class ServiceSessionResource extends Resource
 {
     protected static ?string $model = ServiceSession::class;
-    protected static ?string $navigationGroup = 'Operação';
-    protected static ?string $navigationIcon  = 'heroicon-o-calendar-days';
+    protected static string | UnitEnum | null $navigationGroup = 'Operação';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-calendar-days';
     protected static ?string $navigationLabel = 'Sessões de serviço';
     protected static ?int $navigationSort = 5;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\Select::make('venue_id')
                 ->options(Venue::query()->pluck('name', 'id'))
                 ->required(),

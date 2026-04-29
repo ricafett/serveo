@@ -395,6 +395,7 @@ When implementation details are not fully specified:
 Agents should:
 
 - Read the relevant docs for the module they are touching.
+- When you need to search docs for libraries, frameworks, or languages, use Context7 MCP.
 - Identify the exact acceptance criteria and business rules involved.
 - Check role-permission implications.
 - Check whether printing, audit, or queue behavior is affected.

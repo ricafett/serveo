@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\PrintJobResource\Pages;
 use App\Domain\Audit\Audit;
 use App\Domain\Printing\PrintQueueService;
 use App\Models\PrintJob;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,14 +20,14 @@ use Illuminate\Support\Facades\Auth;
 class PrintJobResource extends Resource
 {
     protected static ?string $model = PrintJob::class;
-    protected static ?string $navigationGroup = 'Operação';
-    protected static ?string $navigationIcon  = 'heroicon-o-queue-list';
+    protected static string | UnitEnum | null $navigationGroup = 'Operação';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-queue-list';
     protected static ?string $navigationLabel = 'Fila de impressão';
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([]);
+        return $schema->schema([]);
     }
 
     public static function canCreate(): bool

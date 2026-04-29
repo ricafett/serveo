@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Models\BillingDocument;
@@ -16,11 +19,11 @@ use Illuminate\Support\Facades\Auth;
 
 class CashierCheckout extends Page
 {
-    protected static ?string $navigationIcon  = 'heroicon-o-banknotes';
-    protected static ?string $navigationGroup = 'Operação';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-banknotes';
+    protected static string | UnitEnum | null $navigationGroup = 'Operação';
     protected static ?string $navigationLabel = 'Caixa';
     protected static ?int    $navigationSort  = 2;
-    protected static string  $view            = 'filament.pages.cashier-checkout';
+    protected string $view = 'filament.pages.cashier-checkout';
     protected static ?string $title           = 'Caixa';
 
     public ?int $serviceSessionId = null;

@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\PrinterRouteResource\Pages;
 use App\Models\Printer;
 use App\Models\PrinterRoute;
 use App\Models\Venue;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,14 +18,14 @@ use Filament\Tables\Table;
 class PrinterRouteResource extends Resource
 {
     protected static ?string $model = PrinterRoute::class;
-    protected static ?string $navigationGroup = 'Configuração';
-    protected static ?string $navigationIcon  = 'heroicon-o-arrow-path-rounded-square';
+    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-arrow-path-rounded-square';
     protected static ?string $navigationLabel = 'Rotas de impressão';
     protected static ?int $navigationSort = 41;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\Select::make('venue_id')
                 ->options(Venue::query()->pluck('name', 'id'))
                 ->required()

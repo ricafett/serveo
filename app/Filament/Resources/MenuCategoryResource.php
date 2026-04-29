@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use BackedEnum;
+use UnitEnum;
+
 use App\Filament\Resources\MenuCategoryResource\Pages;
 use App\Models\MenuCategory;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,14 +16,14 @@ use Filament\Tables\Table;
 class MenuCategoryResource extends Resource
 {
     protected static ?string $model = MenuCategory::class;
-    protected static ?string $navigationGroup = 'Configuração';
-    protected static ?string $navigationIcon  = 'heroicon-o-tag';
+    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-tag';
     protected static ?string $navigationLabel = 'Categorias de menu';
     protected static ?int $navigationSort = 30;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\TextInput::make('code')->required()->maxLength(64)->unique(ignoreRecord: true),
             Forms\Components\TextInput::make('display_name')->required(),
             Forms\Components\Select::make('route_type')->options([
