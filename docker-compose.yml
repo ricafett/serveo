@@ -41,7 +41,7 @@ services:
       POSTGRES_USER: serveo
       POSTGRES_PASSWORD: serveo
     volumes:
-      - serveo_pgdata:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data
     networks:
       - serveo
 
@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - serveo_redisdata:/data
+      - ${REDIS_DATA_PATH:-./data/redis}:/data
     networks:
       - serveo
 
@@ -88,10 +88,6 @@ services:
       - app
     networks:
       - serveo
-
-volumes:
-  serveo_pgdata:
-  serveo_redisdata:
 
 networks:
   serveo:
