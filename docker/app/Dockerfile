@@ -28,33 +28,19 @@ WORKDIR /var/www/html
 # Copy app as ROOT so composer can write composer.lock
 COPY . /var/www/html
 
-# Stub env vars so artisan can bootstrap during build
-ENV APP_KEY="base64:build-time-stub-key-not-used-at-runtime====" \
-    APP_ENV=production \
-    DB_CONNECTION=pgsql \
-    DB_HOST=localhost \
-    DB_PORT=5432 \
-    DB_DATABASE=serveo \
-    DB_USERNAME=serveo \
-    DB_PASSWORD=serveo \
-    REDIS_HOST=localhost \
-    QUEUE_CONNECTION=redis \
-    CACHE_STORE=redis \
-    SESSION_DRIVER=redis
-
 # Run composer as root (can write composer.lock), mark git safe directory
 RUN git config --global --add safe.directory /var/www/html \
     && composer update --no-interaction --no-dev --optimize-autoloader
 
-# Now fix permissions and set up directories
+# Set up directories and permissions
 RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
     && chown -R serveo:serveo /var/www/html
 
-# Artisan optimize as the app user
-RUN php artisan optimize
+# Entrypoint: runs migrate + optimize at runtime with real env vars, then starts php-fpm
+COPY --chmod=755 docker/app/entrypoint.sh /entrypoint.sh
 
 USER serveo
 
 EXPOSE 9000
 
-CMD ["php-fpm"]
+ENTRYPOINT ["/entrypoint.sh"]
