@@ -31,15 +31,15 @@ Priority order when making implementation decisions:
 
 1. `architecture.md`
 2. `product-scope.md`
-3. `04-acceptance-criteria.md`
-4. `08-business-rules.md`
-5. `10-role-permissions.md`
-6. `05-screen-flows.md`
-7. `06-data-model.md`
-8. `07-api-contract.md`
-9. `09-printing-hardware.md`
-10. `12-definition-of-done.md`
-11. `11-seed-data.json`
+3. `acceptance-criteria.md`
+4. `business-rules.md`
+5. `role-permissions.md`
+6. `screen-flows.md`
+7. `data-model.md`
+8. `api-contract.md`
+9. `printing-hardware.md`
+10. `definition-of-done.md`
+11. `seed-data.md`
 
 If a conflict appears between code and docs, align code to docs unless the docs are clearly outdated and the task explicitly includes updating them.
 
@@ -140,7 +140,7 @@ Allowed focus:
 
 ### Screen intent
 
-Agents should align screens with `05-screen-flows.md`.
+Agents should align screens with `screen-flows.md`.
 
 Key screens:
 - Login / session entry
@@ -175,38 +175,102 @@ Do not add these screens in MVP unless explicitly instructed:
 
 ### Code organization
 
-Agents should organize code by domain/module rather than by generic technical folders alone.
+The application uses the following top-level structure:
 
-Recommended top-level app domains:
+- `app/Domain/` — domain service and business logic classes, organized by subdomain
+- `app/Models/` — all Eloquent models (flat, not per-domain subfolders)
+- `app/Filament/` — Filament admin resources and pages
+- `app/Http/` — controllers, middleware, Livewire components
+- `app/Jobs/` — queued background jobs
+- `app/Providers/` — service providers
 
-- Auth
-- Users
-- RolesPermissions
-- VenueLayout
-- ServiceSessions
-- BillingGroups
-- OccupiedZones
-- Menu
-- Orders
-- ProductionTickets
-- BillingDocuments
-- Payments
-- Printing
-- EventLog
-- AccountingExport
-- Localization
-- Admin
+### Implemented domain subfolders
+
+The following domain subfolders exist under `app/Domain/`:
+
+- `Audit` — audit event recording (contains `Audit.php`)
+- `Billing` — billing document and checkout logic (contains `BillingService.php`)
+- `Floor` — billing group and occupancy management (contains `BillingGroupService.php`, `OccupancyService.php`, `ZoneOverlapException.php`)
+- `Orders` — order creation, validation, and voiding (contains `OrderService.php`)
+- `Printing` — print adapter registry, queue service, ticket renderer, and contracts (contains `PrintQueueService.php`, `PrintResult.php`, `PrinterAdapterRegistry.php`, `TicketRenderer.php`, plus `Adapters/` and `Contracts/` subfolders)
+
+New domain logic for Auth, Users, RolesPermissions, Menu, ServiceSessions, VenueLayout, Payments, AccountingExport, EventLog, Localization, and Admin is currently handled through Filament resources and flat Models. When adding new domain logic, create a new subfolder under `app/Domain/` following the existing pattern.
+
+### Implemented Eloquent models
+
+All Eloquent models live flat under `app/Models/`:
+
+- `AccountingExport`
+- `AuditEvent`
+- `BillingDocument`
+- `BillingGroup`
+- `BillingStatus`
+- `CashierPrinterAssignment`
+- `MenuCategory`
+- `MenuItem`
+- `OccupiedZone`
+- `OrderHeader`
+- `OrderItem`
+- `PaymentRecord`
+- `PrintJob`
+- `Printer`
+- `PrinterRoute`
+- `ProductionTicket`
+- `Row`
+- `Seat`
+- `SeatPair`
+- `Section`
+- `ServiceSession`
+- `TranslationKey`
+- `User`
+- `Venue`
+
+### Implemented Filament resources
+
+The Filament admin panel currently exposes:
+
+- `AuditEventResource` — event log view
+- `BillingStatusResource` — billing status configuration
+- `MenuCategoryResource` — menu category management
+- `MenuItemResource` — menu item management with printer route assignment
+- `PrintJobResource` — print job visibility and retry actions
+- `PrinterResource` — printer configuration
+- `PrinterRouteResource` — printer route configuration
+- `RowResource` — venue row management
+- `SectionResource` — venue section management
+- `ServiceSessionResource` — service session management
+- `UserResource` — user management
+
+### Printing subsystem
+
+The printing subsystem lives under `app/Domain/Printing/` and uses the following structure:
+
+- `Contracts/PrinterAdapter.php` — interface that all adapters must implement
+- `Adapters/LanEscPosAdapter.php` — direct LAN ESC/POS printing adapter
+- `Adapters/UsbAgentAdapter.php` — USB print agent forwarding adapter
+- `Adapters/NullAdapter.php` — no-op adapter for testing and disabled printers
+- `PrinterAdapterRegistry.php` — resolves the correct adapter for a given printer
+- `PrintQueueService.php` — creates and manages print job records
+- `TicketRenderer.php` — renders ESC/POS payloads for production tickets and bills
+- `PrintResult.php` — value object representing the outcome of a print dispatch
+
+All print dispatch happens through the single queued job `app/Jobs/DispatchPrintJob.php`, which handles all print job types (production tickets, bills, void slips, reprints).
+
+When referring to adapter class names in code or docs, use:
+- `LanEscPosAdapter` (not `LanEscPosPrinterAdapter`)
+- `UsbAgentAdapter` (not `UsbAgentPrinterAdapter`)
+- `NullAdapter` for testing/disabled scenarios
 
 ### Preferred patterns
 
 - Use service/action classes for important workflows.
 - Keep Livewire components thin where possible.
-- Keep business rules in domain/services, not only in UI components.
+- Keep business rules in `app/Domain/` services, not in UI components.
 - Use policies/gates for authorization.
 - Use form requests or equivalent validation layers.
 - Use database transactions for critical multi-step writes.
 - Use queued jobs for printing and exports.
-- Use explicit DTOs/value objects where they reduce ambiguity.
+- Use explicit DTOs/value objects where they reduce ambiguity (see `PrintResult.php` as an example).
 
 ### Avoid
 
@@ -216,10 +280,11 @@ Recommended top-level app domains:
 - Hidden status transitions.
 - Silent exception swallowing.
 - Over-abstraction before real need exists.
+- Creating per-domain model subfolders — keep all models flat under `app/Models/`.
 
 ## Data and migration guidance
 
-Agents must align persistence with `06-data-model.md` and `08-business-rules.md`.
+Agents must align persistence with `data-model.md` and `business-rules.md`.
 
 ### Required persistence principles
 
@@ -248,30 +313,18 @@ Agents must treat printing as a core subsystem.
 ### Required model
 
 - User actions create business records first.
-- Print requests create persistent print-job records.
-- Queue workers dispatch print jobs.
-- Adapters perform actual printer delivery.
-- Results update print-job status.
-- Failures remain visible and retryable.
-
-### Adapter model
-
-Preferred adapter interfaces:
-
-- `LanEscPosPrinterAdapter`
-- `UsbAgentPrinterAdapter`
-
-Possible support classes:
-
-- `PrintPayloadRenderer`
-- `PrinterRouteResolver`
-- `PrintJobDispatcher`
-- `PrintResultRecorder`
+- Print requests create persistent `PrintJob` records via `PrintQueueService`.
+- The queue worker dispatches `DispatchPrintJob`.
+- `PrinterAdapterRegistry` resolves the correct adapter for the target printer.
+- `TicketRenderer` generates the ESC/POS payload.
+- The adapter performs delivery and returns a `PrintResult`.
+- The job updates the `PrintJob` record with the outcome.
+- Failures remain visible and retryable in the Filament `PrintJobResource`.
 
 ### Printing rules
 
-- Kitchen/bar routing is configured by admin per menu item.
-- Bills print only to cashier printers.
+- Kitchen/bar routing is configured by admin per menu item via `PrinterRoute`.
+- Bills print only to the cashier's assigned printer (`CashierPrinterAssignment`).
 - Void slips go to the original destination type.
 - Reprints must be marked.
 - Print failures must not silently disappear.
@@ -298,7 +351,7 @@ Agents must create tests for critical workflows, not just happy-path demos.
 
 ### Test data rule
 
-Use `11-seed-data.json` as a baseline fixture only.
+Use `seed-data.md` as a reference for baseline fixture data.
 
 Tests should generate additional scenario-specific data when necessary instead of depending entirely on static seed data.
 
@@ -346,7 +399,7 @@ Agents should:
 Agents should:
 
 - Make small, coherent changes.
-- Keep naming consistent with the documentation pack.
+- Keep naming consistent with the documentation pack and the existing codebase.
 - Add or update tests with each meaningful behavior change.
 - Prefer explicit, readable code over clever abstractions.
 
@@ -363,7 +416,7 @@ Agents should verify:
 
 ## Naming guidance
 
-Use domain names from the docs consistently.
+Use domain names from the docs and existing codebase consistently.
 
 Prefer:
 
@@ -373,6 +426,12 @@ Prefer:
 - `BillingDocument`
 - `PaymentRecord`
 - `AuditEvent`
+- `OrderHeader` / `OrderItem` (as implemented, not just `Order`)
+- `PrintJob`
+- `PrinterRoute`
+- `CashierPrinterAssignment`
+- `ServiceSession`
+- `LanEscPosAdapter` / `UsbAgentAdapter` / `NullAdapter`
 
 Avoid replacing these with generic names like:
 
