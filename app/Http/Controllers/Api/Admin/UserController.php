@@ -20,6 +20,7 @@ class UserController extends ApiController
             'displayName'       => $u->name,
             'email'             => $u->email,
             'preferredLanguage' => $u->preferred_language_code,
+            'theme'             => $u->theme,
             'isActive'          => $u->is_active,
             'roles'             => $u->roles->pluck('name')->values()->all(),
         ])->all());
@@ -57,6 +58,7 @@ class UserController extends ApiController
             'displayName'       => ['nullable', 'string', 'max:100'],
             'email'             => ['nullable', 'email', 'max:255'],
             'preferredLanguage' => ['nullable', 'string', 'max:10'],
+            'theme'             => ['nullable', 'string', 'in:light,dark,system'],
             'isActive'          => ['nullable', 'boolean'],
         ]);
 
@@ -64,6 +66,7 @@ class UserController extends ApiController
         if (array_key_exists('displayName', $validated))       $update['name'] = $validated['displayName'];
         if (array_key_exists('email', $validated))             $update['email'] = $validated['email'];
         if (array_key_exists('preferredLanguage', $validated)) $update['preferred_language_code'] = $validated['preferredLanguage'];
+        if (array_key_exists('theme', $validated))             $update['theme'] = $validated['theme'];
         if (array_key_exists('isActive', $validated))          $update['is_active'] = $validated['isActive'];
 
         $user->update($update);

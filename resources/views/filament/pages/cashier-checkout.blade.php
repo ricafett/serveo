@@ -1,10 +1,10 @@
 <x-filament-panels::page>
     @if (! $session)
-        <div class="rounded-lg bg-warning-50 p-4 text-warning-900">
+        <div class="rounded-lg bg-warning-50 p-4 text-warning-900 dark:bg-warning-900 dark:text-warning-100">
             Não existe sessão de serviço aberta.
         </div>
     @elseif ($groups->isEmpty())
-        <div class="rounded-lg bg-gray-50 p-4 text-gray-700">Nenhum grupo a apresentar.</div>
+        <div class="rounded-lg bg-gray-50 p-4 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Nenhum grupo a apresentar.</div>
     @else
         <div class="overflow-x-auto rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
@@ -23,7 +23,7 @@
                     @foreach ($groups as $group)
                         <tr class="border-t {{ $group->is_closed ? 'opacity-60' : '' }}">
                             <td class="px-3 py-2">
-                                <a class="font-semibold text-primary-600 hover:underline"
+                                <a class="font-semibold text-primary-600 hover:underline dark:text-primary-400"
                                    href="{{ \App\Filament\Pages\BillingGroupDetail::getUrl(['record' => $group->id]) }}">
                                     {{ $group->display_code }}
                                 </a>

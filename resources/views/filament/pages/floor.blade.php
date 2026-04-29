@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     @if (! $session)
-        <div class="rounded-lg bg-warning-50 p-4 text-warning-900">
+        <div class="rounded-lg bg-warning-50 p-4 text-warning-900 dark:bg-warning-900 dark:text-warning-100">
             Não existe nenhuma sessão de serviço aberta. Crie uma sessão em
             <em>Configuração &rarr; Sessões de serviço</em> antes de operar o salão.
         </div>
