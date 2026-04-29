@@ -24,6 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
         ]);
+
+        // Apply light/dark theme to all HTML responses before paint.
+        $middleware->web(append: [
+            \App\Http\Middleware\ApplyUserTheme::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

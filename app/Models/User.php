@@ -19,12 +19,17 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
+    public const THEME_LIGHT  = 'light';
+    public const THEME_DARK   = 'dark';
+    public const THEME_SYSTEM = 'system';
+
     protected $fillable = [
         'name',
         'email',
         'username',
         'password',
         'preferred_language_code',
+        'theme',
         'is_active',
         'last_login_at',
     ];

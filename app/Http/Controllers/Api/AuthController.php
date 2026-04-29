@@ -44,6 +44,7 @@ class AuthController extends ApiController
                 'displayName'       => $user->name,
                 'roles'             => $user->roles->pluck('name')->values()->all(),
                 'preferredLanguage' => $user->preferred_language_code,
+                'theme'             => $user->theme,
             ],
             'session' => [
                 'token'     => $request->session()->getId(),
@@ -69,6 +70,7 @@ class AuthController extends ApiController
             'displayName'       => $user->name,
             'roles'             => $user->roles->pluck('name')->values()->all(),
             'preferredLanguage' => $user->preferred_language_code,
+            'theme'             => $user->theme,
             'permissions'       => $user->permissions->pluck('name')->values()->all(),
         ]);
     }

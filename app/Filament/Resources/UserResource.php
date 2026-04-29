@@ -33,6 +33,14 @@ class UserResource extends Resource
             Forms\Components\Select::make('preferred_language_code')
                 ->options(['pt-PT' => 'Português (PT)', 'en-US' => 'English (US)'])
                 ->default('pt-PT')->required(),
+            Forms\Components\Select::make('theme')
+                ->options([
+                    User::THEME_LIGHT  => 'Claro',
+                    User::THEME_DARK   => 'Escuro',
+                    User::THEME_SYSTEM => 'Sistema',
+                ])
+                ->default(User::THEME_SYSTEM)
+                ->required(),
             Forms\Components\Toggle::make('is_active')->default(true),
             Forms\Components\TextInput::make('password')
                 ->password()

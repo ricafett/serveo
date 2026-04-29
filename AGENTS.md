@@ -142,6 +142,7 @@ Allowed focus:
 - Keep layouts simple and task-focused.
 - Use server-driven interactions with Livewire wherever practical.
 - Use Filament primarily for admin/configuration surfaces, not for core service-floor UX.
+- **All UI components, screens, and design changes must support both light and dark themes from inception.** Configure Tailwind `dark:` variants and test both modes before considering UI work complete.
 
 ### Screen intent
 
