@@ -25,7 +25,8 @@ RUN groupadd -g ${WWWGROUP} serveo \
 
 WORKDIR /var/www/html
 
-COPY --chown=serveo:serveo . /var/www/html
+# Copy app as ROOT so composer can write composer.lock
+COPY . /var/www/html
 
 # Stub env vars so artisan can bootstrap during build
 ENV APP_KEY="base64:build-time-stub-key-not-used-at-runtime====" \
@@ -41,20 +42,15 @@ ENV APP_KEY="base64:build-time-stub-key-not-used-at-runtime====" \
     CACHE_STORE=redis \
     SESSION_DRIVER=redis
 
-# Step 1: verify PHP version and loaded extensions (visible in build log)
-RUN php -v && php -m
+# Run composer as root (can write composer.lock), mark git safe directory
+RUN git config --global --add safe.directory /var/www/html \
+    && composer update --no-interaction --no-dev --optimize-autoloader
 
-# Step 2: dry-run to check what composer resolves / why it fails
-RUN composer update --no-interaction --no-dev --dry-run 2>&1 || true
-
-# Step 3: actual install — separate so we see if this is the failing step
-RUN composer update --no-interaction --no-dev --optimize-autoloader
-
-# Step 4: directories and permissions
+# Now fix permissions and set up directories
 RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R serveo:serveo /var/www/html/storage /var/www/html/bootstrap/cache
+    && chown -R serveo:serveo /var/www/html
 
-# Step 5: artisan optimize — separate so we see if THIS is the failing step
+# Artisan optimize as the app user
 RUN php artisan optimize
 
 USER serveo
