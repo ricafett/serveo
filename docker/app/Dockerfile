@@ -25,7 +25,6 @@ RUN groupadd -g ${WWWGROUP} serveo \
 
 WORKDIR /var/www/html
 
-# Copy full application first (needed for composer update to resolve correctly)
 COPY --chown=serveo:serveo . /var/www/html
 
 # Stub env vars so artisan can bootstrap during build
@@ -42,11 +41,21 @@ ENV APP_KEY="base64:build-time-stub-key-not-used-at-runtime====" \
     CACHE_STORE=redis \
     SESSION_DRIVER=redis
 
-# Regenerate composer.lock for the actual PHP 8.3 platform, then install
-RUN composer update --no-interaction --no-dev --optimize-autoloader \
-    && mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R serveo:serveo /var/www/html/storage /var/www/html/bootstrap/cache \
-    && php artisan optimize
+# Step 1: verify PHP version and loaded extensions (visible in build log)
+RUN php -v && php -m
+
+# Step 2: dry-run to check what composer resolves / why it fails
+RUN composer update --no-interaction --no-dev --dry-run 2>&1 || true
+
+# Step 3: actual install — separate so we see if this is the failing step
+RUN composer update --no-interaction --no-dev --optimize-autoloader
+
+# Step 4: directories and permissions
+RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
+    && chown -R serveo:serveo /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Step 5: artisan optimize — separate so we see if THIS is the failing step
+RUN php artisan optimize
 
 USER serveo
 
