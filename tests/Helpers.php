@@ -24,8 +24,14 @@ use Spatie\Permission\PermissionRegistrar;
 function bootScenario(): ServiceSession
 {
     foreach ([
-        'view_floor', 'create_billing_group', 'submit_order', 'reopen_billing_group',
-        'view_audit', 'generate_internal_bill', 'reprint_bill', 'record_payment', 'retry_print_job',
+        'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
+        'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
+        'order.create', 'order.void_item',
+        'production_ticket.view', 'production_ticket.reprint',
+        'billing_document.create', 'billing_document.reprint',
+        'payment.record', 'payment.void',
+        'print_job.view', 'print_job.retry',
+        'audit.view',
     ] as $perm) {
         Permission::findOrCreate($perm);
     }
@@ -33,8 +39,20 @@ function bootScenario(): ServiceSession
         Role::findOrCreate($r);
     }
     Role::findByName('ADMIN')->syncPermissions(Permission::all());
-    Role::findByName('SERVER')->syncPermissions(['view_floor', 'create_billing_group', 'submit_order', 'reopen_billing_group', 'view_audit']);
-    Role::findByName('CASHIER')->syncPermissions(['view_floor', 'generate_internal_bill', 'reprint_bill', 'record_payment', 'retry_print_job', 'view_audit']);
+    Role::findByName('SERVER')->syncPermissions([
+        'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
+        'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
+        'order.create', 'order.void_item',
+        'production_ticket.view',
+        'audit.view',
+    ]);
+    Role::findByName('CASHIER')->syncPermissions([
+        'billing_group.view', 'billing_group.reopen',
+        'billing_document.create', 'billing_document.reprint',
+        'payment.record', 'payment.void',
+        'print_job.view', 'print_job.retry',
+        'audit.view',
+    ]);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     foreach ([
