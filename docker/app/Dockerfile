@@ -25,11 +25,18 @@ RUN groupadd -g ${WWWGROUP} serveo \
 
 WORKDIR /var/www/html
 
+# Copy composer files first for better layer caching
+COPY --chown=serveo:serveo composer.json composer.lock /var/www/html/
+
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
+
+# Copy the rest of the application
 COPY --chown=serveo:serveo . /var/www/html
 
-RUN composer install --no-interaction --no-dev --optimize-autoloader || true \
-    && mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R serveo:serveo /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
+    && chown -R serveo:serveo /var/www/html/storage /var/www/html/bootstrap/cache \
+    && composer dump-autoload --no-dev --optimize \
+    && php artisan optimize
 
 USER serveo
 
