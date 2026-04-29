@@ -4,6 +4,8 @@ services:
     container_name: serveo-app
     restart: unless-stopped
     working_dir: /var/www/html
+    volumes:
+      - app-public:/var/www/html/public
     environment:
       APP_NAME: ${APP_NAME:-Serveo}
       APP_ENV: ${APP_ENV:-production}
@@ -42,6 +44,8 @@ services:
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8080}:80"
+    volumes:
+      - app-public:/var/www/html/public:ro
     depends_on:
       - app
     networks:
@@ -137,6 +141,9 @@ services:
       - app
     networks:
       - serveo
+
+volumes:
+  app-public:
 
 networks:
   serveo:
