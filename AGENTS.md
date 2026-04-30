@@ -6,6 +6,19 @@ This file gives implementation instructions to AI coding agents working on the r
 
 It defines how agents should interpret the documentation pack, how to make decisions, how to structure code, and how to avoid introducing scope drift or architecture mistakes.
 
+## Repository identity
+
+| Property | Value |
+|---|---|
+| GitHub owner | `ricafett` |
+| Repository name | `serveo` |
+| GitHub URL | `https://github.com/ricafett/serveo` |
+| Clone URL | `https://github.com/ricafett/serveo.git` |
+
+When using MCP GitHub tools (e.g., `GitHub_issue_read`, `GitHub_list_issues`, `GitHub_create_pull_request`), use:
+- **owner:** `ricafett`
+- **repo:** `serveo`
+
 ## Product context
 
 This repository is for an MVP application used in a recurring food-service event environment.
