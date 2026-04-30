@@ -3,6 +3,7 @@
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Models\BillingStatus;
 use App\Models\MenuItem;
 use App\Models\Row;
 
@@ -36,7 +37,8 @@ it('records a partial payment via api', function () {
         ->assertJsonPath('data.amount', '10.00');
 
     $this->group->refresh();
-    expect($this->group->status?->code)->toBe('PARTIALLY_PAID');
+    // With simplified statuses, group stays ACTIVE until fully paid.
+    expect($this->group->status?->code)->toBe(BillingStatus::ACTIVE);
 });
 
 it('records a full payment and closes the group', function () {

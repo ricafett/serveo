@@ -12,6 +12,7 @@ use App\Models\Row;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class BillingGroupController extends ApiController
 {
@@ -103,13 +104,22 @@ class BillingGroupController extends ApiController
         }
 
         try {
-            DB::transaction(function () use ($request, $billingGroup, $validated) {
+            $statusChanged = false;
+            $fieldsChanged = false;
+
+            DB::transaction(function () use ($request, $billingGroup, $validated, &$statusChanged, &$fieldsChanged) {
                 if (! empty($validated['statusCode'])) {
+                    if (! $request->user()->hasRole(['CASHIER', 'ADMIN'])) {
+                        throw new RuntimeException('Only cashiers or admins may change billing group status.');
+                    }
+
                     $this->billingGroupService->setStatus(
                         $billingGroup,
                         $validated['statusCode'],
                         $request->user(),
+                        null, // controller already checked version at the gate
                     );
+                    $statusChanged = true;
                 }
 
                 $update = [];
@@ -121,15 +131,22 @@ class BillingGroupController extends ApiController
                 }
                 if (! empty($update)) {
                     $billingGroup->update($update);
+                    $fieldsChanged = true;
                 }
 
-                $billingGroup->increment('version_number');
+                // If only fields changed (no status change), we must still bump version.
+                if (! $statusChanged && $fieldsChanged) {
+                    $billingGroup->increment('version_number');
+                }
             });
         } catch (\RuntimeException $e) {
             $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
                 ? 'VERSION_CONFLICT'
-                : 'INVALID_STATUS_TRANSITION';
-            return $this->error($code, $e->getMessage(), status: 409);
+                : (str_contains($e->getMessage(), 'Only cashiers or admins')
+                    ? 'FORBIDDEN'
+                    : 'INVALID_STATUS_TRANSITION');
+            $status = $code === 'FORBIDDEN' ? 403 : 409;
+            return $this->error($code, $e->getMessage(), status: $status);
         }
 
         return $this->success($this->toBillingGroupDto($billingGroup->refresh()));
@@ -245,15 +262,27 @@ class BillingGroupController extends ApiController
 
     public function reopen(Request $request, BillingGroup $billingGroup): JsonResponse
     {
-        $request->validate([
-            'reason' => ['nullable', 'string', 'max:500'],
+        $validated = $request->validate([
+            'reason'        => ['nullable', 'string', 'max:500'],
+            'versionNumber' => ['nullable', 'integer'],
         ]);
 
         if (! $billingGroup->is_closed) {
             return $this->error('CONFLICT', 'Billing group is already open.', status: 409);
         }
 
-        $this->billingGroupService->reopen($billingGroup, $request->user());
+        try {
+            $this->billingGroupService->reopen(
+                $billingGroup,
+                $request->user(),
+                $validated['versionNumber'] ?? null,
+            );
+        } catch (\RuntimeException $e) {
+            $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
+                ? 'VERSION_CONFLICT'
+                : 'INVALID_STATUS_TRANSITION';
+            return $this->error($code, $e->getMessage(), status: 409);
+        }
 
         return $this->success($this->toBillingGroupDto($billingGroup->refresh()));
     }
@@ -266,6 +295,7 @@ class BillingGroupController extends ApiController
             'statusCode'     => $group->status?->code,
             'statusLabel'    => $group->status?->display_name,
             'coverCount'     => $group->cover_count,
+            'notes'          => $group->notes,
             'isClosed'       => $group->is_closed,
             'versionNumber'  => $group->version_number,
             'openedAt'       => $group->opened_at?->toIso8601String(),

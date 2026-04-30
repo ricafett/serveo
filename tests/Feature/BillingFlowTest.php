@@ -32,10 +32,10 @@ it('generates an internal bill and queues it on the cashier printer', function (
     expect(\App\Models\PrintJob::where('printer_id', $bill->printer_id)->count())->toBeGreaterThanOrEqual(1);
 });
 
-it('partial payment marks the group PARTIALLY_PAID', function () {
+it('partial payment keeps group ACTIVE when PARTIALLY_PAID status does not exist', function () {
     app(BillingService::class)->recordPayment($this->group, $this->cashier, 10.00, 'Numerário');
     $this->group->refresh();
-    expect($this->group->status?->code)->toBe(BillingStatus::PARTIALLY_PAID)
+    expect($this->group->status?->code)->toBe(BillingStatus::ACTIVE)
         ->and($this->group->is_closed)->toBeFalse();
 });
 

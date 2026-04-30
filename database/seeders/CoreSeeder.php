@@ -78,20 +78,17 @@ class CoreSeeder extends Seeder
         );
 
         // ---- Billing statuses ----
+        // MVP starts with only ACTIVE and CLOSED. Admin may add more later via panel.
         foreach ([
-            ['WAITING',         'À espera',          10],
-            ['ACTIVE',          'Ativo',             20],
-            ['CHECK_REQUESTED', 'Conta pedida',      30],
-            ['PARTIALLY_PAID',  'Parcialmente pago', 40],
-            ['CLOSED',          'Fechado',           50],
+            ['ACTIVE', 'Ativo',   10],
+            ['CLOSED', 'Fechado', 20],
         ] as [$code, $name, $sort]) {
             BillingStatus::updateOrCreate(
                 ['code' => $code],
                 ['display_name' => $name, 'sort_order' => $sort, 'is_active' => true]
             );
         }
-        $waiting = BillingStatus::where('code', 'WAITING')->first();
-        $active  = BillingStatus::where('code', 'ACTIVE')->first();
+        $active = BillingStatus::where('code', 'ACTIVE')->first();
 
         // ---- Layout: 2 sections, 2 rows each, 20 seats per row, 10 pairs per row ----
         foreach ([['A', 'Sala A'], ['B', 'Sala B']] as $idx => [$code, $name]) {

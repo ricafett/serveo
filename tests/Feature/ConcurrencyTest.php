@@ -39,17 +39,18 @@ it('allows simultaneous orders on same billing group', function () {
 
 it('rejects concurrent status changes with stale version', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $cashier = makeUser('CASHIER');
     $originalVersion = $group->version_number;
 
     // First update succeeds
-    app(BillingGroupService::class)->setStatus($group, BillingStatus::CHECK_REQUESTED, $this->server, $originalVersion);
+    app(BillingGroupService::class)->setStatus($group, BillingStatus::CLOSED, $cashier, $originalVersion);
     $group->refresh();
 
     // Second update with same original version fails
     expect(fn () => app(BillingGroupService::class)->setStatus(
         $group,
         BillingStatus::CLOSED,
-        $this->server,
+        $cashier,
         $originalVersion,
     ))->toThrow(RuntimeException::class, 'VERSION_CONFLICT');
 });

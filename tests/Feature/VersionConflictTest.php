@@ -6,6 +6,7 @@ use App\Models\BillingStatus;
 beforeEach(function () {
     $this->session = bootScenario();
     $this->server  = makeUser('SERVER');
+    $this->cashier = makeUser('CASHIER');
     $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
 });
 
@@ -17,8 +18,8 @@ it('throws VERSION_CONFLICT on stale version during setStatus', function () {
 
     expect(fn () => app(BillingGroupService::class)->setStatus(
         $this->group->refresh(),
-        BillingStatus::CHECK_REQUESTED,
-        $this->server,
+        BillingStatus::CLOSED,
+        $this->cashier,
         $originalVersion,
     ))->toThrow(RuntimeException::class, 'VERSION_CONFLICT');
 });
@@ -26,7 +27,49 @@ it('throws VERSION_CONFLICT on stale version during setStatus', function () {
 it('increments version_number on successful setStatus', function () {
     $before = $this->group->version_number;
 
-    app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CHECK_REQUESTED, $this->server);
+    app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CLOSED, $this->cashier);
+
+    expect($this->group->refresh()->version_number)->toBe($before + 1);
+});
+
+it('throws VERSION_CONFLICT on stale version during close', function () {
+    $originalVersion = $this->group->version_number;
+    $this->group->increment('version_number');
+
+    expect(fn () => app(BillingGroupService::class)->close(
+        $this->group->refresh(),
+        $this->cashier,
+        $originalVersion,
+    ))->toThrow(RuntimeException::class, 'VERSION_CONFLICT');
+});
+
+it('increments version_number on successful close', function () {
+    $before = $this->group->version_number;
+
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+
+    expect($this->group->refresh()->version_number)->toBe($before + 1);
+});
+
+it('throws VERSION_CONFLICT on stale version during reopen', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $originalVersion = $this->group->version_number;
+    $this->group->increment('version_number');
+
+    expect(fn () => app(BillingGroupService::class)->reopen(
+        $this->group->refresh(),
+        $this->cashier,
+        $originalVersion,
+    ))->toThrow(RuntimeException::class, 'VERSION_CONFLICT');
+});
+
+it('increments version_number on successful reopen', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $before = $this->group->version_number;
+
+    app(BillingGroupService::class)->reopen($this->group, $this->cashier);
 
     expect($this->group->refresh()->version_number)->toBe($before + 1);
 });

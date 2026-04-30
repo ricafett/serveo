@@ -52,7 +52,7 @@ Route::prefix('v1')->group(function () {
         Route::get('billing-groups/{billingGroup}', [BillingGroupController::class, 'show'])
             ->middleware('permission:billing_group.view');
         Route::patch('billing-groups/{billingGroup}', [BillingGroupController::class, 'update'])
-            ->middleware('permission:billing_group.set_status');
+            ->middleware('permission:billing_group.view');
         Route::post('billing-groups/{billingGroup}/zones', [BillingGroupController::class, 'storeZones'])
             ->middleware('permission:floor.assign_zone');
         Route::get('billing-groups/{billingGroup}/orders', [BillingGroupController::class, 'orders'])

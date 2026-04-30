@@ -50,7 +50,7 @@ class BillingService
 
             $this->printQueue->enqueueBill($bill, $cashier);
 
-            // Set status to CHECK_REQUESTED if currently ACTIVE.
+            // Set status to CHECK_REQUESTED if currently ACTIVE and that status exists.
             if ($group->status?->code === BillingStatus::ACTIVE) {
                 $check = BillingStatus::where('code', BillingStatus::CHECK_REQUESTED)->value('id');
                 if ($check) {
@@ -141,7 +141,9 @@ class BillingService
                 $group->openOccupiedZones()->update(['is_open' => false, 'released_at' => now()]);
             } else {
                 $partial = BillingStatus::where('code', BillingStatus::PARTIALLY_PAID)->value('id');
-                $group->update(['billing_status_id' => $partial]);
+                if ($partial) {
+                    $group->update(['billing_status_id' => $partial]);
+                }
             }
 
             Audit::record(

@@ -17,65 +17,45 @@ beforeEach(function () {
     );
 });
 
-it('allows WAITING to ACTIVE transition', function () {
-    // Create group with WAITING status
-    $group = app(BillingGroupService::class)->open($this->session, $this->server, null, null, BillingStatus::WAITING);
-    app(BillingGroupService::class)->setStatus($group, BillingStatus::ACTIVE, $this->server);
-
-    expect($group->refresh()->status?->code)->toBe(BillingStatus::ACTIVE);
+it('allows ACTIVE to CLOSED transition by cashier', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::CLOSED);
 });
 
-it('allows ACTIVE to CHECK_REQUESTED transition', function () {
-    app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CHECK_REQUESTED, $this->server);
-    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::CHECK_REQUESTED);
-});
-
-it('allows CHECK_REQUESTED to PARTIALLY_PAID transition', function () {
-    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    app(\App\Domain\Orders\OrderService::class)->submit(
-        $this->group, $this->server,
-        [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]], $this->zone
-    );
-
-    app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CHECK_REQUESTED, $this->server);
-    app(BillingService::class)->recordPayment($this->group->refresh(), $this->cashier, 10.00, 'Cash');
-
-    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::PARTIALLY_PAID);
-});
-
-it('allows PARTIALLY_PAID to ACTIVE via reopen', function () {
-    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    app(\App\Domain\Orders\OrderService::class)->submit(
-        $this->group, $this->server,
-        [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]], $this->zone
-    );
-
-    app(BillingService::class)->recordPayment($this->group, $this->cashier, 10.00, 'Cash');
+it('allows CLOSED to ACTIVE via reopen by cashier', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
     app(BillingGroupService::class)->reopen($this->group->refresh(), $this->cashier);
 
     expect($this->group->refresh()->status?->code)->toBe(BillingStatus::ACTIVE);
 });
 
-it('allows ACTIVE to CLOSED transition', function () {
-    app(BillingGroupService::class)->close($this->group, $this->server);
-    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::CLOSED);
+it('rejects ACTIVE to CLOSED by server', function () {
+    expect(fn () => app(BillingGroupService::class)->close($this->group, $this->server))
+        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may close a billing group.');
 });
 
-it('rejects ACTIVE to WAITING transition', function () {
-    expect(fn () => app(BillingGroupService::class)->setStatus($this->group, BillingStatus::WAITING, $this->server))
-        ->toThrow(RuntimeException::class, 'Invalid status transition');
+it('rejects reopen by server', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+
+    expect(fn () => app(BillingGroupService::class)->reopen($this->group->refresh(), $this->server))
+        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may reopen a billing group.');
 });
 
-it('rejects CLOSED to CHECK_REQUESTED without reopen', function () {
-    app(BillingGroupService::class)->close($this->group, $this->server);
+it('rejects setStatus to CLOSED by server', function () {
+    expect(fn () => app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CLOSED, $this->server))
+        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may close or reopen a billing group.');
+});
 
-    expect(fn () => app(BillingGroupService::class)->setStatus($this->group->refresh(), BillingStatus::CHECK_REQUESTED, $this->server))
+it('rejects invalid transition from CLOSED to ACTIVE via setStatus', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+
+    expect(fn () => app(BillingGroupService::class)->setStatus($this->group->refresh(), BillingStatus::ACTIVE, $this->cashier))
         ->toThrow(RuntimeException::class, 'Invalid status transition');
 });
 
 it('is no-op when reopening non-closed group', function () {
     $before = $this->group->version_number;
-    app(BillingGroupService::class)->reopen($this->group->refresh(), $this->server);
+    app(BillingGroupService::class)->reopen($this->group->refresh(), $this->cashier);
 
     expect($this->group->refresh()->status?->code)->toBe(BillingStatus::ACTIVE)
         ->and($this->group->version_number)->toBe($before);
