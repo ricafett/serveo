@@ -77,6 +77,18 @@ Agents must implement the MVP using this stack unless explicitly instructed othe
 
 Do not replace the stack with React, Next.js, ASP.NET, Rails, Django, or another stack unless explicitly instructed.
 
+### Pinned versions
+
+| Package | Installed |
+|---|---|
+| Laravel | v13.7.0 |
+| Livewire | v4.2.4 |
+| Filament | v5.6.1 |
+| spatie/laravel-permission | 7.4.1 |
+| Pest | v4.6.3 |
+
+Do not assume v3 APIs. When unsure about a class, method, or namespace from vendor source, query Context7 MCP before writing code.
+
 ## Required architecture
 
 Agents must follow these architectural rules:
@@ -409,7 +421,7 @@ When implementation details are not fully specified:
 Agents should:
 
 - Read the relevant docs for the module they are touching.
-- When you need to search docs for libraries, frameworks, or languages, use Context7 MCP.
+- When researching library or framework behavior — especially Filament, Livewire, or Laravel — query Context7 MCP first instead of guessing from v3 docs or vendor source code.
 - Identify the exact acceptance criteria and business rules involved.
 - Check role-permission implications.
 - Check whether printing, audit, or queue behavior is affected.

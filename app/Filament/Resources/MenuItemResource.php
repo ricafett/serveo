@@ -11,6 +11,7 @@ use App\Models\MenuItem;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -53,8 +54,8 @@ class MenuItemResource extends Resource
                     ->label('Categoria')
                     ->options(MenuCategory::query()->pluck('display_name', 'id')),
             ])
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->actions([Actions\EditAction::make()])
+            ->bulkActions([Actions\DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
