@@ -21,9 +21,9 @@
 
         <div class="space-y-4">
             <div class="rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-                <h3 class="mb-2 text-sm font-semibold">Carrinho</h3>
+                <h3 class="mb-2 text-sm font-semibold">{{ __('order.cart') }}</h3>
                 @if (empty($cartDetailed))
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum item adicionado.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('order.empty_cart') }}</p>
                 @else
                     <table class="w-full text-sm">
                         <tbody>
@@ -41,14 +41,14 @@
                                     <td class="py-1 text-right">{{ number_format($line['subtotal'], 2, ',', ' ') }}</td>
                                     <td class="py-1 pl-2">
                                         <button wire:click="removeItem({{ $line['index'] }})"
-                                            class="text-xs text-danger-600 dark:text-danger-400">remover</button>
+                                            class="text-xs text-danger-600 dark:text-danger-400">{{ __('order.remove') }}</button>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr class="font-semibold">
-                                <td class="pt-2">Total</td>
+                                <td class="pt-2">{{ __('app.total') }}</td>
                                 <td></td>
                                 <td class="pt-2 text-right">{{ number_format($total, 2, ',', ' ') }} EUR</td>
                                 <td></td>
@@ -59,34 +59,34 @@
             </div>
 
             <div class="rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-                <label class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Zona de entrega</label>
+                <label class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{{ __('order.delivery_zone') }}</label>
                 <select wire:model.live="occupiedZoneId" class="mt-1 w-full rounded border-gray-300 text-sm dark:border-gray-700 dark:bg-gray-800">
-                    <option value="">— sem zona específica —</option>
+                    <option value="">{{ __('order.no_specific_zone') }}</option>
                     @foreach ($zoneOptions as $id => $label)
                         <option value="{{ $id }}">{{ $label }}</option>
                     @endforeach
                 </select>
 
                 @if (! empty($pairOptions))
-                    <label class="mt-3 block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Par de lugar (opcional)</label>
+                    <label class="mt-3 block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{{ __('order.seat_pair') }}</label>
                     <select wire:model.live="deliveryPairId" class="mt-1 w-full rounded border-gray-300 text-sm dark:border-gray-700 dark:bg-gray-800">
-                        <option value="">— centro da zona —</option>
+                        <option value="">{{ __('order.center_of_zone') }}</option>
                         @foreach ($pairOptions as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
                         @endforeach
                     </select>
                 @endif
 
-                <label class="mt-3 block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Notas</label>
+                <label class="mt-3 block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{{ __('order.order_notes') }}</label>
                 <textarea wire:model.defer="notes" rows="2"
                     class="mt-1 w-full rounded border-gray-300 text-sm dark:border-gray-700 dark:bg-gray-800"></textarea>
             </div>
 
             <x-filament::button wire:click="submitOrder" color="primary" icon="heroicon-o-paper-airplane" class="w-full">
-                Enviar pedido
+                {{ __('order.submit') }}
             </x-filament::button>
             <a href="{{ \App\Filament\Pages\BillingGroupDetail::getUrl(['record' => $group->id]) }}"
-               class="block text-center text-xs text-gray-500 hover:underline">Cancelar e voltar ao grupo</a>
+               class="block text-center text-xs text-gray-500 hover:underline">{{ __('order.cancel_back') }}</a>
         </div>
     </div>
 </x-filament-panels::page>

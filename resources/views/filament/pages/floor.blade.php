@@ -1,17 +1,16 @@
 <x-filament-panels::page>
     @if (! $session)
         <div class="rounded-lg bg-warning-50 p-4 text-warning-900 dark:bg-warning-900 dark:text-warning-100">
-            Não existe nenhuma sessão de serviço aberta. Crie uma sessão em
-            <em>Configuração &rarr; Sessões de serviço</em> antes de operar o salão.
+            {{ __('floor.no_session') }}
         </div>
     @else
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-xl font-semibold">{{ $session->session_type }} &mdash; {{ $session->session_label }}</h2>
-                <p class="text-sm text-gray-500">Início: {{ $session->starts_at?->format('Y-m-d H:i') }}</p>
+                <p class="text-sm text-gray-500">{{ __('floor.session_start') }}: {{ $session->starts_at?->format('Y-m-d H:i') }}</p>
             </div>
             <x-filament::button wire:click="openGroup" icon="heroicon-o-plus">
-                Abrir novo grupo
+                {{ __('floor.open_group') }}
             </x-filament::button>
         </div>
 
@@ -23,7 +22,7 @@
                         @foreach ($section->rows as $row)
                             <div>
                                 <div class="mb-1 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Fila {{ $row->row_code }}
+                                    {{ __('floor.row') }} {{ $row->row_code }}
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     @foreach ($row->seatPairs as $pair)
@@ -50,9 +49,9 @@
         </div>
 
         <div class="mt-8">
-            <h3 class="mb-3 text-lg font-semibold">Grupos abertos</h3>
+            <h3 class="mb-3 text-lg font-semibold">{{ __('floor.open_groups') }}</h3>
             @if ($openGroups->isEmpty())
-                <p class="text-sm text-gray-500">Nenhum grupo aberto nesta sessão.</p>
+                <p class="text-sm text-gray-500">{{ __('floor.no_open_groups') }}</p>
             @else
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($openGroups as $group)
@@ -68,7 +67,7 @@
                                 @forelse ($group->occupiedZones as $zone)
                                     <div>{{ $zone->row?->section?->section_code }} · {{ $zone->rangeLabel() }}</div>
                                 @empty
-                                    <em>Sem zonas atribuídas</em>
+                                    <em>{{ __('floor.no_zones') }}</em>
                                 @endforelse
                             </div>
                         </a>

@@ -19,21 +19,21 @@ class TicketRenderer
         $ticket->loadMissing(['billingGroup.status', 'occupiedZone.row.section', 'items.menuItem']);
 
         $lines = [];
-        $lines[] = $this->center($ticket->is_void_slip ? '*** ANULAÇÃO ***' : strtoupper($ticket->ticket_type));
+        $lines[] = $this->center($ticket->is_void_slip ? '*** '.__('ticket.void').' ***' : strtoupper($ticket->ticket_type));
         if ($ticket->is_reprint) {
-            $lines[] = $this->center('** REIMPRESSÃO **');
+            $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
         $lines[] = str_repeat('=', self::WIDTH);
-        $lines[] = 'Grupo: '.($ticket->billingGroup?->display_code ?? '-');
+        $lines[] = __('ticket.group').': '.($ticket->billingGroup?->display_code ?? '-');
         if ($ticket->occupiedZone) {
             $z = $ticket->occupiedZone;
             $section = $z->row?->section?->section_code ?? '?';
-            $lines[] = "Zona:  {$section}-{$z->row?->row_code} pares {$z->start_seat_pair_sequence}-{$z->end_seat_pair_sequence}";
+            $lines[] = __('ticket.zone').":  {$section}-{$z->row?->row_code} pares {$z->start_seat_pair_sequence}-{$z->end_seat_pair_sequence}";
         }
         if ($ticket->delivery_reference_label) {
-            $lines[] = 'Entrega: '.$ticket->delivery_reference_label;
+            $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;
         }
-        $lines[] = 'Hora:  '.$ticket->requested_at?->format('Y-m-d H:i');
+        $lines[] = __('ticket.time').':  '.$ticket->requested_at?->format('Y-m-d H:i');
         $lines[] = str_repeat('-', self::WIDTH);
 
         /** @var OrderItem $item */
@@ -48,7 +48,7 @@ class TicketRenderer
         }
 
         $lines[] = str_repeat('=', self::WIDTH);
-        $lines[] = 'Ticket #'.$ticket->id;
+        $lines[] = __('ticket.ticket_num').' #'.$ticket->id;
 
         return implode("\n", $lines)."\n";
     }
@@ -58,14 +58,14 @@ class TicketRenderer
         $bill->loadMissing(['billingGroup.orderHeaders.items.menuItem', 'billingGroup.paymentRecords']);
 
         $lines = [];
-        $lines[] = $this->center('CONTA INTERNA');
+        $lines[] = $this->center(__('ticket.internal_bill'));
         if ($bill->is_reprint) {
-            $lines[] = $this->center('** REIMPRESSÃO **');
+            $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
         $lines[] = str_repeat('=', self::WIDTH);
-        $lines[] = 'Grupo:    '.$bill->billingGroup?->display_code;
-        $lines[] = 'Documento: '.($bill->document_number ?: '#'.$bill->id);
-        $lines[] = 'Hora:      '.$bill->requested_at?->format('Y-m-d H:i');
+        $lines[] = __('ticket.group').':    '.$bill->billingGroup?->display_code;
+        $lines[] = __('ticket.document').': '.($bill->document_number ?: '#'.$bill->id);
+        $lines[] = __('ticket.time').':      '.$bill->requested_at?->format('Y-m-d H:i');
         $lines[] = str_repeat('-', self::WIDTH);
 
         $items = collect();
@@ -86,17 +86,17 @@ class TicketRenderer
         }
 
         $lines[] = str_repeat('-', self::WIDTH);
-        $lines[] = $this->row('SUBTOTAL', number_format((float) $bill->subtotal_amount, 2, ',', ' ').' EUR');
-        $lines[] = $this->row('TOTAL',    number_format((float) $bill->total_amount,    2, ',', ' ').' EUR');
+        $lines[] = $this->row(__('ticket.subtotal'), number_format((float) $bill->subtotal_amount, 2, ',', ' ').' EUR');
+        $lines[] = $this->row(__('ticket.total'),    number_format((float) $bill->total_amount,    2, ',', ' ').' EUR');
 
         $paid = (float) $bill->billingGroup?->paymentsTotal();
         if ($paid > 0) {
-            $lines[] = $this->row('Pago',  number_format($paid, 2, ',', ' ').' EUR');
-            $lines[] = $this->row('Em dívida', number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' EUR');
+            $lines[] = $this->row(__('ticket.paid'),  number_format($paid, 2, ',', ' ').' EUR');
+            $lines[] = $this->row(__('ticket.due'), number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' EUR');
         }
 
         $lines[] = str_repeat('=', self::WIDTH);
-        $lines[] = $this->center('Documento interno - sem valor fiscal');
+        $lines[] = $this->center(__('ticket.no_fiscal'));
 
         return implode("\n", $lines)."\n";
     }

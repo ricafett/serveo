@@ -52,7 +52,17 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode()
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-                fn (): string => Blade::render('@livewire(\'theme-toggle\')'),
+                fn (): string => Blade::render(<<<'BLADE'
+<div class="flex items-center gap-2">
+    @livewire('language-switcher')
+    @livewire('theme-toggle')
+</div>
+BLADE
+                ),
+            )
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): string => Blade::render('<div class="mb-4 flex justify-end">@livewire(\'language-switcher\')</div>'),
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,

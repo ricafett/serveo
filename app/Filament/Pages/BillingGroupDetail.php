@@ -24,7 +24,17 @@ class BillingGroupDetail extends Page
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static bool $shouldRegisterNavigation = false;
     protected string $view = 'filament.pages.billing-group-detail';
-    protected static ?string $title = 'Grupo';
+    protected static ?string $title = null;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('billing.group_title');
+    }
+
+    public function getTitle(): string
+    {
+        return __('billing.group_title') . ' ' . $this->group?->display_code;
+    }
 
     public static function getSlug(?\Filament\Panel $panel = null): string
     {
@@ -46,11 +56,6 @@ class BillingGroupDetail extends Page
         ])->findOrFail($record);
     }
 
-    public function getTitle(): string
-    {
-        return 'Grupo '.$this->group?->display_code;
-    }
-
     protected function refreshGroup(): void
     {
         $this->group = $this->group?->fresh([
@@ -63,21 +68,21 @@ class BillingGroupDetail extends Page
     {
         return [
             Action::make('assignZone')
-                ->label('Atribuir zona')
+                ->label(__('billing.assign_zone'))
                 ->icon('heroicon-o-rectangle-group')
                 ->visible(fn () => ! $this->group?->is_closed)
                 ->form([
                     Forms\Components\Select::make('row_id')
-                        ->label('Fila')
+                        ->label(__('floor.row'))
                         ->options(function () {
                             return Row::with('section')->get()->mapWithKeys(fn ($r) => [
-                                $r->id => $r->section->section_code.' · Fila '.$r->row_code,
+                                $r->id => $r->section->section_code.' · '.__('floor.row').' '.$r->row_code,
                             ])->all();
                         })
                         ->required(),
-                    Forms\Components\TextInput::make('start')->label('Par inicial')->numeric()->required()->minValue(1),
-                    Forms\Components\TextInput::make('end')->label('Par final')->numeric()->required()->minValue(1),
-                    Forms\Components\TextInput::make('delivery_label')->label('Etiqueta entrega')->maxLength(100),
+                    Forms\Components\TextInput::make('start')->label(__('billing.start_pair'))->numeric()->required()->minValue(1),
+                    Forms\Components\TextInput::make('end')->label(__('billing.end_pair'))->numeric()->required()->minValue(1),
+                    Forms\Components\TextInput::make('delivery_label')->label(__('billing.delivery_label'))->maxLength(100),
                 ])
                 ->action(function (array $data) {
                     $row = Row::findOrFail($data['row_id']);
@@ -86,24 +91,24 @@ class BillingGroupDetail extends Page
                             $this->group, $row, (int) $data['start'], (int) $data['end'],
                             Auth::user(), $data['delivery_label'] ?? null,
                         );
-                        Notification::make()->title('Zona atribuída')->success()->send();
+                        Notification::make()->title(__('billing.zone_assigned'))->success()->send();
                     } catch (ZoneOverlapException $e) {
-                        Notification::make()->title('Sobreposição de zonas')->body($e->getMessage())->danger()->send();
+                        Notification::make()->title(__('billing.zone_overlap'))->body($e->getMessage())->danger()->send();
                     } catch (\Throwable $e) {
-                        Notification::make()->title('Erro ao atribuir zona')->body($e->getMessage())->danger()->send();
+                        Notification::make()->title(__('billing.zone_error'))->body($e->getMessage())->danger()->send();
                     }
                     $this->refreshGroup();
                 }),
 
             Action::make('addOrder')
-                ->label('Novo pedido')
+                ->label(__('billing.new_order'))
                 ->icon('heroicon-o-shopping-cart')
                 ->color('primary')
                 ->visible(fn () => ! $this->group?->is_closed)
                 ->url(fn () => OrderEntry::getUrl(['record' => $this->group->id])),
 
             Action::make('generateBill')
-                ->label('Imprimir conta')
+                ->label(__('billing.print_bill'))
                 ->icon('heroicon-o-printer')
                 ->color('warning')
                 ->visible(fn () => ! $this->group?->is_closed)
@@ -111,22 +116,22 @@ class BillingGroupDetail extends Page
                 ->action(function () {
                     try {
                         app(BillingService::class)->generateInternalBill($this->group, Auth::user());
-                        Notification::make()->title('Conta enviada para impressão')->success()->send();
+                        Notification::make()->title(__('billing.bill_sent'))->success()->send();
                     } catch (\Throwable $e) {
-                        Notification::make()->title('Erro')->body($e->getMessage())->danger()->send();
+                        Notification::make()->title(__('billing.bill_error'))->body($e->getMessage())->danger()->send();
                     }
                     $this->refreshGroup();
                 }),
 
             Action::make('reopen')
-                ->label('Reabrir grupo')
+                ->label(__('billing.reopen_group'))
                 ->icon('heroicon-o-arrow-uturn-left')
                 ->color('gray')
                 ->visible(fn () => $this->group?->is_closed)
                 ->requiresConfirmation()
                 ->action(function () {
                     app(BillingGroupService::class)->reopen($this->group, Auth::user());
-                    Notification::make()->title('Grupo reaberto')->success()->send();
+                    Notification::make()->title(__('billing.group_reopened'))->success()->send();
                     $this->refreshGroup();
                 }),
         ];
@@ -139,7 +144,7 @@ class BillingGroupDetail extends Page
             return;
         }
         app(OccupancyService::class)->releaseZone($zone, Auth::user());
-        Notification::make()->title('Zona libertada')->success()->send();
+        Notification::make()->title(__('billing.zone_released'))->success()->send();
         $this->refreshGroup();
     }
 
