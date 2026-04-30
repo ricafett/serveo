@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AccountingExport extends Model
 {
@@ -19,4 +20,14 @@ class AccountingExport extends Model
         'requested_at'       => 'datetime',
         'completed_at'       => 'datetime',
     ];
+
+    public function serviceSession(): BelongsTo
+    {
+        return $this->belongsTo(ServiceSession::class);
+    }
+
+    public function requestedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'requested_by_user_id');
+    }
 }

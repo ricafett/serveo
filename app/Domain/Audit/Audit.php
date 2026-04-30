@@ -32,6 +32,8 @@ class Audit
         'PAYMENT_VOIDED',
         'PRINT_JOB_RETRIED',
         'EXPORT_REQUESTED',
+        'EXPORT_COMPLETED',
+        'EXPORT_FAILED',
     ];
 
     /**

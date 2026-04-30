@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Domain\Audit\Audit;
 use App\Http\Controllers\ApiController;
+use App\Jobs\GenerateAccountingExportJob;
 use App\Models\AccountingExport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AccountingExportController extends ApiController
 {
@@ -26,20 +28,26 @@ class AccountingExportController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'serviceSessionId' => ['nullable', 'exists:service_sessions,id'],
-            'exportType'       => ['required', 'string', 'in:ACCOUNTING_SUMMARY'],
-            'fileFormat'       => ['required', 'string', 'in:CSV,JSON'],
+            'serviceSessionId'   => ['nullable', 'exists:service_sessions,id'],
+            'exportType'         => ['required', 'string', 'in:SESSION_SUMMARY,FULL_LEDGER'],
+            'fileFormat'         => ['required', 'string', 'in:CSV'],
+            'exportRangeStart'   => ['nullable', 'date'],
+            'exportRangeEnd'     => ['nullable', 'date', 'after_or_equal:exportRangeStart'],
         ]);
 
         $export = AccountingExport::create([
-            'venue_id'           => \App\Models\Venue::first()?->id,
-            'service_session_id' => $validated['serviceSessionId'] ?? null,
-            'export_type'        => $validated['exportType'],
-            'file_format'        => $validated['fileFormat'],
-            'export_status'      => 'REQUESTED',
+            'venue_id'             => \App\Models\Venue::first()?->id,
+            'service_session_id'   => $validated['serviceSessionId'] ?? null,
+            'export_type'          => $validated['exportType'],
+            'export_range_start'   => $validated['exportRangeStart'] ?? null,
+            'export_range_end'     => $validated['exportRangeEnd'] ?? null,
+            'file_format'          => $validated['fileFormat'],
+            'export_status'        => 'REQUESTED',
             'requested_by_user_id' => $request->user()->id,
-            'requested_at'       => now(),
+            'requested_at'         => now(),
         ]);
+
+        GenerateAccountingExportJob::dispatch($export->id);
 
         Audit::record(
             'EXPORT_REQUESTED',
@@ -67,13 +75,19 @@ class AccountingExportController extends ApiController
         ]);
     }
 
-    public function download(AccountingExport $accountingExport): JsonResponse
+    public function download(AccountingExport $accountingExport)
     {
         if (! $accountingExport->file_name || $accountingExport->export_status !== 'COMPLETED') {
             return $this->error('NOT_FOUND', 'Export file not ready.', status: 404);
         }
 
-        // MVP placeholder: in real implementation this would stream the file.
-        return $this->error('NOT_FOUND', 'Export download not yet implemented.', status: 404);
+        $disk = Storage::disk('local');
+        if (! $disk->exists($accountingExport->file_name)) {
+            return $this->error('NOT_FOUND', 'Export file missing.', status: 404);
+        }
+
+        return $disk->download($accountingExport->file_name, basename($accountingExport->file_name), [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 }
