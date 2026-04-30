@@ -7,7 +7,9 @@ use UnitEnum;
 
 use App\Filament\Resources\PrinterResource\Pages;
 use App\Models\Printer;
+use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -56,15 +58,15 @@ class PrinterResource extends Resource
                 'LAN'       => 'LAN direta (ESC/POS porta 9100)',
                 'USB_AGENT' => 'USB através do agente local',
                 'NULL'      => 'Simulada (escreve no disco)',
-            ])->required()->reactive(),
+            ])->required()->live(),
             Forms\Components\TextInput::make('address')->label('Endereço IP / hostname')
-                ->visible(fn (Forms\Get $get) => $get('connection_type') === 'LAN'),
+                ->visible(fn (Get $get) => $get('connection_type') === 'LAN'),
             Forms\Components\TextInput::make('port')->numeric()->default(9100)
-                ->visible(fn (Forms\Get $get) => $get('connection_type') === 'LAN'),
+                ->visible(fn (Get $get) => $get('connection_type') === 'LAN'),
             Forms\Components\TextInput::make('agent_endpoint')->label('URL do agente')
-                ->visible(fn (Forms\Get $get) => $get('connection_type') === 'USB_AGENT'),
+                ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
             Forms\Components\TextInput::make('agent_printer_id')->label('ID interno no agente')
-                ->visible(fn (Forms\Get $get) => $get('connection_type') === 'USB_AGENT'),
+                ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
             Forms\Components\Toggle::make('is_active')->default(true),
         ]);
     }
@@ -87,9 +89,9 @@ class PrinterResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Actions\EditAction::make(),
             ])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->bulkActions([Actions\DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array

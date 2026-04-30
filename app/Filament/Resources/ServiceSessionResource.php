@@ -11,6 +11,7 @@ use App\Models\Venue;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -83,8 +84,8 @@ class ServiceSessionResource extends Resource
                 Tables\Columns\TextColumn::make('billing_groups_count')->counts('billingGroups')->label('Grupos'),
             ])
             ->defaultSort('starts_at', 'desc')
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->actions([Actions\EditAction::make()])
+            ->bulkActions([Actions\DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array

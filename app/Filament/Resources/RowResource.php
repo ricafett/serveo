@@ -11,6 +11,7 @@ use App\Models\Section;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -65,8 +66,8 @@ class RowResource extends Resource
                 Tables\Columns\TextColumn::make('seat_pairs_count')->counts('seatPairs')->label('Pares'),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->actions([Actions\EditAction::make()])
+            ->bulkActions([Actions\DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
