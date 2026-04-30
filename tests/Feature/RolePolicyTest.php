@@ -9,9 +9,9 @@ it('admin user can access the Filament admin panel', function () {
     expect($admin->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))->toBeTrue();
 });
 
-it('cashier and server users can access the Filament admin panel', function () {
-    expect(makeUser('CASHIER')->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))->toBeTrue();
-    expect(makeUser('SERVER')->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))->toBeTrue();
+it('cashier and server users cannot access the Filament admin panel', function () {
+    expect(makeUser('CASHIER')->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))->toBeFalse();
+    expect(makeUser('SERVER')->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))->toBeFalse();
 });
 
 it('non-interactive output roles cannot access the panel', function () {

@@ -72,6 +72,8 @@ class BillingGroupController extends ApiController
             });
         } catch (ZoneOverlapException $e) {
             return $this->error('ZONE_OVERLAP', $e->getMessage(), status: 409);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
@@ -109,10 +111,6 @@ class BillingGroupController extends ApiController
 
             DB::transaction(function () use ($request, $billingGroup, $validated, &$statusChanged, &$fieldsChanged) {
                 if (! empty($validated['statusCode'])) {
-                    if (! $request->user()->hasRole(['CASHIER', 'ADMIN'])) {
-                        throw new RuntimeException('Only cashiers or admins may change billing group status.');
-                    }
-
                     $this->billingGroupService->setStatus(
                         $billingGroup,
                         $validated['statusCode'],
@@ -142,11 +140,10 @@ class BillingGroupController extends ApiController
         } catch (\RuntimeException $e) {
             $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
                 ? 'VERSION_CONFLICT'
-                : (str_contains($e->getMessage(), 'Only cashiers or admins')
-                    ? 'FORBIDDEN'
-                    : 'INVALID_STATUS_TRANSITION');
-            $status = $code === 'FORBIDDEN' ? 403 : 409;
-            return $this->error($code, $e->getMessage(), status: $status);
+                : 'INVALID_STATUS_TRANSITION';
+            return $this->error($code, $e->getMessage(), status: 409);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         }
 
         return $this->success($this->toBillingGroupDto($billingGroup->refresh()));
@@ -182,6 +179,8 @@ class BillingGroupController extends ApiController
             });
         } catch (ZoneOverlapException $e) {
             return $this->error('ZONE_OVERLAP', $e->getMessage(), status: 409);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
@@ -277,6 +276,8 @@ class BillingGroupController extends ApiController
                 $request->user(),
                 $validated['versionNumber'] ?? null,
             );
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
                 ? 'VERSION_CONFLICT'

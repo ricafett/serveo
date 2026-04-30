@@ -62,6 +62,10 @@ class Floor extends Page
 
     public function openGroup(): void
     {
+        if (! Auth::user()?->can('floor.open_billing_group')) {
+            Notification::make()->title(__('floor.unauthorized'))->danger()->send();
+            return;
+        }
         if (! $this->serviceSessionId) {
             Notification::make()->title(__('floor.no_session'))->danger()->send();
             return;

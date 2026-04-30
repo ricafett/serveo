@@ -50,7 +50,8 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * Only ADMIN, CASHIER and SERVER may sign in to the Filament panel.
+     * Only ADMIN may sign in to the Filament admin panel.
+     * CASHIER and SERVER will use the operational UI when built.
      * KITCHEN_OUTPUT/BAR_OUTPUT are non-interactive.
      */
     public function canAccessPanel(Panel $panel): bool
@@ -59,6 +60,6 @@ class User extends Authenticatable implements FilamentUser
             return false;
         }
 
-        return $this->hasAnyRole(['ADMIN', 'CASHIER', 'SERVER']);
+        return $this->hasRole('ADMIN');
     }
 }

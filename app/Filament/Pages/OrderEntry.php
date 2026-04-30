@@ -82,6 +82,10 @@ class OrderEntry extends Page
 
     public function submitOrder(): void
     {
+        if (! Auth::user()?->can('order.create')) {
+            Notification::make()->title(__('order.unauthorized'))->danger()->send();
+            return;
+        }
         if (empty($this->cart)) {
             Notification::make()->title(__('order.cart_empty_warning'))->warning()->send();
             return;

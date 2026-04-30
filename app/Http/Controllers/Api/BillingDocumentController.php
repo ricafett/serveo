@@ -29,6 +29,8 @@ class BillingDocumentController extends ApiController
 
         try {
             $bill = $this->billingService->generateInternalBill($group, $request->user());
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             if (str_contains($e->getMessage(), 'cashier printer')) {
                 return $this->error('PRINTER_ROUTE_MISSING', $e->getMessage(), status: 422);
@@ -52,6 +54,8 @@ class BillingDocumentController extends ApiController
 
         try {
             $reprint = $this->billingService->reprintBill($billingDocument, $request->user());
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             if (str_contains($e->getMessage(), 'cashier printer')) {
                 return $this->error('PRINTER_ROUTE_MISSING', $e->getMessage(), status: 422);

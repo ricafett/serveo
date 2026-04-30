@@ -10,7 +10,7 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Permission catalog - grouped by domain.
+        // Permission catalog — aligned with docs/spec/role-permissions.md.
         $permissions = [
             // Floor and occupancy
             'floor.view',
@@ -36,15 +36,33 @@ class RolePermissionSeeder extends Seeder
             // Print jobs
             'print_job.view',
             'print_job.retry',
-            // Configuration
+            // Printer configuration
+            'printer.configure',
+            'printer.test',
+            'printer.route_change',
+            // Venue and layout
+            'venue.configure',
+            // Menu
+            'menu.manage',
+            // Billing statuses
+            'status.configure',
+            // Users and roles
+            'user.manage',
+            'role.manage',
+            // Translations
+            'translation.manage',
+            // Audit and export
+            'audit.view',
+            'event_log.view_limited',
+            'event_log.view_full',
+            'accounting_export.generate',
+            // Legacy config aliases (kept for backward compatibility)
             'config.users',
             'config.layout',
             'config.menu',
             'config.printers',
             'config.billing_statuses',
             'config.translations',
-            // Audit & export
-            'audit.view',
             'export.create',
         ];
 
@@ -57,23 +75,34 @@ class RolePermissionSeeder extends Seeder
 
         $server = Role::findOrCreate('SERVER');
         $server->syncPermissions([
-            'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
+            'floor.view',
+            'floor.open_billing_group',
+            'floor.assign_zone',
+            'floor.release_zone',
             'billing_group.view',
-            'order.create', 'order.void_item',
+            'order.create',
+            'order.void_item',
             'production_ticket.view',
             'audit.view',
+            'event_log.view_limited',
         ]);
 
         $cashier = Role::findOrCreate('CASHIER');
         $cashier->syncPermissions([
-            'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
-            'billing_document.create', 'billing_document.reprint',
-            'payment.record', 'payment.void',
-            'print_job.view', 'print_job.retry',
+            'billing_group.view',
+            'billing_group.set_status',
+            'billing_group.reopen',
+            'billing_document.create',
+            'billing_document.reprint',
+            'payment.record',
+            'payment.void',
+            'print_job.view',
+            'print_job.retry',
             'audit.view',
+            'event_log.view_limited',
         ]);
 
-        // Non-interactive output roles - exist for audit/routing semantics.
+        // Non-interactive output roles — exist for audit/routing semantics.
         Role::findOrCreate('KITCHEN_OUTPUT');
         Role::findOrCreate('BAR_OUTPUT');
     }

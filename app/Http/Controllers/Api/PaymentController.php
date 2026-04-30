@@ -35,6 +35,8 @@ class PaymentController extends ApiController
                 $validated['paymentLabel'],
                 $validated['notes'] ?? null,
             );
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }

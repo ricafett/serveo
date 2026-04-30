@@ -70,7 +70,7 @@ class BillingGroupDetail extends Page
             Action::make('assignZone')
                 ->label(__('billing.assign_zone'))
                 ->icon('heroicon-o-rectangle-group')
-                ->visible(fn () => ! $this->group?->is_closed)
+                ->visible(fn () => ! $this->group?->is_closed && Auth::user()?->can('floor.assign_zone'))
                 ->form([
                     Forms\Components\Select::make('row_id')
                         ->label(__('floor.row'))
@@ -104,14 +104,14 @@ class BillingGroupDetail extends Page
                 ->label(__('billing.new_order'))
                 ->icon('heroicon-o-shopping-cart')
                 ->color('primary')
-                ->visible(fn () => ! $this->group?->is_closed)
+                ->visible(fn () => ! $this->group?->is_closed && Auth::user()?->can('order.create'))
                 ->url(fn () => OrderEntry::getUrl(['record' => $this->group->id])),
 
             Action::make('generateBill')
                 ->label(__('billing.print_bill'))
                 ->icon('heroicon-o-printer')
                 ->color('warning')
-                ->visible(fn () => ! $this->group?->is_closed)
+                ->visible(fn () => ! $this->group?->is_closed && Auth::user()?->can('billing_document.create'))
                 ->requiresConfirmation()
                 ->action(function () {
                     try {
@@ -127,11 +127,15 @@ class BillingGroupDetail extends Page
                 ->label(__('billing.reopen_group'))
                 ->icon('heroicon-o-arrow-uturn-left')
                 ->color('gray')
-                ->visible(fn () => $this->group?->is_closed)
+                ->visible(fn () => $this->group?->is_closed && Auth::user()?->can('billing_group.reopen'))
                 ->requiresConfirmation()
                 ->action(function () {
-                    app(BillingGroupService::class)->reopen($this->group, Auth::user());
-                    Notification::make()->title(__('billing.group_reopened'))->success()->send();
+                    try {
+                        app(BillingGroupService::class)->reopen($this->group, Auth::user());
+                        Notification::make()->title(__('billing.group_reopened'))->success()->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()->title(__('billing.reopen_error'))->body($e->getMessage())->danger()->send();
+                    }
                     $this->refreshGroup();
                 }),
         ];
@@ -143,8 +147,16 @@ class BillingGroupDetail extends Page
         if ($zone->billing_group_id !== $this->group->id) {
             return;
         }
-        app(OccupancyService::class)->releaseZone($zone, Auth::user());
-        Notification::make()->title(__('billing.zone_released'))->success()->send();
+        if (! Auth::user()?->can('floor.release_zone')) {
+            Notification::make()->title(__('billing.zone_release_unauthorized'))->danger()->send();
+            return;
+        }
+        try {
+            app(OccupancyService::class)->releaseZone($zone, Auth::user());
+            Notification::make()->title(__('billing.zone_released'))->success()->send();
+        } catch (\Throwable $e) {
+            Notification::make()->title(__('billing.zone_release_error'))->body($e->getMessage())->danger()->send();
+        }
         $this->refreshGroup();
     }
 

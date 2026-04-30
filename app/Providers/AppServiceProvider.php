@@ -3,8 +3,21 @@
 namespace App\Providers;
 
 use App\Domain\Localization\DatabaseTranslationLoader;
+use App\Models\AuditEvent;
+use App\Models\BillingDocument;
+use App\Models\BillingGroup;
+use App\Models\OrderHeader;
+use App\Models\PaymentRecord;
+use App\Models\Printer;
+use App\Policies\AuditEventPolicy;
+use App\Policies\BillingDocumentPolicy;
+use App\Policies\BillingGroupPolicy;
+use App\Policies\OrderPolicy;
+use App\Policies\PaymentRecordPolicy;
+use App\Policies\PrinterPolicy;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Translation\Translator;
 
@@ -28,6 +41,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(AuditEvent::class, AuditEventPolicy::class);
+        Gate::policy(BillingDocument::class, BillingDocumentPolicy::class);
+        Gate::policy(BillingGroup::class, BillingGroupPolicy::class);
+        Gate::policy(OrderHeader::class, OrderPolicy::class);
+        Gate::policy(PaymentRecord::class, PaymentRecordPolicy::class);
+        Gate::policy(Printer::class, PrinterPolicy::class);
+
         $locale = $this->resolveLocale();
         app()->setLocale($locale);
 

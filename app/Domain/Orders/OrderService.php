@@ -153,6 +153,8 @@ class OrderService
 
     public function voidItem(OrderItem $item, User $actor, ?string $reason = null): void
     {
+        $this->ensureCan($actor, 'order.void_item');
+
         if ($item->voided_at) {
             return;
         }
