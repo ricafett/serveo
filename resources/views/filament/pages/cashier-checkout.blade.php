@@ -1,22 +1,22 @@
 <x-filament-panels::page>
     @if (! $session)
         <div class="rounded-lg bg-warning-50 p-4 text-warning-900 dark:bg-warning-900 dark:text-warning-100">
-            Não existe sessão de serviço aberta.
+            {{ __('cashier.no_session') }}
         </div>
     @elseif ($groups->isEmpty())
-        <div class="rounded-lg bg-gray-50 p-4 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Nenhum grupo a apresentar.</div>
+        <div class="rounded-lg bg-gray-50 p-4 text-gray-700 dark:bg-gray-800 dark:text-gray-300">{{ __('cashier.no_groups') }}</div>
     @else
         <div class="overflow-x-auto rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800">
                     <tr>
-                        <th class="px-3 py-2 text-left">Grupo</th>
-                        <th class="px-3 py-2 text-left">Estado</th>
-                        <th class="px-3 py-2 text-left">Zonas</th>
-                        <th class="px-3 py-2 text-right">Total</th>
-                        <th class="px-3 py-2 text-right">Pago</th>
-                        <th class="px-3 py-2 text-right">Saldo</th>
-                        <th class="px-3 py-2 text-right">Ações</th>
+                        <th class="px-3 py-2 text-left">{{ __('cashier.group') }}</th>
+                        <th class="px-3 py-2 text-left">{{ __('billing.status') }}</th>
+                        <th class="px-3 py-2 text-left">{{ __('cashier.zones') }}</th>
+                        <th class="px-3 py-2 text-right">{{ __('cashier.total') }}</th>
+                        <th class="px-3 py-2 text-right">{{ __('cashier.paid') }}</th>
+                        <th class="px-3 py-2 text-right">{{ __('cashier.balance') }}</th>
+                        <th class="px-3 py-2 text-right">{{ __('cashier.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,14 +43,14 @@
                                 <div class="flex flex-wrap justify-end gap-1">
                                     @if (! $group->is_closed)
                                         <x-filament::button size="xs" color="warning"
-                                            wire:click="generateBill({{ $group->id }})">Imprimir conta</x-filament::button>
+                                            wire:click="generateBill({{ $group->id }})">{{ __('cashier.print_bill') }}</x-filament::button>
                                     @endif
                                     <x-filament::button size="xs" color="gray"
-                                        wire:click="reprintLastBill({{ $group->id }})">Reimprimir</x-filament::button>
+                                        wire:click="reprintLastBill({{ $group->id }})">{{ __('cashier.reprint') }}</x-filament::button>
                                     @if ($group->is_closed)
                                         <x-filament::button size="xs" color="gray"
                                             wire:click="reopenGroup({{ $group->id }})"
-                                            wire:confirm="Reabrir grupo {{ $group->display_code }}?">Reabrir</x-filament::button>
+                                            wire:confirm="{{ __('cashier.reopen_confirm') }} {{ $group->display_code }}?">{{ __('cashier.reopen') }}</x-filament::button>
                                     @endif
                                 </div>
                             </td>

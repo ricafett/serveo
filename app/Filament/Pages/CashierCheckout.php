@@ -21,10 +21,20 @@ class CashierCheckout extends Page
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-banknotes';
     protected static string | UnitEnum | null $navigationGroup = 'Operação';
-    protected static ?string $navigationLabel = 'Caixa';
+    protected static ?string $navigationLabel = null;
     protected static ?int    $navigationSort  = 2;
     protected string $view = 'filament.pages.cashier-checkout';
-    protected static ?string $title           = 'Caixa';
+    protected static ?string $title           = null;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('cashier.title');
+    }
+
+    public function getTitle(): string
+    {
+        return __('cashier.title');
+    }
 
     public ?int $serviceSessionId = null;
     public bool $showClosed = false;
@@ -40,7 +50,7 @@ class CashierCheckout extends Page
         return [
             $this->recordPaymentAction(),
             Action::make('toggleClosed')
-                ->label(fn () => $this->showClosed ? 'Ocultar fechados' : 'Mostrar fechados')
+                ->label(fn () => $this->showClosed ? __('cashier.hide_closed') : __('cashier.show_closed'))
                 ->icon('heroicon-o-eye')
                 ->action(fn () => $this->showClosed = ! $this->showClosed),
         ];
@@ -51,9 +61,9 @@ class CashierCheckout extends Page
         $group = BillingGroup::findOrFail($groupId);
         try {
             app(BillingService::class)->generateInternalBill($group, Auth::user());
-            Notification::make()->title('Conta enviada para impressora')->success()->send();
+            Notification::make()->title(__('cashier.bill_sent'))->success()->send();
         } catch (\Throwable $e) {
-            Notification::make()->title('Erro')->body($e->getMessage())->danger()->send();
+            Notification::make()->title(__('billing.bill_error'))->body($e->getMessage())->danger()->send();
         }
     }
 
@@ -64,14 +74,14 @@ class CashierCheckout extends Page
             ->latest('id')->first();
 
         if (! $bill) {
-            Notification::make()->title('Sem conta para reimprimir')->warning()->send();
+            Notification::make()->title(__('cashier.no_bill_reprint'))->warning()->send();
             return;
         }
         try {
             app(BillingService::class)->reprintBill($bill, Auth::user());
-            Notification::make()->title('Reimpressão enviada')->success()->send();
+            Notification::make()->title(__('cashier.reprint_sent'))->success()->send();
         } catch (\Throwable $e) {
-            Notification::make()->title('Erro')->body($e->getMessage())->danger()->send();
+            Notification::make()->title(__('billing.bill_error'))->body($e->getMessage())->danger()->send();
         }
     }
 
@@ -79,25 +89,25 @@ class CashierCheckout extends Page
     {
         $group = BillingGroup::findOrFail($groupId);
         app(BillingGroupService::class)->reopen($group, Auth::user());
-        Notification::make()->title('Grupo reaberto')->success()->send();
+        Notification::make()->title(__('billing.group_reopened'))->success()->send();
     }
 
     public function recordPaymentAction(): Action
     {
         return Action::make('recordPayment')
-            ->label('Registar pagamento')
+            ->label(__('cashier.record_payment'))
             ->icon('heroicon-o-currency-euro')
             ->color('success')
             ->form([
                 Forms\Components\Select::make('group_id')
-                    ->label('Grupo')
+                    ->label(__('cashier.payment_group'))
                     ->options(fn () => $this->openGroups()->mapWithKeys(fn ($g) => [
-                        $g->id => $g->display_code.' — saldo '.number_format($g->balance(), 2, ',', ' ').' EUR',
+                        $g->id => $g->display_code.' — '.__('app.balance').' '.number_format($g->balance(), 2, ',', ' ').' EUR',
                     ])->all())
                     ->required(),
-                Forms\Components\TextInput::make('amount')->label('Valor (EUR)')->numeric()->required()->minValue(0.01),
-                Forms\Components\TextInput::make('label')->label('Forma de pagamento')->required()->default('Numerário'),
-                Forms\Components\Textarea::make('notes')->rows(2),
+                Forms\Components\TextInput::make('amount')->label(__('cashier.payment_amount'))->numeric()->required()->minValue(0.01),
+                Forms\Components\TextInput::make('label')->label(__('cashier.payment_label'))->required()->default(__('cashier.payment_default')),
+                Forms\Components\Textarea::make('notes')->label(__('app.notes'))->rows(2),
             ])
             ->action(function (array $data) {
                 $group = BillingGroup::findOrFail($data['group_id']);
@@ -105,7 +115,7 @@ class CashierCheckout extends Page
                     $group, Auth::user(),
                     (float) $data['amount'], $data['label'], $data['notes'] ?? null,
                 );
-                Notification::make()->title('Pagamento registado')->success()->send();
+                Notification::make()->title(__('cashier.payment_recorded'))->success()->send();
             });
     }
 

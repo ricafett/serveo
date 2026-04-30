@@ -28,6 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Apply light/dark theme to all HTML responses before paint.
         $middleware->web(append: [
             \App\Http\Middleware\ApplyUserTheme::class,
+            \App\Http\Middleware\SetLocale::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\SetLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

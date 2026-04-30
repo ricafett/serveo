@@ -19,10 +19,20 @@ class Floor extends Page
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-squares-2x2';
     protected static string | UnitEnum | null $navigationGroup = 'Operação';
-    protected static ?string $navigationLabel = 'Plano de sala';
+    protected static ?string $navigationLabel = null;
     protected static ?int $navigationSort = 1;
     protected string $view = 'filament.pages.floor';
-    protected static ?string $title = 'Plano de sala';
+    protected static ?string $title = null;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('floor.title');
+    }
+
+    public function getTitle(): string
+    {
+        return __('floor.title');
+    }
 
     public ?int $serviceSessionId = null;
 
@@ -53,14 +63,14 @@ class Floor extends Page
     public function openGroup(): void
     {
         if (! $this->serviceSessionId) {
-            Notification::make()->title('Sem sessão de serviço aberta.')->danger()->send();
+            Notification::make()->title(__('floor.no_session'))->danger()->send();
             return;
         }
         $session = ServiceSession::findOrFail($this->serviceSessionId);
         $service = app(BillingGroupService::class);
         $group = $service->open($session, Auth::user());
 
-        Notification::make()->title("Grupo {$group->display_code} aberto")->success()->send();
+        Notification::make()->title("{$group->display_code} " . __('app.open'))->success()->send();
         $this->redirect(BillingGroupDetail::getUrl(['record' => $group->id]));
     }
 }

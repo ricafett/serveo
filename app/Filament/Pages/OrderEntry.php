@@ -20,7 +20,17 @@ class OrderEntry extends Page
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
     protected static bool $shouldRegisterNavigation = false;
     protected string $view = 'filament.pages.order-entry';
-    protected static ?string $title = 'Pedido';
+    protected static ?string $title = null;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('order.title');
+    }
+
+    public function getTitle(): string
+    {
+        return __('order.new_order') . ' · ' . $this->group?->display_code;
+    }
 
     public static function getSlug(?\Filament\Panel $panel = null): string
     {
@@ -42,14 +52,9 @@ class OrderEntry extends Page
         $this->record = $record;
         $this->group = BillingGroup::with(['occupiedZones.row.seatPairs'])->findOrFail($record);
         if ($this->group->is_closed) {
-            abort(403, 'Grupo fechado.');
+            abort(403, __('billing.closed_group'));
         }
         $this->occupiedZoneId = $this->group->occupiedZones->where('is_open', true)->first()?->id;
-    }
-
-    public function getTitle(): string
-    {
-        return 'Novo pedido · '.$this->group?->display_code;
     }
 
     public function addItem(int $menuItemId): void
@@ -78,7 +83,7 @@ class OrderEntry extends Page
     public function submitOrder(): void
     {
         if (empty($this->cart)) {
-            Notification::make()->title('Carrinho vazio')->warning()->send();
+            Notification::make()->title(__('order.cart_empty_warning'))->warning()->send();
             return;
         }
 
@@ -94,10 +99,10 @@ class OrderEntry extends Page
 
         try {
             app(OrderService::class)->submit($this->group, Auth::user(), $lines, $zone, $this->notes);
-            Notification::make()->title('Pedido enviado para produção')->success()->send();
+            Notification::make()->title(__('order.order_sent'))->success()->send();
             $this->redirect(BillingGroupDetail::getUrl(['record' => $this->group->id]));
         } catch (\Throwable $e) {
-            Notification::make()->title('Falha ao submeter pedido')->body($e->getMessage())->danger()->send();
+            Notification::make()->title(__('order.order_failed'))->body($e->getMessage())->danger()->send();
         }
     }
 
