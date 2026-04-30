@@ -3,14 +3,14 @@
 namespace App\Domain;
 
 use App\Models\User;
-use RuntimeException;
+use Illuminate\Auth\Access\AuthorizationException;
 
 trait ChecksPermissions
 {
     protected function ensureCan(User $user, string $permission): void
     {
         if (! $user->hasPermissionTo($permission)) {
-            throw new RuntimeException("Unauthorized: missing permission {$permission}");
+            throw new AuthorizationException("Unauthorized: missing permission {$permission}");
         }
     }
 }

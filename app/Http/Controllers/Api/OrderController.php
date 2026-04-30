@@ -56,6 +56,8 @@ class OrderController extends ApiController
                 $zone,
                 $validated['notes'] ?? null,
             );
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
@@ -85,26 +87,30 @@ class OrderController extends ApiController
         $affected = [];
         $tickets = [];
 
-        DB::transaction(function () use ($request, $orderHeader, $validated, &$affected, &$tickets) {
-            foreach ($validated['items'] as $itemData) {
-                $item = OrderItem::where('order_header_id', $orderHeader->id)
-                    ->where('id', $itemData['orderItemId'])
-                    ->first();
+        try {
+            DB::transaction(function () use ($request, $orderHeader, $validated, &$affected, &$tickets) {
+                foreach ($validated['items'] as $itemData) {
+                    $item = OrderItem::where('order_header_id', $orderHeader->id)
+                        ->where('id', $itemData['orderItemId'])
+                        ->first();
 
-                if (! $item) {
-                    continue;
+                    if (! $item) {
+                        continue;
+                    }
+
+                    $this->orderService->voidItem($item, $request->user(), $itemData['reason']);
+                    $affected[] = $item->refresh();
                 }
 
-                $this->orderService->voidItem($item, $request->user(), $itemData['reason']);
-                $affected[] = $item->refresh();
-            }
-
-            // Load any void tickets created
-            $tickets = $orderHeader->billingGroup->productionTickets()
-                ->where('is_void_slip', true)
-                ->where('created_at', '>=', now()->subSeconds(5))
-                ->get();
-        });
+                // Load any void tickets created
+                $tickets = $orderHeader->billingGroup->productionTickets()
+                    ->where('is_void_slip', true)
+                    ->where('created_at', '>=', now()->subSeconds(5))
+                    ->get();
+            });
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
+        }
 
         return $this->success([
             'affectedItems' => collect($affected)->map(fn ($item) => [

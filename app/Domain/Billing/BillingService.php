@@ -75,6 +75,8 @@ class BillingService
 
     public function reprintBill(BillingDocument $original, User $cashier): BillingDocument
     {
+        $this->ensureCan($cashier, 'billing_document.reprint');
+
         $printer = $this->resolveCashierPrinter($cashier) ?? $original->printer;
         if (! $printer) {
             throw new RuntimeException('No cashier printer available for reprint.');
@@ -163,6 +165,8 @@ class BillingService
 
     public function voidPayment(PaymentRecord $payment, User $cashier, ?string $notes = null): void
     {
+        $this->ensureCan($cashier, 'payment.void');
+
         if ($payment->is_voided) {
             return;
         }

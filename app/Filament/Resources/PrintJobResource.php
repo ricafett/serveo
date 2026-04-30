@@ -30,6 +30,11 @@ class PrintJobResource extends Resource
         return $schema->schema([]);
     }
 
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('print_job.view') ?? false;
+    }
+
     public static function canCreate(): bool
     {
         return false;
@@ -72,7 +77,7 @@ class PrintJobResource extends Resource
                 Action::make('retry')
                     ->label('Reenviar')
                     ->icon('heroicon-o-arrow-path')
-                    ->visible(fn (PrintJob $record) => in_array($record->status, ['FAILED', 'CANCELED'], true))
+                    ->visible(fn (PrintJob $record) => in_array($record->status, ['FAILED', 'CANCELED'], true) && Auth::user()?->can('print_job.retry'))
                     ->action(function (PrintJob $record, PrintQueueService $queue) {
                         $queue->retry($record, Auth::user());
                         Audit::record(
@@ -86,7 +91,7 @@ class PrintJobResource extends Resource
                     ->label('Cancelar')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn (PrintJob $record) => in_array($record->status, ['PENDING', 'FAILED', 'IN_PROGRESS'], true))
+                    ->visible(fn (PrintJob $record) => in_array($record->status, ['PENDING', 'FAILED', 'IN_PROGRESS'], true) && Auth::user()?->can('print_job.retry'))
                     ->action(function (PrintJob $record) {
                         $record->update(['status' => 'CANCELED']);
                         Notification::make()->title('Cancelado')->send();

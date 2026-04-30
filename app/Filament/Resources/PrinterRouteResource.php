@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PrinterRouteResource extends Resource
 {
@@ -22,6 +23,26 @@ class PrinterRouteResource extends Resource
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-arrow-path-rounded-square';
     protected static ?string $navigationLabel = 'Rotas de impressão';
     protected static ?int $navigationSort = 41;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('printer.route_change') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('printer.route_change') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('printer.route_change') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('printer.route_change') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

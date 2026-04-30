@@ -31,7 +31,13 @@ function bootScenario(): ServiceSession
         'billing_document.create', 'billing_document.reprint',
         'payment.record', 'payment.void',
         'print_job.view', 'print_job.retry',
-        'audit.view',
+        'printer.configure', 'printer.test', 'printer.route_change',
+        'venue.configure', 'menu.manage', 'status.configure',
+        'user.manage', 'role.manage', 'translation.manage',
+        'audit.view', 'event_log.view_limited', 'event_log.view_full',
+        'accounting_export.generate',
+        'config.users', 'config.layout', 'config.menu', 'config.printers',
+        'config.billing_statuses', 'config.translations', 'export.create',
     ] as $perm) {
         Permission::findOrCreate($perm);
     }

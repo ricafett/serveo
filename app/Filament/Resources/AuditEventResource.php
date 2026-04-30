@@ -10,6 +10,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class AuditEventResource extends Resource
@@ -23,6 +24,11 @@ class AuditEventResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('event_log.view_limited') || Auth::user()?->can('event_log.view_full') ?? false;
     }
 
     public static function canCreate(): bool { return false; }

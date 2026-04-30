@@ -6,6 +6,7 @@ use App\Domain\Floor\OccupancyService;
 use App\Models\BillingStatus;
 use App\Models\MenuItem;
 use App\Models\Row;
+use Illuminate\Auth\Access\AuthorizationException;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -31,19 +32,19 @@ it('allows CLOSED to ACTIVE via reopen by cashier', function () {
 
 it('rejects ACTIVE to CLOSED by server', function () {
     expect(fn () => app(BillingGroupService::class)->close($this->group, $this->server))
-        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may close a billing group.');
+        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_group.set_status');
 });
 
 it('rejects reopen by server', function () {
     app(BillingGroupService::class)->close($this->group, $this->cashier);
 
     expect(fn () => app(BillingGroupService::class)->reopen($this->group->refresh(), $this->server))
-        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may reopen a billing group.');
+        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_group.reopen');
 });
 
 it('rejects setStatus to CLOSED by server', function () {
     expect(fn () => app(BillingGroupService::class)->setStatus($this->group, BillingStatus::CLOSED, $this->server))
-        ->toThrow(RuntimeException::class, 'Unauthorized: only cashiers or admins may close or reopen a billing group.');
+        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_group.set_status');
 });
 
 it('rejects invalid transition from CLOSED to ACTIVE via setStatus', function () {

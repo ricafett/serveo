@@ -72,6 +72,8 @@ class OccupancyService
 
     public function releaseZone(OccupiedZone $zone, User $actor): void
     {
+        $this->ensureCan($actor, 'floor.release_zone');
+
         DB::transaction(function () use ($zone, $actor) {
             if (! $zone->is_open) {
                 return;

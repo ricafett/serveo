@@ -30,7 +30,12 @@ class AccountingExportResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole('ADMIN') ?? false;
+        return Auth::user()?->can('accounting_export.generate') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('accounting_export.generate') ?? false;
     }
 
     public static function canEdit($record): bool

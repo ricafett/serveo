@@ -22,6 +22,8 @@ class BillingGroupService
         ?string $notes = null,
         ?string $initialStatusCode = null,
     ): BillingGroup {
+        $this->ensureCan($actor, 'floor.open_billing_group');
+
         if (! $session->isOpen()) {
             throw new RuntimeException('Service session is not open.');
         }
@@ -60,18 +62,16 @@ class BillingGroupService
         BillingStatus::CLOSED  => [],
     ];
 
-    private function ensureCanTransition(User $user, string $from, string $to): void
+    private function ensureTransitionAllowed(User $user, string $from, string $to): void
     {
-        // Only cashiers and admins may close or reopen a billing group.
-        if ($to === BillingStatus::CLOSED || ($from === BillingStatus::CLOSED && $to === BillingStatus::ACTIVE)) {
-            if (! $user->hasRole(['CASHIER', 'ADMIN'])) {
-                throw new RuntimeException('Unauthorized: only cashiers or admins may close or reopen a billing group.');
-            }
-        }
+        // Closing and reopening require specific permissions checked at method entry.
+        // This method validates business-rule transitions only.
     }
 
     public function setStatus(BillingGroup $group, string $statusCode, User $actor, ?int $expectedVersion = null): BillingGroup
     {
+        $this->ensureCan($actor, 'billing_group.set_status');
+
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
         }
@@ -82,8 +82,6 @@ class BillingGroupService
         if ($previous === $statusCode) {
             return $group;
         }
-
-        $this->ensureCanTransition($actor, $previous, $statusCode);
 
         $allowed = $this->validTransitions[$previous] ?? [];
         if (! in_array($statusCode, $allowed, true)) {
@@ -119,12 +117,10 @@ class BillingGroupService
 
     public function close(BillingGroup $group, User $actor, ?int $expectedVersion = null): BillingGroup
     {
+        $this->ensureCan($actor, 'billing_group.set_status');
+
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
-        }
-
-        if (! $actor->hasRole(['CASHIER', 'ADMIN'])) {
-            throw new RuntimeException('Unauthorized: only cashiers or admins may close a billing group.');
         }
 
         DB::transaction(function () use ($group) {
@@ -149,12 +145,10 @@ class BillingGroupService
 
     public function reopen(BillingGroup $group, User $actor, ?int $expectedVersion = null): BillingGroup
     {
+        $this->ensureCan($actor, 'billing_group.reopen');
+
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
-        }
-
-        if (! $actor->hasRole(['CASHIER', 'ADMIN'])) {
-            throw new RuntimeException('Unauthorized: only cashiers or admins may reopen a billing group.');
         }
 
         $active = BillingStatus::where('code', BillingStatus::ACTIVE)->value('id');

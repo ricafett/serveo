@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class MenuItemResource extends Resource
 {
@@ -21,6 +22,26 @@ class MenuItemResource extends Resource
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel = 'Itens de menu';
     protected static ?int $navigationSort = 31;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('menu.manage') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('menu.manage') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('menu.manage') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('menu.manage') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

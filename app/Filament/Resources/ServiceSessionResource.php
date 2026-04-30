@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceSessionResource extends Resource
 {
@@ -21,6 +22,26 @@ class ServiceSessionResource extends Resource
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-calendar-days';
     protected static ?string $navigationLabel = 'Sessões de serviço';
     protected static ?int $navigationSort = 5;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

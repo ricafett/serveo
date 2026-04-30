@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PrinterResource extends Resource
 {
@@ -20,6 +21,26 @@ class PrinterResource extends Resource
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-printer';
     protected static ?string $navigationLabel = 'Impressoras';
     protected static ?int $navigationSort = 40;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('printer.configure') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('printer.configure') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('printer.configure') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('printer.configure') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

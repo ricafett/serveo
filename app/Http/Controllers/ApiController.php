@@ -37,6 +37,7 @@ abstract class ApiController extends Controller
     {
         $code = match (true) {
             $e instanceof \Illuminate\Auth\AuthenticationException => 'UNAUTHENTICATED',
+            $e instanceof \Illuminate\Auth\Access\AuthorizationException => 'FORBIDDEN',
             $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => 'NOT_FOUND',
             $e instanceof \App\Domain\Floor\ZoneOverlapException => 'ZONE_OVERLAP',
             default => 'VALIDATION_ERROR',

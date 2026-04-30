@@ -58,6 +58,10 @@ class CashierCheckout extends Page
 
     public function generateBill(int $groupId): void
     {
+        if (! Auth::user()?->can('billing_document.create')) {
+            Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
+            return;
+        }
         $group = BillingGroup::findOrFail($groupId);
         try {
             app(BillingService::class)->generateInternalBill($group, Auth::user());
@@ -69,6 +73,10 @@ class CashierCheckout extends Page
 
     public function reprintLastBill(int $groupId): void
     {
+        if (! Auth::user()?->can('billing_document.reprint')) {
+            Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
+            return;
+        }
         $bill = BillingDocument::where('billing_group_id', $groupId)
             ->where('document_type', BillingDocument::TYPE_INTERNAL_BILL)
             ->latest('id')->first();
@@ -87,9 +95,17 @@ class CashierCheckout extends Page
 
     public function reopenGroup(int $groupId): void
     {
+        if (! Auth::user()?->can('billing_group.reopen')) {
+            Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
+            return;
+        }
         $group = BillingGroup::findOrFail($groupId);
-        app(BillingGroupService::class)->reopen($group, Auth::user());
-        Notification::make()->title(__('billing.group_reopened'))->success()->send();
+        try {
+            app(BillingGroupService::class)->reopen($group, Auth::user());
+            Notification::make()->title(__('billing.group_reopened'))->success()->send();
+        } catch (\Throwable $e) {
+            Notification::make()->title(__('billing.reopen_error'))->body($e->getMessage())->danger()->send();
+        }
     }
 
     public function recordPaymentAction(): Action
@@ -98,6 +114,7 @@ class CashierCheckout extends Page
             ->label(__('cashier.record_payment'))
             ->icon('heroicon-o-currency-euro')
             ->color('success')
+            ->visible(fn () => Auth::user()?->can('payment.record'))
             ->form([
                 Forms\Components\Select::make('group_id')
                     ->label(__('cashier.payment_group'))

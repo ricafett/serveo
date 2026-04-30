@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class BillingStatusResource extends Resource
 {
@@ -20,6 +21,26 @@ class BillingStatusResource extends Resource
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-flag';
     protected static ?string $navigationLabel = 'Estados de grupo';
     protected static ?int $navigationSort = 50;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('status.configure') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('status.configure') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('status.configure') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('status.configure') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

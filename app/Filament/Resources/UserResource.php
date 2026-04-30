@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
@@ -23,6 +24,26 @@ class UserResource extends Resource
     protected static ?string $modelLabel      = 'Utilizador';
     protected static ?string $pluralModelLabel = 'Utilizadores';
     protected static ?int $navigationSort = 10;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->can('user.manage') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('user.manage') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('user.manage') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->can('user.manage') ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {
