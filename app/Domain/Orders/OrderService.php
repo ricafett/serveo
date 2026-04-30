@@ -3,6 +3,7 @@
 namespace App\Domain\Orders;
 
 use App\Domain\Audit\Audit;
+use App\Domain\ChecksPermissions;
 use App\Domain\Printing\PrintQueueService;
 use App\Models\BillingGroup;
 use App\Models\MenuItem;
@@ -19,6 +20,8 @@ use RuntimeException;
 
 class OrderService
 {
+    use ChecksPermissions;
+
     public function __construct(private readonly PrintQueueService $printQueue) {}
 
     /**
@@ -34,6 +37,7 @@ class OrderService
         ?OccupiedZone $zone = null,
         ?string $notes = null,
     ): OrderHeader {
+        $this->ensureCan($actor, 'order.create');
         if (empty($lines)) {
             throw new RuntimeException('Cannot submit an empty order.');
         }
