@@ -41,13 +41,13 @@ function bootScenario(): ServiceSession
     Role::findByName('ADMIN')->syncPermissions(Permission::all());
     Role::findByName('SERVER')->syncPermissions([
         'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
-        'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
+        'billing_group.view',
         'order.create', 'order.void_item',
         'production_ticket.view',
         'audit.view',
     ]);
     Role::findByName('CASHIER')->syncPermissions([
-        'billing_group.view', 'billing_group.reopen',
+        'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
         'billing_document.create', 'billing_document.reprint',
         'payment.record', 'payment.void',
         'print_job.view', 'print_job.retry',
@@ -55,12 +55,10 @@ function bootScenario(): ServiceSession
     ]);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
+    // MVP: only ACTIVE and CLOSED statuses. Admin may add more later.
     foreach ([
-        ['WAITING', 'À espera', 10],
-        ['ACTIVE', 'Ativo', 20],
-        ['CHECK_REQUESTED', 'Conta pedida', 30],
-        ['PARTIALLY_PAID', 'Parcialmente pago', 40],
-        ['CLOSED', 'Fechado', 50],
+        ['ACTIVE', 'Ativo',   10],
+        ['CLOSED', 'Fechado', 20],
     ] as [$c, $d, $o]) {
         BillingStatus::firstOrCreate(['code' => $c], ['display_name' => $d, 'sort_order' => $o, 'is_active' => true]);
     }

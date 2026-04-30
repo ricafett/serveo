@@ -58,7 +58,7 @@ class RolePermissionSeeder extends Seeder
         $server = Role::findOrCreate('SERVER');
         $server->syncPermissions([
             'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
-            'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
+            'billing_group.view',
             'order.create', 'order.void_item',
             'production_ticket.view',
             'audit.view',
@@ -66,7 +66,7 @@ class RolePermissionSeeder extends Seeder
 
         $cashier = Role::findOrCreate('CASHIER');
         $cashier->syncPermissions([
-            'billing_group.view', 'billing_group.reopen',
+            'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
             'billing_document.create', 'billing_document.reprint',
             'payment.record', 'payment.void',
             'print_job.view', 'print_job.retry',

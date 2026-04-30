@@ -20,7 +20,7 @@ beforeEach(function () {
 
 it('creates a billing group via api', function () {
     $response = $this->actingAs($this->server)->postJson('/api/v1/billing-groups', [
-        'statusCode' => 'WAITING',
+        'statusCode' => 'ACTIVE',
         'coverCount' => 4,
         'notes'      => 'API test group',
         'zones'      => [
@@ -35,7 +35,7 @@ it('creates a billing group via api', function () {
 
     $response->assertStatus(201)
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.statusCode', 'WAITING')
+        ->assertJsonPath('data.statusCode', 'ACTIVE')
         ->assertJsonPath('data.coverCount', 4);
 });
 
@@ -48,16 +48,37 @@ it('returns a billing group with zones and totals', function () {
         ->assertJsonPath('data.displayCode', $this->group->display_code);
 });
 
-it('updates billing group status and notes', function () {
+it('updates billing group notes only', function () {
     $response = $this->actingAs($this->server)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
         'versionNumber' => 1,
-        'statusCode'    => 'CHECK_REQUESTED',
         'notes'         => 'Updated via API',
     ]);
 
     $response->assertStatus(200)
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.statusCode', 'CHECK_REQUESTED');
+        ->assertJsonPath('data.notes', 'Updated via API');
+});
+
+it('allows cashier to close a billing group via status update', function () {
+    $response = $this->actingAs($this->cashier)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
+        'versionNumber' => 1,
+        'statusCode'    => 'CLOSED',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.statusCode', 'CLOSED')
+        ->assertJsonPath('data.isClosed', true);
+});
+
+it('rejects server closing a billing group via status update', function () {
+    $response = $this->actingAs($this->server)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
+        'versionNumber' => 1,
+        'statusCode'    => 'CLOSED',
+    ]);
+
+    $response->assertStatus(403)
+        ->assertJsonPath('error.code', 'FORBIDDEN');
 });
 
 it('rejects update with stale version number', function () {
@@ -145,12 +166,29 @@ it('reopens a closed billing group', function () {
     expect($this->group->is_closed)->toBeTrue();
 
     $response = $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/reopen", [
-        'reason' => 'Guest returned',
+        'reason'        => 'Guest returned',
+        'versionNumber' => $this->group->version_number,
     ]);
 
     $response->assertStatus(200)
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.isClosed', false);
+});
+
+it('rejects reopen with stale version', function () {
+    app(\App\Domain\Billing\BillingService::class)->recordPayment(
+        $this->group, $this->cashier, 1000.00, 'Numerário'
+    );
+
+    $this->group->refresh();
+
+    $response = $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/reopen", [
+        'reason'        => 'Guest returned',
+        'versionNumber' => $this->group->version_number - 1,
+    ]);
+
+    $response->assertStatus(409)
+        ->assertJsonPath('error.code', 'VERSION_CONFLICT');
 });
 
 it('enforces role permissions on billing group endpoints', function () {
