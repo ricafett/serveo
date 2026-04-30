@@ -3,6 +3,7 @@
 namespace App\Domain\Billing;
 
 use App\Domain\Audit\Audit;
+use App\Domain\ChecksPermissions;
 use App\Domain\Printing\PrintQueueService;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
@@ -16,10 +17,13 @@ use RuntimeException;
 
 class BillingService
 {
+    use ChecksPermissions;
+
     public function __construct(private readonly PrintQueueService $printQueue) {}
 
     public function generateInternalBill(BillingGroup $group, User $cashier): BillingDocument
     {
+        $this->ensureCan($cashier, 'billing_document.create');
         if ($group->is_closed) {
             throw new RuntimeException('Cannot bill a closed group.');
         }
@@ -108,6 +112,8 @@ class BillingService
 
     public function recordPayment(BillingGroup $group, User $cashier, float $amount, string $label, ?string $notes = null): PaymentRecord
     {
+        $this->ensureCan($cashier, 'payment.record');
+
         if ($amount <= 0) {
             throw new RuntimeException('Payment amount must be greater than zero.');
         }

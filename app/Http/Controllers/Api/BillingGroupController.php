@@ -48,13 +48,8 @@ class BillingGroupController extends ApiController
                     $request->user(),
                     $validated['coverCount'] ?? null,
                     $validated['notes'] ?? null,
+                    $validated['statusCode'] ?? null,
                 );
-
-                // Apply initial status if not ACTIVE
-                if (($validated['statusCode'] ?? 'ACTIVE') !== 'ACTIVE') {
-                    $this->billingGroupService->setStatus($group, $validated['statusCode'], $request->user());
-                    $group->refresh();
-                }
 
                 // Create zones if provided
                 if (! empty($validated['zones'])) {
@@ -110,7 +105,11 @@ class BillingGroupController extends ApiController
         try {
             DB::transaction(function () use ($request, $billingGroup, $validated) {
                 if (! empty($validated['statusCode'])) {
-                    $this->billingGroupService->setStatus($billingGroup, $validated['statusCode'], $request->user());
+                    $this->billingGroupService->setStatus(
+                        $billingGroup,
+                        $validated['statusCode'],
+                        $request->user(),
+                    );
                 }
 
                 $update = [];
@@ -127,7 +126,10 @@ class BillingGroupController extends ApiController
                 $billingGroup->increment('version_number');
             });
         } catch (\RuntimeException $e) {
-            return $this->error('INVALID_STATUS_TRANSITION', $e->getMessage(), status: 409);
+            $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
+                ? 'VERSION_CONFLICT'
+                : 'INVALID_STATUS_TRANSITION';
+            return $this->error($code, $e->getMessage(), status: 409);
         }
 
         return $this->success($this->toBillingGroupDto($billingGroup->refresh()));

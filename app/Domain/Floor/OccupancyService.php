@@ -3,6 +3,7 @@
 namespace App\Domain\Floor;
 
 use App\Domain\Audit\Audit;
+use App\Domain\ChecksPermissions;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\Row;
@@ -12,6 +13,7 @@ use RuntimeException;
 
 class OccupancyService
 {
+    use ChecksPermissions;
     /**
      * Open a new occupied zone for a billing group, enforcing the no-overlap rule
      * inside the same row. The whole operation runs in a transaction so two
@@ -25,6 +27,8 @@ class OccupancyService
         User $actor,
         ?string $deliveryCenterLabel = null,
     ): OccupiedZone {
+        $this->ensureCan($actor, 'floor.assign_zone');
+
         if ($startSeq > $endSeq) {
             throw new RuntimeException('start_seat_pair_sequence must be <= end_seat_pair_sequence');
         }

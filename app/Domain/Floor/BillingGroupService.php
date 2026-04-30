@@ -17,13 +17,14 @@ class BillingGroupService
         User $actor,
         ?int $coverCount = null,
         ?string $notes = null,
+        ?string $initialStatusCode = null,
     ): BillingGroup {
         if (! $session->isOpen()) {
             throw new RuntimeException('Service session is not open.');
         }
 
-        return DB::transaction(function () use ($session, $actor, $coverCount, $notes) {
-            $statusId = BillingStatus::where('code', BillingStatus::ACTIVE)->value('id');
+        return DB::transaction(function () use ($session, $actor, $coverCount, $notes, $initialStatusCode) {
+            $statusId = BillingStatus::where('code', $initialStatusCode ?? BillingStatus::ACTIVE)->value('id');
 
             $next = (int) BillingGroup::where('service_session_id', $session->id)->count() + 1;
             $code = 'G-'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
@@ -51,8 +52,20 @@ class BillingGroupService
         });
     }
 
-    public function setStatus(BillingGroup $group, string $statusCode, User $actor): BillingGroup
+    private array $validTransitions = [
+        'WAITING' => ['ACTIVE'],
+        'ACTIVE' => ['CHECK_REQUESTED', 'CLOSED'],
+        'CHECK_REQUESTED' => ['PARTIALLY_PAID', 'ACTIVE'],
+        'PARTIALLY_PAID' => ['ACTIVE', 'CLOSED'],
+        'CLOSED' => [],
+    ];
+
+    public function setStatus(BillingGroup $group, string $statusCode, User $actor, ?int $expectedVersion = null): BillingGroup
     {
+        if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
+            throw new RuntimeException('VERSION_CONFLICT');
+        }
+
         $status = BillingStatus::where('code', $statusCode)->firstOrFail();
         $previous = $group->status?->code;
 
@@ -60,7 +73,15 @@ class BillingGroupService
             return $group;
         }
 
-        $group->update(['billing_status_id' => $status->id]);
+        $allowed = $this->validTransitions[$previous] ?? [];
+        if (! in_array($statusCode, $allowed, true)) {
+            throw new RuntimeException("Invalid status transition from {$previous} to {$statusCode}");
+        }
+
+        $group->update([
+            'billing_status_id' => $status->id,
+            'version_number' => $group->version_number + 1,
+        ]);
 
         Audit::record(
             'BILLING_GROUP_STATUS_CHANGED',
@@ -69,7 +90,7 @@ class BillingGroupService
             ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id],
         );
 
-        return $group;
+        return $group->refresh();
     }
 
     public function close(BillingGroup $group, User $actor): BillingGroup
@@ -95,15 +116,18 @@ class BillingGroupService
 
     public function reopen(BillingGroup $group, User $actor): BillingGroup
     {
-        if (! $group->is_closed) {
+        $active = BillingStatus::where('code', BillingStatus::ACTIVE)->value('id');
+
+        if ($group->status?->code === BillingStatus::ACTIVE) {
             return $group;
         }
-        $statusId = BillingStatus::where('code', BillingStatus::ACTIVE)->value('id');
-        $group->update([
-            'is_closed' => false,
-            'closed_at' => null,
-            'billing_status_id' => $statusId,
-        ]);
+
+        $update = ['billing_status_id' => $active];
+        if ($group->is_closed) {
+            $update['is_closed'] = false;
+            $update['closed_at'] = null;
+        }
+        $group->update($update);
 
         Audit::record(
             'BILLING_GROUP_REOPENED',
