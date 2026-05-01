@@ -1,0 +1,91 @@
+@php
+$user = auth()->user();
+if (! $user) return;
+
+$navItems = [];
+
+// Server nav items
+if ($user->hasRole('SERVER')) {
+    $navItems[] = [
+        'route' => 'floor',
+        'label' => __('Floor'),
+        'icon' => '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
+    ];
+}
+
+// Cashier nav items
+if ($user->hasRole('CASHIER')) {
+    $navItems[] = [
+        'route' => 'lookup',
+        'label' => __('Lookup'),
+        'icon' => '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>',
+    ];
+}
+
+// Admin shortcut (optional - admin typically uses Filament, but can access operational screens)
+if ($user->hasRole('ADMIN') && count($navItems) === 0) {
+    $navItems[] = [
+        'route' => 'floor',
+        'label' => __('Floor'),
+        'icon' => '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
+    ];
+    $navItems[] = [
+        'route' => 'lookup',
+        'label' => __('Lookup'),
+        'icon' => '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>',
+    ];
+}
+@endphp
+
+@if(count($navItems) > 0)
+    {{-- Mobile Bottom Bar --}}
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 sm:hidden safe-area-pb">
+        <div class="flex items-center justify-around">
+            @foreach($navItems as $item)
+                <a
+                    href="{{ route($item['route']) }}"
+                    class="flex flex-col items-center justify-center py-2 px-3 min-h-[56px] min-w-[64px] text-xs font-medium transition-colors
+                        {{ request()->routeIs($item['route']) || request()->routeIs($item['route'] . '.*')
+                            ? 'text-primary-600 dark:text-primary-400'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
+                >
+                    {!! $item['icon'] !!}
+                    <span class="mt-0.5">{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+        </div>
+    </nav>
+
+    {{-- Desktop Side Navigation --}}
+    <nav class="hidden sm:flex fixed left-0 top-14 bottom-0 w-16 lg:w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col py-4 z-20">
+        <div class="flex-1 space-y-1 px-2">
+            @foreach($navItems as $item)
+                <a
+                    href="{{ route($item['route']) }}"
+                    class="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm font-medium transition-colors min-h-[44px]
+                        {{ request()->routeIs($item['route']) || request()->routeIs($item['route'] . '.*')
+                            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}"
+                >
+                    {!! $item['icon'] !!}
+                    <span class="hidden lg:inline">{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+        </div>
+
+        {{-- Desktop-only: App version / footer --}}
+        <div class="px-3 py-2 text-[10px] text-gray-400 dark:text-gray-600 text-center hidden lg:block">
+            Serveo
+        </div>
+    </nav>
+
+    {{-- Desktop main content offset --}}
+    <style>
+        @media (min-width: 640px) {
+            main { margin-left: 4rem; }
+        }
+        @media (min-width: 1024px) {
+            main { margin-left: 14rem; }
+        }
+    </style>
+@endif
