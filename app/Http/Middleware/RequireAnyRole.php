@@ -16,13 +16,17 @@ class RequireAnyRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user()?->hasAnyRole($roles)) {
-            return response()->json([
-                'success' => false,
-                'error'   => [
-                    'code'    => 'FORBIDDEN',
-                    'message' => 'This action requires an authorized role.',
-                ],
-            ], 403);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => [
+                        'code'    => 'FORBIDDEN',
+                        'message' => 'This action requires an authorized role.',
+                    ],
+                ], 403);
+            }
+
+            abort(403, __('This action requires an authorized role.'));
         }
 
         return $next($request);
