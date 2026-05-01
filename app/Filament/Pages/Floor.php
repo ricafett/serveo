@@ -15,6 +15,9 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 
+/**
+ * @deprecated Operational floor UI has moved to Livewire at /floor. This Filament page is kept for backward compatibility during transition.
+ */
 class Floor extends Page
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-squares-2x2';

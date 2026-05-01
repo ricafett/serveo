@@ -1,0 +1,251 @@
+<?php
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+});
+
+// ------------------------------------------------------------------
+// Authentication & Landing
+// ------------------------------------------------------------------
+
+it('redirects unauthenticated users to login', function () {
+    $response = $this->get('/floor');
+    $response->assertRedirect('/login');
+});
+
+it('shows login page for guests', function () {
+    $response = $this->get('/login');
+    $response->assertOk();
+    $response->assertSee('Sign In');
+});
+
+it('redirects authenticated users from login to home', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/login');
+    $response->assertRedirect('/home');
+});
+
+it('redirects server to floor on home', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertRedirect('/floor');
+});
+
+it('redirects cashier to lookup on home', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertRedirect('/lookup');
+});
+
+it('redirects admin to filament dashboard on home', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('ADMIN');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertRedirect(route('filament.admin.pages.dashboard'));
+});
+
+// ------------------------------------------------------------------
+// Role-based route access
+// ------------------------------------------------------------------
+
+it('allows server to access floor', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('Floor');
+});
+
+it('allows admin to access floor', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('ADMIN');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertOk();
+});
+
+it('denies cashier from floor', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertForbidden();
+});
+
+it('allows cashier to access lookup', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/lookup');
+    $response->assertOk();
+    $response->assertSee('Billing Group Lookup');
+});
+
+it('allows admin to access lookup', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('ADMIN');
+
+    $response = $this->actingAs($user)->get('/lookup');
+    $response->assertOk();
+});
+
+it('denies server from lookup', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/lookup');
+    $response->assertForbidden();
+});
+
+it('allows server to access billing group detail', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/billing-groups/1');
+    $response->assertOk();
+    $response->assertSee('Billing Group');
+});
+
+it('allows cashier to access checkout', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/checkout/1');
+    $response->assertOk();
+    $response->assertSee('Checkout');
+});
+
+it('allows cashier to access reprint panel', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/reprint');
+    $response->assertOk();
+    $response->assertSee('Reprint & Documents');
+});
+
+// ------------------------------------------------------------------
+// Layout & UI
+// ------------------------------------------------------------------
+
+it('renders operational layout with navigation for server', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('Floor');
+    // Navigation should be present
+    $response->assertSee('User menu', false); // Alpine.js dropdown trigger
+});
+
+it('renders operational layout with navigation for cashier', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/lookup');
+    $response->assertOk();
+    $response->assertSee('Lookup');
+});
+
+it('includes language switcher in layout', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('language-switcher', false);
+    $response->assertSee('PT');
+    $response->assertSee('EN');
+});
+
+it('includes theme toggle in layout', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('theme-toggle', false);
+    $response->assertSee('Claro');
+    $response->assertSee('Escuro');
+});
+
+// ------------------------------------------------------------------
+// Logout
+// ------------------------------------------------------------------
+
+it('logs out user and redirects to login', function () {
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->post('/logout');
+    $response->assertRedirect('/login');
+    $this->assertGuest();
+});
+
+// ------------------------------------------------------------------
+// Web login form
+// ------------------------------------------------------------------
+
+it('logs in user via web form with valid credentials', function () {
+    $user = User::factory()->create([
+        'username' => 'server1',
+        'password' => bcrypt('password'),
+        'is_active' => true,
+    ]);
+    $user->assignRole('SERVER');
+
+    $response = $this->post('/login', [
+        'username' => 'server1',
+        'password' => 'password',
+    ]);
+
+    $response->assertRedirect('/home');
+    $this->assertAuthenticatedAs($user);
+});
+
+it('rejects login with invalid credentials', function () {
+    $user = User::factory()->create([
+        'username' => 'server1',
+        'password' => bcrypt('password'),
+        'is_active' => true,
+    ]);
+
+    $response = $this->post('/login', [
+        'username' => 'server1',
+        'password' => 'wrongpassword',
+    ]);
+
+    $response->assertSessionHasErrors('username');
+    $this->assertGuest();
+});
+
+it('rejects login for inactive user', function () {
+    $user = User::factory()->create([
+        'username' => 'inactive',
+        'password' => bcrypt('password'),
+        'is_active' => false,
+    ]);
+
+    $response = $this->post('/login', [
+        'username' => 'inactive',
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors('username');
+    $this->assertGuest();
+});

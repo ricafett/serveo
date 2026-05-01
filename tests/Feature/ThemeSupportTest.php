@@ -86,20 +86,20 @@ it('injects theme script for authenticated user', function () {
     $user = makeUser('SERVER');
     $user->update(['theme' => User::THEME_DARK]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/floor');
 
     $response->assertStatus(200);
-    $response->assertSee("var theme = 'dark';", false);
+    $response->assertSee("theme = 'dark'", false);
 });
 
 it('injects system theme script when user theme is system', function () {
     $user = makeUser('SERVER');
     $user->update(['theme' => User::THEME_SYSTEM]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/floor');
 
     $response->assertStatus(200);
-    $response->assertSee("var theme = 'system';", false);
+    $response->assertSee("theme = 'system'", false);
 });
 
 it('includes theme in admin users list', function () {
