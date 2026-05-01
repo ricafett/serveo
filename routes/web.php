@@ -31,8 +31,12 @@ Route::middleware('auth')->group(function () {
     // Server routes
     Route::middleware('role:SERVER,ADMIN')->group(function () {
         Route::get('/floor', \App\Livewire\Floor\FloorIndex::class)->name('floor');
-        Route::get('/billing-groups/{id}', \App\Livewire\BillingGroup\BillingGroupDetail::class)->name('billing-groups.detail');
         Route::get('/orders/new/{billingGroupId}', \App\Livewire\Order\OrderEntry::class)->name('orders.new');
+    });
+
+    // Shared billing-group detail (server + cashier + admin)
+    Route::middleware('role:SERVER,CASHIER,ADMIN')->group(function () {
+        Route::get('/billing-groups/{id}', \App\Livewire\BillingGroup\BillingGroupDetail::class)->name('billing-groups.detail');
     });
 
     // Cashier routes
