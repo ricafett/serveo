@@ -1,19 +1,177 @@
 <div class="p-4 sm:p-6 lg:p-8">
     <div class="max-w-4xl mx-auto">
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Order Entry') }}</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Billing Group') }} #{{ $billingGroupId }}</p>
+        {{-- Header --}}
+        <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button
+                    type="button"
+                    wire:click="goBack"
+                    class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Order Entry') }}</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $this->group?->display_code }}</p>
+                </div>
             </div>
-            <a href="{{ url()->previous() }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center">
-                {{ __('Back') }}
-            </a>
+            @if($this->group?->is_closed)
+                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('Closed') }}</span>
+            @endif
         </div>
 
-        <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Order entry will be implemented in issue #20. This is the operational layout shell.') }}
-            </p>
+        {{-- Messages --}}
+        @if($errorMessage)
+            <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-600 dark:text-red-400">
+                {{ $errorMessage }}
+            </div>
+        @endif
+        @if($successMessage)
+            <div class="mb-4 rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
+                {{ $successMessage }}
+            </div>
+        @endif
+
+        {{-- Zone Selector --}}
+        @if($this->zones->count() > 0)
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Delivery Zone') }}</label>
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        wire:click="setZone(null)"
+                        class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedZoneId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                    >
+                        {{ __('Group level') }}
+                    </button>
+                    @foreach($this->zones as $zone)
+                        <button
+                            type="button"
+                            wire:click="setZone({{ $zone->id }})"
+                            class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedZoneId === $zone->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                        >
+                            {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- Delivery Pair Override --}}
+        @if($this->selectedZone)
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Seat Pair (optional)') }}</label>
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        wire:click="setDeliveryPair(null)"
+                        class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                    >
+                        {{ __('Center') }}
+                    </button>
+                    @foreach($this->selectedZone->row?->seatPairs ?? [] as $pair)
+                        @if($pair->pair_sequence >= $this->selectedZone->start_seat_pair_sequence && $pair->pair_sequence <= $this->selectedZone->end_seat_pair_sequence)
+                            <button
+                                type="button"
+                                wire:click="setDeliveryPair({{ $pair->id }})"
+                                class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === $pair->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                            >
+                                {{ $pair->pair_sequence }}
+                            </button>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- Cart Summary --}}
+        @if(count($cart) > 0)
+            <div class="mb-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Cart') }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $this->cartItemCount }})</span></h2>
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($this->cartTotal, 2) }}</span>
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                    @foreach($cart as $index => $item)
+                        <div class="px-4 py-3 flex items-center justify-between">
+                            <div class="min-w-0 flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $item['display_name'] }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ number_format($item['unit_price'], 2) }} · {{ $item['route_type'] }}</div>
+                            </div>
+                            <div class="flex items-center gap-2 ml-3">
+                                <button
+                                    type="button"
+                                    wire:click="decrementCartItem({{ $index }})"
+                                    class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
+                                </button>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white w-6 text-center">{{ $item['quantity'] }}</span>
+                                <button
+                                    type="button"
+                                    wire:click="incrementCartItem({{ $index }})"
+                                    class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- Menu Categories --}}
+        <div class="mb-4">
+            <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+                @foreach($this->menuCategories as $category)
+                    <button
+                        type="button"
+                        wire:click="selectCategory({{ $category->id }})"
+                        class="shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium min-h-[44px] transition-colors {{ $selectedCategoryId === $category->id ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                    >
+                        {{ $category->display_name }}
+                    </button>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Menu Items Grid --}}
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+            @foreach($this->menuItems as $menuItem)
+                <button
+                    type="button"
+                    wire:click="addToCart({{ $menuItem->id }})"
+                    class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-left hover:border-primary-300 dark:hover:border-primary-700 transition-colors min-h-[80px] flex flex-col justify-between"
+                >
+                    <div class="text-sm font-medium text-gray-900 dark:text-white leading-tight">{{ $menuItem->display_name }}</div>
+                    <div class="mt-2 flex items-center justify-between">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($menuItem->unit_price, 2) }}</span>
+                        <span class="rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 w-7 h-7 flex items-center justify-center text-sm font-semibold">+</span>
+                    </div>
+                </button>
+            @endforeach
+        </div>
+
+        {{-- Notes --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Notes') }}</label>
+            <textarea wire:model="notes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3"></textarea>
+        </div>
+
+        {{-- Submit --}}
+        <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-gray-50/90 dark:bg-gray-950/90 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-t border-gray-200 dark:border-gray-800 sm:static sm:bg-transparent sm:border-0 sm:px-0 sm:mx-0">
+            <button
+                type="button"
+                wire:click="submitOrder"
+                @disabled($this->group?->is_closed || count($cart) === 0)
+                class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {{ __('Submit Order') }}
+                @if(count($cart) > 0)
+                    <span class="ml-2 text-xs opacity-75">({{ $this->cartItemCount }} · {{ number_format($this->cartTotal, 2) }})</span>
+                @endif
+            </button>
         </div>
     </div>
 </div>
