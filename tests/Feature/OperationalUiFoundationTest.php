@@ -8,6 +8,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    $this->seed(\Database\Seeders\CoreSeeder::class);
 });
 
 // ------------------------------------------------------------------
@@ -92,7 +93,7 @@ it('allows cashier to access lookup', function () {
 
     $response = $this->actingAs($user)->get('/lookup');
     $response->assertOk();
-    $response->assertSee('Billing Group Lookup');
+    $response->assertSee('Billing Groups');
 });
 
 it('allows admin to access lookup', function () {
@@ -117,7 +118,7 @@ it('allows server to access billing group detail', function () {
 
     $response = $this->actingAs($user)->get('/billing-groups/1');
     $response->assertOk();
-    $response->assertSee('Billing Group');
+    $response->assertSee('G-001');
 });
 
 it('allows cashier to access checkout', function () {
@@ -203,14 +204,14 @@ it('logs out user and redirects to login', function () {
 
 it('logs in user via web form with valid credentials', function () {
     $user = User::factory()->create([
-        'username' => 'server1',
+        'username' => 'testserver1',
         'password' => bcrypt('password'),
         'is_active' => true,
     ]);
     $user->assignRole('SERVER');
 
     $response = $this->post('/login', [
-        'username' => 'server1',
+        'username' => 'testserver1',
         'password' => 'password',
     ]);
 
@@ -220,13 +221,13 @@ it('logs in user via web form with valid credentials', function () {
 
 it('rejects login with invalid credentials', function () {
     $user = User::factory()->create([
-        'username' => 'server1',
+        'username' => 'testserver2',
         'password' => bcrypt('password'),
         'is_active' => true,
     ]);
 
     $response = $this->post('/login', [
-        'username' => 'server1',
+        'username' => 'testserver2',
         'password' => 'wrongpassword',
     ]);
 
