@@ -17,6 +17,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @deprecated Operational cashier checkout UI has moved to Livewire at /lookup, /checkout/{id}, and /reprint. This Filament page is kept for backward compatibility during transition.
+ */
 class CashierCheckout extends Page
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-banknotes';

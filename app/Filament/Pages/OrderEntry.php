@@ -15,6 +15,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @deprecated Operational order entry UI has moved to Livewire at /orders/new/{billingGroupId}. This Filament page is kept for backward compatibility during transition.
+ */
 class OrderEntry extends Page
 {
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';

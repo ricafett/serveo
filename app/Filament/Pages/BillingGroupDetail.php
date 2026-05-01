@@ -19,6 +19,9 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @deprecated Operational billing group detail UI has moved to Livewire at /billing-groups/{id}. This Filament page is kept for backward compatibility during transition.
+ */
 class BillingGroupDetail extends Page
 {
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
