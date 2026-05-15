@@ -1,10 +1,9 @@
 <?php
 
-use App\Domain\Floor\BillingGroupService;
-use App\Domain\Floor\OccupancyService;
 use App\Models\Row;
 use App\Models\SeatPair;
 use App\Models\Section;
+use App\Models\TranslationKey;
 use Laravel\Dusk\Browser;
 
 beforeEach(function () {
@@ -39,9 +38,41 @@ test('theme toggle switches between light and dark', function () {
             ->press('Sign In')
             ->waitForText('Floor', 5);
 
-        // Check dark class exists by default (login page forces dark)
+        // Default should be dark (system dark or user dark)
         $hasDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
-        $this->assertTrue($hasDark, 'Expected <html> to have dark class');
+
+        // Click light theme button
+        $browser->click('[title="Claro"]')
+            ->pause(500);
+
+        $hasDarkAfterLight = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertFalse($hasDarkAfterLight, 'Expected <html> to NOT have dark class after clicking light');
+
+        // Click dark theme button
+        $browser->click('[title="Escuro"]')
+            ->pause(500);
+
+        $hasDarkAfterDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkAfterDark, 'Expected <html> to have dark class after clicking dark');
+    });
+});
+
+test('language switcher buttons are clickable', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Floor', 5);
+
+        // Buttons should be visible and clickable
+        $browser->assertSee('PT')
+            ->assertSee('EN')
+            ->assertPresent('[title="Português"]')
+            ->assertPresent('[title="English"]');
     });
 });
 

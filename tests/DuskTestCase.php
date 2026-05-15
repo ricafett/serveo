@@ -50,6 +50,11 @@ abstract class DuskTestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Ensure Dusk tests use the shared SQLite file, not :memory:.
+        config(['database.connections.sqlite.database' => database_path('dusk.sqlite')]);
+        DB::purge('sqlite');
+        DB::reconnect('sqlite');
+
         // Truncate operational tables so each test starts clean,
         // while keeping reference data (roles, permissions, venue, menu, printers).
         DB::statement('PRAGMA foreign_keys = OFF');
