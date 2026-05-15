@@ -75,6 +75,7 @@ class ProductionTicketController extends ApiController
                     'billing_group_id'     => $productionTicket->billing_group_id,
                     'service_session_id'   => $productionTicket->service_session_id,
                     'production_ticket_id' => $newTicket->id,
+                    'actor_user_id'        => $user->id,
                 ],
             );
 

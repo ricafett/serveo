@@ -46,7 +46,7 @@ class Audit
             'service_session_id' => $relations['service_session_id'] ?? null,
             'event_type'         => $eventType,
             'event_time'         => now(),
-            'actor_user_id'      => Auth::id(),
+            'actor_user_id'      => $relations['actor_user_id'] ?? Auth::id(),
             'billing_group_id'   => $relations['billing_group_id']   ?? null,
             'occupied_zone_id'   => $relations['occupied_zone_id']   ?? null,
             'order_header_id'    => $relations['order_header_id']    ?? null,

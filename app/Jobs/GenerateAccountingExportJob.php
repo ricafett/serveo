@@ -30,7 +30,7 @@ class GenerateAccountingExportJob implements ShouldQueue
             'EXPORT_REQUESTED',
             "Export #{$export->id} requested",
             ['type' => $export->export_type, 'format' => $export->file_format],
-            ['accounting_export_id' => $export->id],
+            ['accounting_export_id' => $export->id, 'actor_user_id' => $export->requested_by_user_id],
         );
 
         try {
@@ -46,7 +46,7 @@ class GenerateAccountingExportJob implements ShouldQueue
                 'EXPORT_COMPLETED',
                 "Export #{$export->id} completed: {$filePath}",
                 ['file_path' => $filePath],
-                ['accounting_export_id' => $export->id],
+                ['accounting_export_id' => $export->id, 'actor_user_id' => $export->requested_by_user_id],
             );
         } catch (Throwable $e) {
             $export->update([
@@ -58,7 +58,7 @@ class GenerateAccountingExportJob implements ShouldQueue
                 'EXPORT_FAILED',
                 "Export #{$export->id} failed: {$e->getMessage()}",
                 ['error' => $e->getMessage()],
-                ['accounting_export_id' => $export->id],
+                ['accounting_export_id' => $export->id, 'actor_user_id' => $export->requested_by_user_id],
             );
 
             throw $e;

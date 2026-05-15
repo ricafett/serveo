@@ -47,7 +47,7 @@ function bootScenario(): ServiceSession
     Role::findByName('ADMIN')->syncPermissions(Permission::all());
     Role::findByName('SERVER')->syncPermissions([
         'floor.view', 'floor.open_billing_group', 'floor.assign_zone', 'floor.release_zone',
-        'billing_group.view',
+        'billing_group.view', 'billing_group.reopen',
         'order.create', 'order.void_item',
         'production_ticket.view',
         'audit.view',

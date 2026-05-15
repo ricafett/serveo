@@ -84,6 +84,7 @@ class PrintJobResource extends Resource
                             'PRINT_JOB_RETRIED',
                             "Print job #{$record->id} reenviado",
                             ['kind' => $record->job_kind],
+                            ['actor_user_id' => Auth::id()],
                         );
                         Notification::make()->title('Reenviado')->success()->send();
                     }),

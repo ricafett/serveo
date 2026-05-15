@@ -53,7 +53,7 @@ class AccountingExportController extends ApiController
             'EXPORT_REQUESTED',
             "Exportação #{$export->id} solicitada",
             ['type' => $export->export_type, 'format' => $export->file_format],
-            ['accounting_export_id' => $export->id],
+            ['accounting_export_id' => $export->id, 'actor_user_id' => $request->user()->id],
         );
 
         return $this->success([

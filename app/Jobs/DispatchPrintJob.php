@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Domain\Audit\Audit;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Domain\Printing\TicketRenderer;
 use App\Models\BillingDocument;
@@ -86,8 +87,29 @@ class DispatchPrintJob implements ShouldQueue
 
             if ($printable instanceof ProductionTicket) {
                 $printable->update(['ticket_status' => 'PRINTED', 'printed_at' => now()]);
+                Audit::record(
+                    'PRODUCTION_TICKET_PRINTED',
+                    "Ticket #{$printable->id} impresso com sucesso",
+                    ['printer_id' => $printer->id, 'job_id' => $job->id],
+                    [
+                        'billing_group_id'     => $printable->billing_group_id,
+                        'service_session_id'   => $printable->service_session_id,
+                        'production_ticket_id' => $printable->id,
+                        'actor_user_id'        => $job->requested_by_user_id,
+                    ],
+                );
             } elseif ($printable instanceof BillingDocument) {
                 $printable->update(['document_status' => 'PRINTED', 'printed_at' => now()]);
+                Audit::record(
+                    'BILL_PRINTED',
+                    "Conta #{$printable->id} impressa com sucesso",
+                    ['printer_id' => $printer->id, 'job_id' => $job->id],
+                    [
+                        'billing_group_id'    => $printable->billing_group_id,
+                        'billing_document_id' => $printable->id,
+                        'actor_user_id'       => $job->requested_by_user_id,
+                    ],
+                );
             }
             return;
         }
@@ -100,6 +122,17 @@ class DispatchPrintJob implements ShouldQueue
 
         if ($printable instanceof ProductionTicket) {
             $printable->update(['ticket_status' => 'FAILED']);
+            Audit::record(
+                'PRODUCTION_TICKET_FAILED',
+                "Ticket #{$printable->id} falhou ao imprimir: {$result->message}",
+                ['printer_id' => $printer->id, 'job_id' => $job->id, 'error' => $result->message],
+                [
+                    'billing_group_id'     => $printable->billing_group_id,
+                    'service_session_id'   => $printable->service_session_id,
+                    'production_ticket_id' => $printable->id,
+                    'actor_user_id'        => $job->requested_by_user_id,
+                ],
+            );
         }
     }
 }

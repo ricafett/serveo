@@ -66,6 +66,7 @@ class BillingService
                     'billing_group_id'    => $group->id,
                     'service_session_id'  => $group->service_session_id,
                     'billing_document_id' => $bill->id,
+                    'actor_user_id'       => $cashier->id,
                 ],
             );
 
@@ -106,6 +107,7 @@ class BillingService
                 'billing_group_id'    => $original->billing_group_id,
                 'service_session_id'  => $original->billingGroup?->service_session_id,
                 'billing_document_id' => $reprint->id,
+                'actor_user_id'       => $cashier->id,
             ],
         );
 
@@ -156,6 +158,7 @@ class BillingService
                     'billing_group_id'   => $group->id,
                     'service_session_id' => $group->service_session_id,
                     'payment_record_id'  => $payment->id,
+                    'actor_user_id'      => $cashier->id,
                 ],
             );
 
@@ -185,6 +188,7 @@ class BillingService
                 'billing_group_id'   => $payment->billing_group_id,
                 'service_session_id' => $payment->billingGroup?->service_session_id,
                 'payment_record_id'  => $payment->id,
+                'actor_user_id'      => $cashier->id,
             ],
         );
     }

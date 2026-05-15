@@ -80,6 +80,7 @@ class RolePermissionSeeder extends Seeder
             'floor.assign_zone',
             'floor.release_zone',
             'billing_group.view',
+            'billing_group.reopen',
             'order.create',
             'order.void_item',
             'production_ticket.view',

@@ -63,7 +63,7 @@ class OccupancyService
                 'OCCUPIED_ZONE_OPENED',
                 "Zona aberta em {$row->row_code} pares {$startSeq}-{$endSeq} para grupo {$group->display_code}",
                 ['start' => $startSeq, 'end' => $endSeq, 'row_id' => $row->id],
-                ['billing_group_id' => $group->id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $group->service_session_id],
+                ['billing_group_id' => $group->id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
             );
 
             return $zone;
@@ -86,7 +86,7 @@ class OccupancyService
                 'OCCUPIED_ZONE_RELEASED',
                 "Zona libertada (#{$zone->id})",
                 ['released_by' => $actor->id],
-                ['billing_group_id' => $zone->billing_group_id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $zone->billingGroup?->service_session_id],
+                ['billing_group_id' => $zone->billing_group_id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $zone->billingGroup?->service_session_id, 'actor_user_id' => $actor->id],
             );
         });
     }

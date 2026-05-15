@@ -131,6 +131,7 @@ class OrderService
                         'occupied_zone_id'      => $zone?->id,
                         'production_ticket_id'  => $ticket->id,
                         'order_header_id'       => $header->id,
+                        'actor_user_id'         => $actor->id,
                     ],
                 );
             }
@@ -144,6 +145,7 @@ class OrderService
                     'service_session_id' => $group->service_session_id,
                     'occupied_zone_id'   => $zone?->id,
                     'order_header_id'    => $header->id,
+                    'actor_user_id'      => $actor->id,
                 ],
             );
 
@@ -210,6 +212,7 @@ class OrderService
                     'order_header_id'  => $header->id,
                     'order_item_id'    => $item->id,
                     'service_session_id' => $header->billingGroup?->service_session_id,
+                    'actor_user_id'    => $actor->id,
                 ],
             );
         });

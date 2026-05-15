@@ -50,7 +50,7 @@ class BillingGroupService
                 'BILLING_GROUP_OPENED',
                 "Grupo {$code} aberto por {$actor->name}",
                 ['cover_count' => $coverCount],
-                ['billing_group_id' => $group->id, 'service_session_id' => $session->id],
+                ['billing_group_id' => $group->id, 'service_session_id' => $session->id, 'actor_user_id' => $actor->id],
             );
 
             return $group;
@@ -109,7 +109,7 @@ class BillingGroupService
             'BILLING_GROUP_STATUS_CHANGED',
             "Estado do grupo {$group->display_code}: {$previous} -> {$statusCode}",
             ['from' => $previous, 'to' => $statusCode],
-            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id],
+            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
         );
 
         return $group->refresh();
@@ -137,7 +137,7 @@ class BillingGroupService
             'BILLING_GROUP_CLOSED',
             "Grupo {$group->display_code} fechado",
             [],
-            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id],
+            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
         );
 
         return $group->refresh();
@@ -171,7 +171,7 @@ class BillingGroupService
             'BILLING_GROUP_REOPENED',
             "Grupo {$group->display_code} reaberto",
             [],
-            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id],
+            ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
         );
 
         return $group->refresh();

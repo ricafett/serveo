@@ -35,11 +35,12 @@ it('rejects ACTIVE to CLOSED by server', function () {
         ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_group.set_status');
 });
 
-it('rejects reopen by server', function () {
+it('allows reopen by server', function () {
     app(BillingGroupService::class)->close($this->group, $this->cashier);
 
-    expect(fn () => app(BillingGroupService::class)->reopen($this->group->refresh(), $this->server))
-        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_group.reopen');
+    app(BillingGroupService::class)->reopen($this->group->refresh(), $this->server);
+
+    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::ACTIVE);
 });
 
 it('rejects setStatus to CLOSED by server', function () {
