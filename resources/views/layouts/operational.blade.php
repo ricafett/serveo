@@ -73,7 +73,7 @@
                                 @click="open = !open"
                                 type="button"
                                 class="flex items-center gap-1.5 rounded-lg p-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] justify-center"
-                                aria-label="{{ __('User menu') }}"
+                                aria-label="{{ __('auth.user_menu') }}"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -100,14 +100,14 @@
 
                                 @if(auth()->user()?->hasRole('ADMIN'))
                                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center">
-                                        {{ __('Admin Panel') }}
+                                        {{ __('auth.admin_panel') }}
                                     </a>
                                 @endif
 
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center">
-                                        {{ __('Log Out') }}
+                                        {{ __('auth.log_out') }}
                                     </button>
                                 </form>
                             </div>

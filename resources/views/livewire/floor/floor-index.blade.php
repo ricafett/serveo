@@ -3,13 +3,13 @@
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Floor') }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('floor.title') }}</h1>
                 @if($this->session)
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ $this->session->session_label }} · {{ $this->openGroups->count() }} {{ __('open groups') }}
+                        {{ $this->session->session_label }} · {{ $this->openGroups->count() }} {{ __('floor.open_groups') }}
                     </p>
                 @else
-                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ __('No open service session.') }}</p>
+                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ __('floor.no_session') }}</p>
                 @endif
             </div>
         </div>
@@ -30,10 +30,10 @@
                                 {{-- Row Label --}}
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                        {{ __('Row') }} {{ $row->row_code }}
+                                        {{ __('floor.row') }} {{ $row->row_code }}
                                     </span>
                                     <span class="text-xs text-gray-400 dark:text-gray-500">
-                                        {{ $row->seatPairs->count() }} {{ __('pairs') }}
+                                        {{ $row->seatPairs->count() }} {{ __('app.pairs') }}
                                     </span>
                                 </div>
 
@@ -45,7 +45,7 @@
                                                 type="button"
                                                 wire:click="selectRange({{ $row->id }}, {{ $range['start'] }}, {{ $range['end'] }})"
                                                 class="rounded-lg px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30 transition-colors min-h-[44px] flex items-center"
-                                                title="{{ __('Tap to open billing group') }}"
+                                                title="{{ __('floor.tap_to_open') }}"
                                             >
                                                 {{ $range['start'] }}–{{ $range['end'] }}
                                             </button>
@@ -69,7 +69,7 @@
                 </div>
             @empty
                 <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 text-center">
-                    <p class="text-gray-500 dark:text-gray-400">{{ __('No sections configured.') }}</p>
+                    <p class="text-gray-500 dark:text-gray-400">{{ __('floor.no_sections') }}</p>
                 </div>
             @endforelse
         </div>
@@ -77,7 +77,7 @@
         {{-- Open Groups Quick List --}}
         @if($this->openGroups->count() > 0)
             <div class="mt-8">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('Open Billing Groups') }}</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('floor.open_groups') }}</h2>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
                         <a
@@ -101,7 +101,7 @@
                                 @endforeach
                             </div>
                             @if($group->cover_count)
-                                <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count }} {{ __('covers') }}</div>
+                                <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count }} {{ __('app.covers') }}</div>
                             @endif
                         </a>
                     @endforeach
@@ -144,7 +144,7 @@
             <div class="p-4 sm:p-6">
                 {{-- Header --}}
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('Open Billing Group') }}</h2>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('floor.open_group') }}</h2>
                     <button
                         type="button"
                         @click="createModalOpen = false; $wire.closeModal()"
@@ -169,15 +169,15 @@
                         $selectedRow = \App\Models\Row::with('section')->find($selectedRowId);
                     @endphp
                     <div class="mb-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-3 text-sm text-primary-700 dark:text-primary-300">
-                        <div class="font-medium">{{ __('Selected range') }}</div>
-                        <div>{{ $selectedRow?->section?->name }} · {{ __('Row') }} {{ $selectedRow?->row_code }} · {{ __('Pairs') }} {{ $zoneStartSeq }}–{{ $zoneEndSeq }}</div>
+                        <div class="font-medium">{{ __('floor.selected_range') }}</div>
+                        <div>{{ $selectedRow?->section?->name }} · {{ __('floor.row') }} {{ $selectedRow?->row_code }} · {{ __('app.pairs') }} {{ $zoneStartSeq }}–{{ $zoneEndSeq }}</div>
                     </div>
                 @endif
 
                 {{-- Form --}}
                 <form wire:submit.prevent="createBillingGroup" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Status') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.status') }}</label>
                         <select id="status-code" wire:model="statusCode" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                             @foreach(\App\Models\BillingStatus::where('is_active', true)->orderBy('sort_order')->get() as $status)
                                 <option value="{{ $status->code }}">{{ $status->display_name ?? $status->code }}</option>
@@ -188,18 +188,18 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Cover Count') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.cover_count') }}</label>
                             <input id="cover-count" type="number" wire:model="coverCount" min="1" placeholder="—" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                             @error('coverCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Delivery Label') }}</label>
-                            <input id="delivery-label" type="text" wire:model="deliveryLabel" placeholder="{{ __('e.g. Center') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.delivery_label') }}</label>
+                            <input id="delivery-label" type="text" wire:model="deliveryLabel" placeholder="{{ __('app.delivery_label_example') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Notes') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.notes') }}</label>
                         <textarea id="notes" wire:model="notes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3"></textarea>
                         @error('notes') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -214,7 +214,7 @@
                             type="submit"
                             class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors"
                         >
-                            {{ __('Open Billing Group') }}
+                            {{ __('floor.open_group') }}
                         </button>
                     </div>
                 </form>

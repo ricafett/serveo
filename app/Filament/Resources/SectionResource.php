@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Auth;
 class SectionResource extends Resource
 {
     protected static ?string $model = Section::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'Salas (Sections)';
+    protected static ?string $navigationLabel = 'app.navigation_label_sections';
     protected static ?int $navigationSort = 20;
 
     public static function canViewAny(): bool
@@ -62,10 +62,10 @@ class SectionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('venue.name')->label('Venue')->sortable(),
+                Tables\Columns\TextColumn::make('venue.name')->label(__('app.venue'))->sortable(),
                 Tables\Columns\TextColumn::make('section_code')->sortable(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('rows_count')->counts('rows')->label('Linhas'),
+                Tables\Columns\TextColumn::make('rows_count')->counts('rows')->label(__('app.rows')),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([Actions\EditAction::make()])

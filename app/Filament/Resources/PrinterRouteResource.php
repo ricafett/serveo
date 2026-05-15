@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Auth;
 class PrinterRouteResource extends Resource
 {
     protected static ?string $model = PrinterRoute::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-arrow-path-rounded-square';
-    protected static ?string $navigationLabel = 'Rotas de impressão';
+    protected static ?string $navigationLabel = 'app.navigation_label_printer_routes';
     protected static ?int $navigationSort = 41;
 
     public static function canViewAny(): bool
@@ -53,14 +53,14 @@ class PrinterRouteResource extends Resource
                 ->required()
                 ->default(fn () => Venue::query()->value('id')),
             Forms\Components\Select::make('document_type')->options([
-                'PRODUCTION_TICKET' => 'Ticket de produção',
-                'BILL'              => 'Conta',
-                'VOID_SLIP'         => 'Anulação',
+                'PRODUCTION_TICKET' => __('app.document_type_production_ticket'),
+                'BILL'              => __('app.document_type_bill'),
+                'VOID_SLIP'         => __('app.document_type_void_slip'),
             ])->required(),
             Forms\Components\Select::make('fulfillment_route')->options([
-                'KITCHEN' => 'Cozinha',
-                'BAR'     => 'Bar',
-            ])->nullable()->helperText('Aplica-se apenas a tickets de produção e anulações'),
+                'KITCHEN' => __('app.route_kitchen'),
+                'BAR'     => __('app.route_bar'),
+            ])->nullable()->helperText(__('app.helper_text_production_only')),
             Forms\Components\Select::make('printer_id')
                 ->options(Printer::query()->where('is_active', true)->pluck('name', 'id'))
                 ->required(),

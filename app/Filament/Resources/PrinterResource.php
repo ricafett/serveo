@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Auth;
 class PrinterResource extends Resource
 {
     protected static ?string $model = Printer::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-printer';
-    protected static ?string $navigationLabel = 'Impressoras';
+    protected static ?string $navigationLabel = 'app.navigation_label_printers';
     protected static ?int $navigationSort = 40;
 
     public static function canViewAny(): bool
@@ -49,23 +49,23 @@ class PrinterResource extends Resource
         return $schema->schema([
             Forms\Components\TextInput::make('name')->required(),
             Forms\Components\Select::make('printer_type')->options([
-                'KITCHEN' => 'Cozinha',
-                'BAR'     => 'Bar',
-                'BILL'    => 'Conta (caixa)',
-                'GENERIC' => 'Genérica',
+                'KITCHEN' => __('app.printer_type_kitchen'),
+                'BAR'     => __('app.printer_type_bar'),
+                'BILL'    => __('app.printer_type_bill'),
+                'GENERIC' => __('app.printer_type_generic'),
             ])->required(),
             Forms\Components\Select::make('connection_type')->options([
-                'LAN'       => 'LAN direta (ESC/POS porta 9100)',
-                'USB_AGENT' => 'USB através do agente local',
-                'NULL'      => 'Simulada (escreve no disco)',
+                'LAN'       => __('app.connection_type_lan'),
+                'USB_AGENT' => __('app.connection_type_usb_agent'),
+                'NULL'      => __('app.connection_type_null'),
             ])->required()->live(),
-            Forms\Components\TextInput::make('address')->label('Endereço IP / hostname')
+            Forms\Components\TextInput::make('address')->label(__('app.address_ip_hostname'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'LAN'),
             Forms\Components\TextInput::make('port')->numeric()->default(9100)
                 ->visible(fn (Get $get) => $get('connection_type') === 'LAN'),
-            Forms\Components\TextInput::make('agent_endpoint')->label('URL do agente')
+            Forms\Components\TextInput::make('agent_endpoint')->label(__('app.agent_url'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
-            Forms\Components\TextInput::make('agent_printer_id')->label('ID interno no agente')
+            Forms\Components\TextInput::make('agent_printer_id')->label(__('app.agent_internal_id'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
             Forms\Components\Toggle::make('is_active')->default(true),
         ]);
@@ -84,8 +84,8 @@ class PrinterResource extends Resource
                     'danger'  => 'UNREACHABLE',
                     'warning' => 'WARNING',
                     'gray'    => 'UNKNOWN',
-                ])->label('Saúde'),
-                Tables\Columns\TextColumn::make('last_seen_at')->dateTime()->label('Visto pela última vez'),
+                ])->label(__('app.health')),
+                Tables\Columns\TextColumn::make('last_seen_at')->dateTime()->label(__('app.last_seen')),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([

@@ -23,16 +23,36 @@ class DatabaseTranslationLoader extends FileLoader
         $cacheKey = "translations:{$locale}:{$ns}:{$group}";
 
         return Cache::remember($cacheKey, 300, function () use ($locale, $group, $ns) {
-            $rows = TranslationKey::where('language_code', $locale)
-                ->where('translation_namespace', $ns)
-                ->where('translation_key', 'like', "{$group}.%")
-                ->where('is_active', true)
-                ->get();
+            $query = TranslationKey::where('language_code', $locale)
+                ->where('is_active', true);
+
+            if ($group === '*') {
+                // Raw string / JSON-style translations (e.g. __('Hello'))
+                $query->where('translation_namespace', '*');
+                $rows = $query->get();
+
+                $translations = [];
+                foreach ($rows as $row) {
+                    $translations[$row->translation_key] = $row->translation_value;
+                }
+
+                return $translations;
+            }
+
+            if ($ns === '*') {
+                // Default namespace: in our data model the group name IS the namespace
+                $query->where('translation_namespace', $group);
+            } else {
+                // Explicit namespace: look for namespaced keys with group prefix
+                $query->where('translation_namespace', $ns)
+                    ->where('translation_key', 'like', "{$group}.%");
+            }
+
+            $rows = $query->get();
 
             $translations = [];
             foreach ($rows as $row) {
-                $key = substr($row->translation_key, strlen($group) + 1);
-                data_set($translations, $key, $row->translation_value);
+                data_set($translations, $row->translation_key, $row->translation_value);
             }
 
             return $translations;

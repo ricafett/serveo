@@ -16,9 +16,9 @@ use UnitEnum;
 class AuditEventResource extends Resource
 {
     protected static ?string $model = AuditEvent::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Auditoria';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-document-magnifying-glass';
-    protected static ?string $navigationLabel = 'Eventos de auditoria';
+    protected static ?string $navigationLabel = 'app.navigation_label_audit_events';
     protected static ?int $navigationSort = 90;
 
     public static function form(Schema $schema): Schema
@@ -41,8 +41,8 @@ class AuditEventResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('event_time')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('event_type')->badge()->searchable(),
-                Tables\Columns\TextColumn::make('actor.name')->label('Utilizador'),
-                Tables\Columns\TextColumn::make('billing_group_id')->label('Grupo'),
+                Tables\Columns\TextColumn::make('actor.name')->label(__('app.user')),
+                Tables\Columns\TextColumn::make('billing_group_id')->label(__('billing.group_title')),
                 Tables\Columns\TextColumn::make('summary')->wrap()->searchable(),
             ])
             ->defaultSort('event_time', 'desc')

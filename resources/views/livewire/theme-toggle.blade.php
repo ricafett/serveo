@@ -2,7 +2,7 @@
     <button
         type="button"
         wire:click="setTheme('light')"
-        title="Claro"
+        title="{{ __('app.theme_light') }}"
         class="rounded p-1.5 transition {{ $theme === 'light' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800' }}"
     >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -12,7 +12,7 @@
     <button
         type="button"
         wire:click="setTheme('dark')"
-        title="Escuro"
+        title="{{ __('app.theme_dark') }}"
         class="rounded p-1.5 transition {{ $theme === 'dark' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800' }}"
     >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -22,7 +22,7 @@
     <button
         type="button"
         wire:click="setTheme('system')"
-        title="Sistema"
+        title="{{ __('app.theme_system') }}"
         class="rounded p-1.5 transition {{ $theme === 'system' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800' }}"
     >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">

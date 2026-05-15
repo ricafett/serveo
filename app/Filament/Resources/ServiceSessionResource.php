@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Auth;
 class ServiceSessionResource extends Resource
 {
     protected static ?string $model = ServiceSession::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Operação';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-calendar-days';
-    protected static ?string $navigationLabel = 'Sessões de serviço';
+    protected static ?string $navigationLabel = 'app.navigation_label_service_sessions';
     protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
@@ -51,18 +51,18 @@ class ServiceSessionResource extends Resource
                 ->options(Venue::query()->pluck('name', 'id'))
                 ->required(),
             Forms\Components\Select::make('session_type')->options([
-                'LUNCH'  => 'Almoço',
-                'DINNER' => 'Jantar',
-                'EVENT'  => 'Evento',
+                'LUNCH'  => __('app.session_type_lunch'),
+                'DINNER' => __('app.session_type_dinner'),
+                'EVENT'  => __('app.session_type_event'),
             ])->required(),
             Forms\Components\TextInput::make('session_label')->required()
-                ->helperText('Único por venue. Ex.: "2026-04-29 DINNER"'),
+                ->helperText(__('app.helper_text_session_label')),
             Forms\Components\DateTimePicker::make('starts_at')->required(),
             Forms\Components\DateTimePicker::make('ends_at')->nullable(),
             Forms\Components\Select::make('status')->options([
-                'PLANNED' => 'Planeada',
-                'OPEN'    => 'Aberta',
-                'CLOSED'  => 'Fechada',
+                'PLANNED' => __('app.status_planned'),
+                'OPEN'    => __('app.status_open'),
+                'CLOSED'  => __('app.status_closed'),
             ])->required()->default('OPEN'),
             Forms\Components\Textarea::make('notes')->rows(2),
         ]);
@@ -72,7 +72,7 @@ class ServiceSessionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('venue.name')->label('Venue'),
+                Tables\Columns\TextColumn::make('venue.name')->label(__('app.venue')),
                 Tables\Columns\TextColumn::make('session_label'),
                 Tables\Columns\TextColumn::make('session_type')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge()->colors([
@@ -81,7 +81,7 @@ class ServiceSessionResource extends Resource
                     'danger'  => 'CLOSED',
                 ]),
                 Tables\Columns\TextColumn::make('starts_at')->dateTime(),
-                Tables\Columns\TextColumn::make('billing_groups_count')->counts('billingGroups')->label('Grupos'),
+                Tables\Columns\TextColumn::make('billing_groups_count')->counts('billingGroups')->label(__('billing.group_title')),
             ])
             ->defaultSort('starts_at', 'desc')
             ->actions([Actions\EditAction::make()])

@@ -11,12 +11,12 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Order Entry') }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('order.order_entry') }}</h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ $this->group?->display_code }}</p>
                 </div>
             </div>
             @if($this->group?->is_closed)
-                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('Closed') }}</span>
+                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('app.closed') }}</span>
             @endif
         </div>
 
@@ -35,14 +35,14 @@
         {{-- Zone Selector --}}
         @if($this->zones->count() > 0)
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Delivery Zone') }}</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.delivery_zone') }}</label>
                 <div class="flex flex-wrap gap-2">
                     <button
                         type="button"
                         wire:click="setZone(null)"
                         class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedZoneId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                     >
-                        {{ __('Group level') }}
+                        {{ __('order.group_level') }}
                     </button>
                     @foreach($this->zones as $zone)
                         <button
@@ -60,14 +60,14 @@
         {{-- Delivery Pair Override --}}
         @if($this->selectedZone)
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Seat Pair (optional)') }}</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.seat_pair') }}</label>
                 <div class="flex flex-wrap gap-2">
                     <button
                         type="button"
                         wire:click="setDeliveryPair(null)"
                         class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                     >
-                        {{ __('Center') }}
+                        {{ __('order.center') }}
                     </button>
                     @foreach($this->selectedZone->row?->seatPairs ?? [] as $pair)
                         @if($pair->pair_sequence >= $this->selectedZone->start_seat_pair_sequence && $pair->pair_sequence <= $this->selectedZone->end_seat_pair_sequence)
@@ -88,7 +88,7 @@
         @if(count($cart) > 0)
             <div class="mb-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Cart') }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $this->cartItemCount }})</span></h2>
+                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('order.cart') }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $this->cartItemCount }})</span></h2>
                     <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($this->cartTotal, 2) }}</span>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
@@ -155,7 +155,7 @@
 
         {{-- Notes --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Notes') }}</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.notes') }}</label>
             <textarea id="order-notes" wire:model="notes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3"></textarea>
         </div>
 
@@ -167,7 +167,7 @@
                 @disabled($this->group?->is_closed || count($cart) === 0)
                 class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {{ __('Submit Order') }}
+                {{ __('order.submit') }}
                 @if(count($cart) > 0)
                     <span class="ml-2 text-xs opacity-75">({{ $this->cartItemCount }} · {{ number_format($this->cartTotal, 2) }})</span>
                 @endif

@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Auth;
 class MenuCategoryResource extends Resource
 {
     protected static ?string $model = MenuCategory::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-tag';
-    protected static ?string $navigationLabel = 'Categorias de menu';
+    protected static ?string $navigationLabel = 'app.navigation_label_menu_categories';
     protected static ?int $navigationSort = 30;
 
     public static function canViewAny(): bool

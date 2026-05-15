@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Auth;
 class MenuItemResource extends Resource
 {
     protected static ?string $model = MenuItem::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationLabel = 'Itens de menu';
+    protected static ?string $navigationLabel = 'app.navigation_label_menu_items';
     protected static ?int $navigationSort = 31;
 
     public static function canViewAny(): bool
@@ -64,15 +64,15 @@ class MenuItemResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('category.display_name')->label('Categoria')->sortable(),
+                Tables\Columns\TextColumn::make('category.display_name')->label(__('app.category'))->sortable(),
                 Tables\Columns\TextColumn::make('display_name')->searchable(),
                 Tables\Columns\TextColumn::make('unit_price')->money('EUR')->sortable(),
-                Tables\Columns\TextColumn::make('category.route_type')->label('Rota')->badge(),
+                Tables\Columns\TextColumn::make('category.route_type')->label(__('app.route'))->badge(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('menu_category_id')
-                    ->label('Categoria')
+                    ->label(__('app.category'))
                     ->options(MenuCategory::query()->pluck('display_name', 'id')),
             ])
             ->actions([Actions\EditAction::make()])

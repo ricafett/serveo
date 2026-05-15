@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
 class CashierCheckout extends Page
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-banknotes';
-    protected static string | UnitEnum | null $navigationGroup = 'Operação';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';
     protected static ?string $navigationLabel = null;
     protected static ?int    $navigationSort  = 2;
     protected string $view = 'filament.pages.cashier-checkout';

@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Auth;
 class BillingStatusResource extends Resource
 {
     protected static ?string $model = BillingStatus::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-flag';
-    protected static ?string $navigationLabel = 'Estados de grupo';
+    protected static ?string $navigationLabel = 'app.navigation_label_billing_status';
     protected static ?int $navigationSort = 50;
 
     public static function canViewAny(): bool

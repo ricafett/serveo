@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ __('Sign In') }} — {{ config('app.name', 'Serveo') }}</title>
+    <title>{{ __('auth.sign_in') }} — {{ config('app.name', 'Serveo') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
@@ -47,7 +47,7 @@
                 @endif
 
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Username') }}</label>
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.username') }}</label>
                     <input
                         id="username"
                         name="username"
@@ -56,12 +56,12 @@
                         autofocus
                         autocomplete="username"
                         class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3"
-                        placeholder="{{ __('Enter username') }}"
+                        placeholder="{{ __('auth.enter_username') }}"
                     >
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Password') }}</label>
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.password') }}</label>
                     <input
                         id="password"
                         name="password"
@@ -69,7 +69,7 @@
                         required
                         autocomplete="current-password"
                         class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3"
-                        placeholder="{{ __('Enter password') }}"
+                        placeholder="{{ __('auth.enter_password') }}"
                     >
                 </div>
 
@@ -77,7 +77,7 @@
                     type="submit"
                     class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors"
                 >
-                    {{ __('Sign In') }}
+                    {{ __('auth.sign_in') }}
                 </button>
             </form>
         </div>

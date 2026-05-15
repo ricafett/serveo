@@ -19,11 +19,11 @@ use Spatie\Permission\Models\Role;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-users';
-    protected static ?string $navigationLabel = 'Utilizadores';
-    protected static ?string $modelLabel      = 'Utilizador';
-    protected static ?string $pluralModelLabel = 'Utilizadores';
+    protected static ?string $navigationLabel = 'app.navigation_label_users';
+    protected static ?string $modelLabel      = 'app.model_label_user';
+    protected static ?string $pluralModelLabel = 'app.plural_model_label_users';
     protected static ?int $navigationSort = 10;
 
     public static function canViewAny(): bool
@@ -53,13 +53,13 @@ class UserResource extends Resource
             Forms\Components\TextInput::make('username')->required()->unique(ignoreRecord: true)->maxLength(64),
             Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
             Forms\Components\Select::make('preferred_language_code')
-                ->options(['pt-PT' => 'Português (PT)', 'en-US' => 'English (US)'])
+                ->options(['pt-PT' => __('app.language_pt'), 'en-US' => __('app.language_en')])
                 ->default('pt-PT')->required(),
             Forms\Components\Select::make('theme')
                 ->options([
-                    User::THEME_LIGHT  => 'Claro',
-                    User::THEME_DARK   => 'Escuro',
-                    User::THEME_SYSTEM => 'Sistema',
+                    User::THEME_LIGHT  => __('app.theme_light'),
+                    User::THEME_DARK   => __('app.theme_dark'),
+                    User::THEME_SYSTEM => __('app.theme_system'),
                 ])
                 ->default(User::THEME_SYSTEM)
                 ->required(),
@@ -86,9 +86,9 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('username')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
-                Tables\Columns\TextColumn::make('roles.name')->badge()->label('Funções'),
-                Tables\Columns\IconColumn::make('is_active')->boolean()->label('Ativo'),
-                Tables\Columns\TextColumn::make('last_login_at')->dateTime()->label('Último login')->sortable(),
+                Tables\Columns\TextColumn::make('roles.name')->badge()->label(__('app.roles')),
+                Tables\Columns\IconColumn::make('is_active')->boolean()->label(__('app.active')),
+                Tables\Columns\TextColumn::make('last_login_at')->dateTime()->label(__('app.last_login'))->sortable(),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active'),

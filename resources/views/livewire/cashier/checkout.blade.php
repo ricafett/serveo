@@ -11,12 +11,12 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Checkout') }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('billing.checkout') }}</h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ $group?->display_code }}</p>
                 </div>
             </div>
             @if($group?->is_closed)
-                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('Closed') }}</span>
+                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('app.closed') }}</span>
             @endif
         </div>
 
@@ -38,20 +38,20 @@
                 @can('billing_document.create')
                     <button type="button" wire:click="printBill" class="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-500 min-h-[44px] flex items-center gap-1.5 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" /></svg>
-                        {{ __('Print Bill') }}
+                        {{ __('billing.print_bill') }}
                     </button>
                 @endcan
                 @can('payment.record')
                     <a href="#payment" class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] flex items-center gap-1.5 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" /></svg>
-                        {{ __('Record Payment') }}
+                        {{ __('cashier.record_payment') }}
                     </a>
                 @endcan
             @else
                 @can('billing_group.reopen')
                     <button type="button" wire:click="reopenGroup" class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] flex items-center gap-1.5 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
-                        {{ __('Reopen') }}
+                        {{ __('cashier.reopen') }}
                     </button>
                 @endcan
             @endif
@@ -59,7 +59,7 @@
                 @if($group?->billingDocuments?->count() > 0)
                     <a href="{{ route('reprint.group', ['billingGroupId' => $group->id]) }}" wire:navigate class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] flex items-center gap-1.5 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" /></svg>
-                        {{ __('Reprint') }}
+                        {{ __('cashier.reprint') }}
                     </a>
                 @endif
             @endcan
@@ -68,15 +68,15 @@
         {{-- Totals --}}
         <div class="mb-6 grid grid-cols-3 gap-3">
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Charges') }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.charges') }}</div>
                 <div class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ number_format($this->chargesTotal, 2) }}</div>
             </div>
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Paid') }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.paid') }}</div>
                 <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($this->paymentsTotal, 2) }}</div>
             </div>
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('Balance') }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('app.balance') }}</div>
                 <div class="mt-1 text-xl font-bold {{ $this->balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ number_format($this->balance, 2) }}</div>
             </div>
         </div>
@@ -84,7 +84,7 @@
         {{-- Orders --}}
         <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Orders') }}</h2>
+                <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.orders') }}</h2>
             </div>
             <div class="divide-y divide-gray-200 dark:divide-gray-800">
                 @forelse($group?->orderHeaders ?? [] as $order)
@@ -106,7 +106,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="text-gray-900 dark:text-gray-100 {{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : '' }}">{{ $item->quantity }}× {{ $item->menuItem?->display_name }}</span>
                                         @if($item->voided_at)
-                                            <span class="text-xs text-red-500 dark:text-red-400">{{ __('Voided') }}</span>
+                                            <span class="text-xs text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
                                         @endif
                                     </div>
                                     <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }}</span>
@@ -115,7 +115,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">{{ __('No orders yet.') }}</div>
+                    <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">{{ __('billing.no_orders') }}</div>
                 @endforelse
             </div>
         </div>
@@ -124,7 +124,7 @@
         @if($group?->paymentRecords?->count() > 0)
             <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Payments') }}</h2>
+                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.payments') }}</h2>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                     @foreach($group->paymentRecords as $payment)
@@ -134,7 +134,7 @@
                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->format('H:i') }} · {{ $payment->payment_label }}</div>
                             </div>
                             @if($payment->is_voided)
-                                <span class="text-xs text-red-500 dark:text-red-400">{{ __('Voided') }}</span>
+                                <span class="text-xs text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
                             @endif
                         </div>
                     @endforeach
@@ -146,7 +146,7 @@
         @if($group?->billingDocuments?->count() > 0)
             <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Bills') }}</h2>
+                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.printed_bills') }}</h2>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                     @foreach($group->billingDocuments as $doc)
@@ -155,14 +155,14 @@
                                 <div class="text-sm text-gray-900 dark:text-white">
                                     {{ $doc->document_number }}
                                     @if($doc->is_reprint)
-                                        <span class="text-xs text-amber-600 dark:text-amber-400">({{ __('Reprint') }})</span>
+                                        <span class="text-xs text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
                                     @endif
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->format('H:i') }} · {{ number_format($doc->total_amount, 2) }}</div>
                             </div>
                             @can('billing_document.reprint')
                                 <button type="button" wire:click="reprintBill({{ $doc->id }})" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 px-2 py-1 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[44px]">
-                                    {{ __('Reprint') }}
+                                    {{ __('cashier.reprint') }}
                                 </button>
                             @endcan
                         </div>
@@ -176,26 +176,26 @@
             @can('payment.record')
                 <div id="payment" class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                     <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                        <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('Record Payment') }}</h2>
+                        <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('cashier.record_payment') }}</h2>
                     </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Amount') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('cashier.amount') }}</label>
                                 <input id="payment-amount" type="number" wire:model="paymentAmount" step="0.01" min="0.01" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                                 @error('paymentAmount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Payment Method') }}</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('cashier.payment_method') }}</label>
                                 <input id="payment-label" type="text" wire:model="paymentLabel" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Notes') }}</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.notes') }}</label>
                             <textarea id="payment-notes" wire:model="paymentNotes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3"></textarea>
                         </div>
                         <button type="button" wire:click="recordPayment" class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors">
-                            {{ __('Record Payment') }}
+                            {{ __('cashier.record_payment') }}
                         </button>
                     </div>
                 </div>

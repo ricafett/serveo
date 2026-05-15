@@ -3,8 +3,8 @@
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('Billing Groups') }}</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('Search and open groups for checkout.') }}</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('cashier.billing_groups') }}</h1>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('cashier.search_placeholder') }}</p>
             </div>
         </div>
 
@@ -18,13 +18,13 @@
                     id="search"
                     type="text"
                     wire:model.live.debounce.300ms="search"
-                    placeholder="{{ __('Search by code or section...') }}"
+                    placeholder="{{ __('cashier.search_placeholder') }}"
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 pl-10 pr-3"
                 >
             </div>
             <label class="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer min-h-[44px]">
                 <input id="show-closed" type="checkbox" wire:model.live="showClosed" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                {{ __('Show closed') }}
+                {{ __('cashier.show_closed') }}
             </label>
         </div>
 
@@ -55,7 +55,7 @@
                             @endforeach
                         </div>
                         <div class="mt-2 flex items-center justify-between">
-                            <span class="text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count ? $group->cover_count . ' ' . __('covers') : '' }}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count ? $group->cover_count . ' ' . __('app.covers') : '' }}</span>
                             <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($group->balance(), 2) }}</span>
                         </div>
                     </button>
@@ -63,7 +63,7 @@
             </div>
         @else
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 text-center">
-                <p class="text-gray-500 dark:text-gray-400">{{ __('No billing groups found.') }}</p>
+                <p class="text-gray-500 dark:text-gray-400">{{ __('cashier.no_groups_found') }}</p>
             </div>
         @endif
     </div>

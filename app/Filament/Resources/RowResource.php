@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Auth;
 class RowResource extends Resource
 {
     protected static ?string $model = Row::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Configuração';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-bars-3';
-    protected static ?string $navigationLabel = 'Linhas (Rows)';
+    protected static ?string $navigationLabel = 'app.navigation_label_rows';
     protected static ?int $navigationSort = 21;
 
     public static function canViewAny(): bool
@@ -60,10 +60,10 @@ class RowResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('section.section_code')->label('Sala')->sortable(),
+                Tables\Columns\TextColumn::make('section.section_code')->label(__('app.room'))->sortable(),
                 Tables\Columns\TextColumn::make('row_code')->sortable(),
-                Tables\Columns\TextColumn::make('seats_count')->counts('seats')->label('Lugares'),
-                Tables\Columns\TextColumn::make('seat_pairs_count')->counts('seatPairs')->label('Pares'),
+                Tables\Columns\TextColumn::make('seats_count')->counts('seats')->label(__('app.seats')),
+                Tables\Columns\TextColumn::make('seat_pairs_count')->counts('seatPairs')->label(__('app.pairs')),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([Actions\EditAction::make()])

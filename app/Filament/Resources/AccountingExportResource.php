@@ -21,11 +21,11 @@ use UnitEnum;
 class AccountingExportResource extends Resource
 {
     protected static ?string $model = AccountingExport::class;
-    protected static string | UnitEnum | null $navigationGroup = 'Auditoria';
+    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-document-arrow-down';
-    protected static ?string $navigationLabel = 'Exportações contabilísticas';
-    protected static ?string $modelLabel      = 'Exportação';
-    protected static ?string $pluralModelLabel = 'Exportações contabilísticas';
+    protected static ?string $navigationLabel = 'app.navigation_label_accounting_exports';
+    protected static ?string $modelLabel      = 'app.model_label_accounting_export';
+    protected static ?string $pluralModelLabel = 'app.plural_model_label_accounting_exports';
     protected static ?int $navigationSort = 95;
 
     public static function canViewAny(): bool
@@ -53,20 +53,20 @@ class AccountingExportResource extends Resource
         return $schema->schema([
             Forms\Components\Select::make('service_session_id')
                 ->relationship('serviceSession', 'session_label')
-                ->label('Sessão de serviço')
+                ->label(__('app.service_session'))
                 ->nullable(),
             Forms\Components\Select::make('export_type')
                 ->options([
-                    'SESSION_SUMMARY' => 'Resumo de sessão',
-                    'FULL_LEDGER' => 'Livro completo',
+                    'SESSION_SUMMARY' => __('app.type_session_summary'),
+                    'FULL_LEDGER' => __('app.type_full_ledger'),
                 ])
                 ->required()
                 ->default('SESSION_SUMMARY'),
             Forms\Components\DateTimePicker::make('export_range_start')
-                ->label('Início do intervalo')
+                ->label(__('app.range_start'))
                 ->nullable(),
             Forms\Components\DateTimePicker::make('export_range_end')
-                ->label('Fim do intervalo')
+                ->label(__('app.range_end'))
                 ->nullable(),
             Forms\Components\Select::make('file_format')
                 ->options(['CSV' => 'CSV'])
@@ -80,22 +80,22 @@ class AccountingExportResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('export_type')->badge()->label('Tipo'),
-                Tables\Columns\TextColumn::make('export_range_start')->dateTime()->label('Início'),
-                Tables\Columns\TextColumn::make('export_range_end')->dateTime()->label('Fim'),
-                Tables\Columns\TextColumn::make('file_format')->label('Formato'),
+                Tables\Columns\TextColumn::make('export_type')->badge()->label(__('app.type')),
+                Tables\Columns\TextColumn::make('export_range_start')->dateTime()->label(__('app.start')),
+                Tables\Columns\TextColumn::make('export_range_end')->dateTime()->label(__('app.end')),
+                Tables\Columns\TextColumn::make('file_format')->label(__('app.format')),
                 Tables\Columns\TextColumn::make('export_status')->badge()->colors([
                     'warning' => 'REQUESTED',
                     'success' => 'COMPLETED',
                     'danger'  => 'FAILED',
-                ])->label('Estado'),
-                Tables\Columns\TextColumn::make('requestedBy.name')->label('Solicitado por'),
-                Tables\Columns\TextColumn::make('completed_at')->dateTime()->label('Concluído'),
+                ])->label(__('app.status')),
+                Tables\Columns\TextColumn::make('requestedBy.name')->label(__('app.requested_by')),
+                Tables\Columns\TextColumn::make('completed_at')->dateTime()->label(__('app.completed')),
             ])
             ->defaultSort('id', 'desc')
             ->actions([
                 Action::make('download')
-                    ->label('Descarregar')
+                    ->label(__('app.download'))
                     ->icon('heroicon-o-arrow-down-tray')
                     ->visible(fn (AccountingExport $record) => $record->export_status === 'COMPLETED' && $record->file_name)
                     ->url(fn (AccountingExport $record) => route('accounting-export.download', $record))
