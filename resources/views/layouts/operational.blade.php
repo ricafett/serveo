@@ -27,6 +27,21 @@
                 document.documentElement.classList.remove('dark');
             }
         })();
+
+        // Listen for theme changes from Livewire toggle so the DOM updates immediately
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('theme-changed', (event) => {
+                const theme = event.theme;
+                localStorage.setItem('theme', theme);
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            });
+        });
     </script>
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">

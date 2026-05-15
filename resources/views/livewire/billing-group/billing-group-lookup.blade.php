@@ -15,6 +15,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input
+                    id="search"
                     type="text"
                     wire:model.live.debounce.300ms="search"
                     placeholder="{{ __('Search by code or section...') }}"
@@ -22,7 +23,7 @@
                 >
             </div>
             <label class="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer min-h-[44px]">
-                <input type="checkbox" wire:model.live="showClosed" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                <input id="show-closed" type="checkbox" wire:model.live="showClosed" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                 {{ __('Show closed') }}
             </label>
         </div>

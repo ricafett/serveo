@@ -27,7 +27,11 @@ class LanguageSwitcher extends Component
             $user->update(['preferred_language_code' => $locale]);
         }
 
-        // Clear translation cache so new locale is loaded immediately
+        // Clear translation cache so new locale is loaded immediately.
+        // NOTE: Cache::flush() is required because the array cache driver
+        // (used in tests and local dev) does not support tag-based eviction.
+        // In production with Redis/Memcached, this should be replaced with
+        // tagged cache invalidation on the 'translations' tag.
         \Illuminate\Support\Facades\Cache::flush();
 
         $this->redirect(request()->fullUrl());
