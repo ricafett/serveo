@@ -16,7 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
-class UserResource extends Resource
+class UserResource extends BaseResource
 {
     protected static ?string $model = User::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';

@@ -16,7 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class ServiceSessionResource extends Resource
+class ServiceSessionResource extends BaseResource
 {
     protected static ?string $model = ServiceSession::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';

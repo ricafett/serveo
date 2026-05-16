@@ -16,7 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class RowResource extends Resource
+class RowResource extends BaseResource
 {
     protected static ?string $model = Row::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';

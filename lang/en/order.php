@@ -1,0 +1,23 @@
+<?php
+
+return array (
+  'title' => 'Order',
+  'new_order' => 'New Order',
+  'submit' => 'Submit Order',
+  'cart' => 'Cart',
+  'empty_cart' => 'No items added.',
+  'remove' => 'remove',
+  'delivery_zone' => 'Delivery Zone',
+  'no_specific_zone' => '— no specific zone —',
+  'seat_pair' => 'Seat Pair (optional)',
+  'center_of_zone' => '— center of zone —',
+  'order_notes' => 'Notes',
+  'cancel_back' => 'Cancel and return to group',
+  'order_sent' => 'Order sent to production',
+  'cart_empty_warning' => 'Cart is empty',
+  'order_failed' => 'Failed to submit order',
+  'group_level' => 'Group level',
+  'center' => 'Center',
+  'order_entry' => 'Order Entry',
+  'unauthorized' => 'Unauthorized',
+);

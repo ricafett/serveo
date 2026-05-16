@@ -1,0 +1,18 @@
+<?php
+
+return array (
+  'title' => 'Floor',
+  'open_group' => 'Open Billing Group',
+  'no_session' => 'No open service session. Create a session in Configuration → Service Sessions before operating the floor.',
+  'session_start' => 'Start',
+  'open_groups' => 'Open Billing Groups',
+  'no_open_groups' => 'No open groups in this session.',
+  'no_zones' => 'No zones assigned',
+  'row' => 'Row',
+  'free' => 'Free',
+  'busy' => 'Busy',
+  'tap_to_open' => 'Tap to open billing group',
+  'no_sections' => 'No sections configured.',
+  'selected_range' => 'Selected range',
+  'unauthorized' => 'Unauthorized',
+);

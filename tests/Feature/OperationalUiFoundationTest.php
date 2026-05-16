@@ -160,7 +160,7 @@ it('renders operational layout with navigation for cashier', function () {
 
     $response = $this->actingAs($user)->get('/lookup');
     $response->assertOk();
-    $response->assertSee('Lookup');
+    $response->assertSee('Checkout');
 });
 
 it('includes language switcher in layout', function () {
@@ -170,8 +170,7 @@ it('includes language switcher in layout', function () {
     $response = $this->actingAs($user)->get('/floor');
     $response->assertOk();
     $response->assertSee('language-switcher', false);
-    $response->assertSee('PT');
-    $response->assertSee('EN');
+    $response->assertSee('EN'); // active locale shown in dropdown trigger
 });
 
 it('includes theme toggle in layout', function () {
@@ -181,8 +180,8 @@ it('includes theme toggle in layout', function () {
     $response = $this->actingAs($user)->get('/floor');
     $response->assertOk();
     $response->assertSee('theme-toggle', false);
-    $response->assertSee('Claro');
-    $response->assertSee('Escuro');
+    $response->assertSee('Light');
+    $response->assertSee('Dark');
 });
 
 // ------------------------------------------------------------------

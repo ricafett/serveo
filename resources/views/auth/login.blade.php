@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,8 +11,10 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 
     <script>
+        // Apply theme immediately to prevent flash
         (function() {
             const theme = localStorage.getItem('theme') || 'system';
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -23,10 +25,35 @@
                 document.documentElement.classList.remove('dark');
             }
         })();
+
+        // Listen for theme changes from Livewire toggle so the DOM updates immediately
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('theme-changed', (event) => {
+                const theme = event.theme;
+                localStorage.setItem('theme', theme);
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            });
+        });
     </script>
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-    <div class="min-h-screen flex items-center justify-center p-4">
+    {{-- Top bar with language + theme (consistent with operational layout) --}}
+    <header class="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+            <div class="flex items-center justify-end h-14 gap-2">
+                <livewire:language-switcher />
+                <livewire:theme-toggle />
+            </div>
+        </div>
+    </header>
+
+    <div class="min-h-screen flex items-center justify-center p-4 pt-20">
         <div class="w-full max-w-sm">
             {{-- Logo --}}
             <div class="flex flex-col items-center mb-8">
@@ -83,16 +110,6 @@
         </div>
     </div>
 
-    <script>
-        // Re-apply theme on load
-        const theme = localStorage.getItem('theme') || 'system';
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = theme === 'dark' || (theme === 'system' && systemDark);
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
+    @livewireScripts
 </body>
 </html>

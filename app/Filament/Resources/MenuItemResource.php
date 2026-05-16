@@ -16,7 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class MenuItemResource extends Resource
+class MenuItemResource extends BaseResource
 {
     protected static ?string $model = MenuItem::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';

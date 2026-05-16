@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use UnitEnum;
 
-class AccountingExportResource extends Resource
+class AccountingExportResource extends BaseResource
 {
     protected static ?string $model = AccountingExport::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';

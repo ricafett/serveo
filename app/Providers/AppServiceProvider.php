@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
             $loader = new DatabaseTranslationLoader($app['files'], $app['path.lang']);
             $ref = new \ReflectionProperty($translator, 'loader');
             $ref->setValue($translator, $loader);
-            $translator->setFallback('pt-PT');
+            $translator->setFallback(config('app.fallback_locale', 'pt-PT'));
         });
     }
 
@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->bound('translator')) {
             $translator = $this->app->make('translator');
             $translator->setLocale($locale);
-            $translator->setFallback('pt-PT');
+            $translator->setFallback(config('app.fallback_locale', 'pt-PT'));
         }
     }
 

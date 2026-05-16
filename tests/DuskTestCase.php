@@ -62,6 +62,15 @@ abstract class DuskTestCase extends BaseTestCase
             DB::table($table)->truncate();
         }
         DB::statement('PRAGMA foreign_keys = ON');
+
+        // Clear translation cache so locale changes are picked up
+        \Illuminate\Support\Facades\Cache::flush();
+
+        // Force default locale to en-US for predictable test assertions
+        app()->setLocale('en-US');
+        if (app()->bound('translator')) {
+            app('translator')->setLocale('en-US');
+        }
     }
 
     /**

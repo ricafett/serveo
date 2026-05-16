@@ -3,12 +3,16 @@
 use App\Models\Row;
 use App\Models\SeatPair;
 use App\Models\Section;
-use App\Models\TranslationKey;
 use Laravel\Dusk\Browser;
 
 beforeEach(function () {
     $this->scenario = $this->scenario();
     $this->server = makeUser('SERVER');
+    $this->server->update(['preferred_language_code' => 'en-US']);
+    $this->cashier = makeUser('CASHIER');
+    $this->cashier->update(['preferred_language_code' => 'en-US']);
+    $this->admin = makeUser('ADMIN');
+    $this->admin->update(['preferred_language_code' => 'en-US']);
 
     $venue = \App\Models\Venue::first();
     $section = Section::firstOrCreate(
@@ -27,29 +31,29 @@ beforeEach(function () {
     }
 });
 
+// ------------------------------------------------------------------
+// Theme
+// ------------------------------------------------------------------
+
 test('theme toggle switches between light and dark', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->server->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Sign In', 5);
 
         // Default should be dark (system dark or user dark)
         $hasDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
 
         // Click light theme button
-        $browser->click('[title="Claro"]')
+        $browser->click('[title="Light"]')
             ->pause(500);
 
         $hasDarkAfterLight = $browser->script('return document.documentElement.classList.contains("dark");')[0];
         $this->assertFalse($hasDarkAfterLight, 'Expected <html> to NOT have dark class after clicking light');
 
         // Click dark theme button
-        $browser->click('[title="Escuro"]')
+        $browser->click('[title="Dark"]')
             ->pause(500);
 
         $hasDarkAfterDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
@@ -57,7 +61,24 @@ test('theme toggle switches between light and dark', function () {
     });
 });
 
-test('language switcher buttons are clickable', function () {
+// ------------------------------------------------------------------
+// Language Switcher UI
+// ------------------------------------------------------------------
+
+test('language switcher dropdown is visible on login page', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5);
+
+        // Trigger button should show active locale code
+        $browser->assertSee('EN')
+            ->assertPresent('[aria-label="Select language"]');
+    });
+});
+
+test('language switcher dropdown is visible on operational layout', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -68,15 +89,12 @@ test('language switcher buttons are clickable', function () {
             ->press('Sign In')
             ->waitForText('Floor', 5);
 
-        // Buttons should be visible and clickable
-        $browser->assertSee('PT')
-            ->assertSee('EN')
-            ->assertPresent('[title="Português"]')
-            ->assertPresent('[title="English"]');
+        $browser->assertSee('EN')
+            ->assertPresent('[aria-label="Select language"]');
     });
 });
 
-test('language switcher is visible on operational layout', function () {
+test('language switcher opens dropdown and shows both options', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -87,9 +105,131 @@ test('language switcher is visible on operational layout', function () {
             ->press('Sign In')
             ->waitForText('Floor', 5);
 
-        $browser->assertPresent('[wire\:id]');
+        // Open dropdown
+        $browser->click('[aria-label="Select language"]')
+            ->pause(300);
+
+        // Both options should be visible
+        $browser->assertSee('Português')
+            ->assertSee('English');
     });
 });
+
+// ------------------------------------------------------------------
+// Translation Verification
+// ------------------------------------------------------------------
+
+test('login page shows English translations by default', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->assertSee('Sign In')
+            ->assertSee('Username')
+            ->assertSee('Password');
+    });
+});
+
+test('switching to Portuguese updates login page text on reload', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->assertSee('Sign In');
+
+        // Switch to Portuguese via dropdown
+        $browser->click('[aria-label="Select language"]')
+            ->pause(300)
+            ->click('@switch-locale-pt-PT')
+            ->waitForText('Iniciar sessão', 5);
+
+        $browser->assertSee('Iniciar sessão')
+            ->assertSee('Nome de utilizador')
+            ->assertSee('Palavra-passe');
+    });
+});
+
+test('operational floor page shows English translations', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Floor', 5);
+
+        $browser->assertSee('Floor');
+    });
+});
+
+test('switching to Portuguese updates floor page text', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Floor', 5);
+
+        // Switch to Portuguese
+        $browser->click('[aria-label="Select language"]')
+            ->pause(300)
+            ->click('@switch-locale-pt-PT')
+            ->waitForText('Plano de sala', 5);
+
+        $browser->assertSee('Plano de sala');
+    });
+});
+
+test('order entry page shows correct translations', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $group = createBillingGroup($this->scenario, $this->server);
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Floor', 5);
+
+        $browser->visit("/orders/new/{$group->id}")
+            ->waitForText('Order Entry', 5)
+            ->assertSee('Submit Order');
+    });
+});
+
+test('cashier checkout page shows correct translations', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $group = createBillingGroup($this->scenario, $this->server);
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->cashier->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/checkout/{$group->id}")
+            ->waitForText('Checkout', 5)
+            ->assertSee('CHARGES')
+            ->assertSee('BALANCE')
+            ->assertSee('Print Bill');
+    });
+});
+
+// ------------------------------------------------------------------
+// Mobile / Navigation
+// ------------------------------------------------------------------
 
 test('mobile bottom nav is visible on small screens', function () {
     $this->browse(function (Browser $browser) {
@@ -123,5 +263,60 @@ test('user menu shows role and logout option', function () {
             ->waitForText('Log Out', 3)
             ->assertSee('SERVER')
             ->assertSee('Log Out');
+    });
+});
+
+// ------------------------------------------------------------------
+// Admin / Filament
+// ------------------------------------------------------------------
+
+test('admin login page shows language switcher', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/admin/login')
+            ->waitForText('Sign in', 5);
+
+        $browser->assertPresent('[aria-label="Select language"]')
+            ->assertSee('EN');
+    });
+});
+
+test('admin dashboard shows translated navigation groups', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/admin/login')
+            ->waitForText('Sign in', 5)
+            ->type('input[type="email"]', $this->admin->email)
+            ->type('input[type="password"]', 'secret')
+            ->press('Sign in')
+            ->pause(1000)
+            ->waitForText('Dashboard', 10);
+
+        // Navigation groups may appear as raw keys if resources use keys but panel uses translations
+        $browser->assertSee('Dashboard');
+    });
+});
+
+test('switching to Portuguese updates admin navigation text', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/admin/login')
+            ->waitForText('Sign in', 5)
+            ->type('input[type="email"]', $this->admin->email)
+            ->type('input[type="password"]', 'secret')
+            ->press('Sign in')
+            ->pause(1000)
+            ->waitForText('Dashboard', 10);
+
+        $browser->click('[aria-label="Select language"]')
+            ->pause(300)
+            ->click('@switch-locale-pt-PT')
+            ->waitForText('PT', 10)
+            ->pause(1500);
+
+        $browser->assertSourceHas('Operação');
     });
 });

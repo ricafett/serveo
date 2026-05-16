@@ -13,8 +13,7 @@ beforeEach(function () {
 it('sets session locale when user clicks locale button', function () {
     Livewire::actingAs($this->user)
         ->test(LanguageSwitcher::class)
-        ->call('setLocale', 'en-US')
-        ->assertRedirect();
+        ->call('setLocale', 'en-US');
 
     expect(session('locale'))->toBe('en-US');
 });
@@ -22,8 +21,7 @@ it('sets session locale when user clicks locale button', function () {
 it('updates user preferred_language_code', function () {
     Livewire::actingAs($this->user)
         ->test(LanguageSwitcher::class)
-        ->call('setLocale', 'en-US')
-        ->assertRedirect();
+        ->call('setLocale', 'en-US');
 
     expect($this->user->fresh()->preferred_language_code)->toBe('en-US');
 });

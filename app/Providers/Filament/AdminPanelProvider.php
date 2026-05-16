@@ -35,9 +35,9 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->navigationGroups([
-                'app.navigation_group_operation',
-                'app.navigation_group_config',
-                'app.navigation_group_audit',
+                __('app.navigation_group_operation'),
+                __('app.navigation_group_config'),
+                __('app.navigation_group_audit'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -92,6 +92,7 @@ BLADE
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\SetLocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -13,7 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
-class AuditEventResource extends Resource
+class AuditEventResource extends BaseResource
 {
     protected static ?string $model = AuditEvent::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';

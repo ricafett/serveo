@@ -15,7 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class BillingStatusResource extends Resource
+class BillingStatusResource extends BaseResource
 {
     protected static ?string $model = BillingStatus::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';

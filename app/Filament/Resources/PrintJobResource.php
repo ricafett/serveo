@@ -17,7 +17,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class PrintJobResource extends Resource
+class PrintJobResource extends BaseResource
 {
     protected static ?string $model = PrintJob::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';

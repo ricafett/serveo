@@ -38,7 +38,9 @@ class LanguageSwitcher extends Component
         // tagged cache invalidation on the 'translations' tag.
         \Illuminate\Support\Facades\Cache::flush();
 
-        $this->redirect(request()->fullUrl());
+        // Use a JavaScript reload to avoid request()->fullUrl() returning
+        // the Livewire update endpoint during component updates.
+        $this->js('window.location.reload()');
     }
 
     public function render()

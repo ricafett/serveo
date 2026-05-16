@@ -3,7 +3,9 @@
 namespace App\Domain\Localization;
 
 use App\Models\TranslationKey;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Translation\FileLoader;
 
 class DatabaseTranslationLoader extends FileLoader
@@ -23,39 +25,47 @@ class DatabaseTranslationLoader extends FileLoader
         $cacheKey = "translations:{$locale}:{$ns}:{$group}";
 
         return Cache::remember($cacheKey, 300, function () use ($locale, $group, $ns) {
-            $query = TranslationKey::where('language_code', $locale)
-                ->where('is_active', true);
+            if (! Schema::hasTable('translation_keys')) {
+                return [];
+            }
 
-            if ($group === '*') {
-                // Raw string / JSON-style translations (e.g. __('Hello'))
-                $query->where('translation_namespace', '*');
+            try {
+                $query = TranslationKey::where('language_code', $locale)
+                    ->where('is_active', true);
+
+                if ($group === '*') {
+                    // Raw string / JSON-style translations (e.g. __('Hello'))
+                    $query->where('translation_namespace', '*');
+                    $rows = $query->get();
+
+                    $translations = [];
+                    foreach ($rows as $row) {
+                        $translations[$row->translation_key] = $row->translation_value;
+                    }
+
+                    return $translations;
+                }
+
+                if ($ns === '*') {
+                    // Default namespace: in our data model the group name IS the namespace
+                    $query->where('translation_namespace', $group);
+                } else {
+                    // Explicit namespace: look for namespaced keys with group prefix
+                    $query->where('translation_namespace', $ns)
+                        ->where('translation_key', 'like', "{$group}.%");
+                }
+
                 $rows = $query->get();
 
                 $translations = [];
                 foreach ($rows as $row) {
-                    $translations[$row->translation_key] = $row->translation_value;
+                    data_set($translations, $row->translation_key, $row->translation_value);
                 }
 
                 return $translations;
+            } catch (QueryException) {
+                return [];
             }
-
-            if ($ns === '*') {
-                // Default namespace: in our data model the group name IS the namespace
-                $query->where('translation_namespace', $group);
-            } else {
-                // Explicit namespace: look for namespaced keys with group prefix
-                $query->where('translation_namespace', $ns)
-                    ->where('translation_key', 'like', "{$group}.%");
-            }
-
-            $rows = $query->get();
-
-            $translations = [];
-            foreach ($rows as $row) {
-                data_set($translations, $row->translation_key, $row->translation_value);
-            }
-
-            return $translations;
         });
     }
 

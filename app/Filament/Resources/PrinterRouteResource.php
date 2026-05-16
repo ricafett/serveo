@@ -17,7 +17,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class PrinterRouteResource extends Resource
+class PrinterRouteResource extends BaseResource
 {
     protected static ?string $model = PrinterRoute::class;
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';

@@ -153,3 +153,18 @@ function makeUser(string $role, ?string $username = null): User
     $user->assignRole($role);
     return $user;
 }
+
+function createBillingGroup(ServiceSession $session, User $server, array $overrides = []): \App\Models\BillingGroup
+{
+    $status = \App\Models\BillingStatus::where('code', 'ACTIVE')->first();
+
+    $group = \App\Models\BillingGroup::create(array_merge([
+        'service_session_id' => $session->id,
+        'opened_by_user_id' => $server->id,
+        'display_code' => 'BG-' . bin2hex(random_bytes(2)),
+        'billing_status_id' => $status?->id,
+        'opened_at' => now(),
+    ], $overrides));
+
+    return $group;
+}
