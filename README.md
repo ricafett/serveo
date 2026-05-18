@@ -181,10 +181,22 @@ For full deployment, hardening and operational steps, see `deployment.md`.
 
 ## Tests
 
+Use the PowerShell script for a consistent test environment (automatic `.env` swapping and Dusk server management):
+
+```powershell
+.\run-tests.ps1              # Pest + Dusk
+.\run-tests.ps1 -PestOnly    # Pest only
+.\run-tests.ps1 -DuskOnly    # Dusk only
+```
+
+Or run Pest directly:
+
 ```bash
-./vendor/bin/pest            # all tests
+./vendor/bin/pest            # all feature/unit tests
 ./vendor/bin/pest tests/Feature
 ```
+
+See `docs/testing.md` for the full testing guide.
 
 ## Notes
 

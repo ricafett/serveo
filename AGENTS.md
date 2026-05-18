@@ -364,6 +364,15 @@ Agents must treat printing as a core subsystem.
 
 Agents must create tests for critical workflows, not just happy-path demos.
 
+**Read `docs/testing.md` before writing or modifying tests.** It covers the test stack (Pest + Dusk), the `run-tests.ps1` script, selector conventions, and Dusk helper methods. Do not skip it.
+
+### Environment involvement
+
+- `.env.dusk.local` is the **tracked** test environment (SQLite, sync queues). It is the only env file meant for the test runner.
+- `.env` is **not tracked** and must remain the local dev config (PostgreSQL/Redis). Do not overwrite `.env` with test settings.
+- Always run the full suite via `run-tests.ps1`, which swaps `.env` with `.env.dusk.local` and restores it afterward.
+- Pest tests use `:memory:` SQLite and are isolated. Dusk tests share `database/dusk.sqlite` and truncate operational tables between tests.
+
 ### Required coverage areas
 
 - Occupied-zone overlap rejection

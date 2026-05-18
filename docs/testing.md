@@ -52,6 +52,19 @@ Running `./vendor/bin/pest tests/Browser/` directly will fail because `phpunit.x
 2. **ChromeDriver** is auto-managed by `laravel/dusk` (`vendor/laravel/dusk/bin/chromedriver-win.exe` on Windows).
 3. A local PHP server must be running on `127.0.0.1:8000` with `.env.dusk.local` active (the script handles this automatically).
 
+### Environment File Separation (Critical)
+
+The repository maintains two environment configurations. **They must not be mixed up.**
+
+| File | Purpose | Tracked in git |
+|---|---|---|
+| `.env` | **Local development** — PostgreSQL, Redis, `APP_ENV=local` | **No** (`.gitignore`d) |
+| `.env.dusk.local` | **Test runner** — SQLite, `APP_ENV=testing`, sync queues | **Yes** |
+
+**Why this matters**: `.env` is read by the application server on every request. If `.env` accidentally contains the Dusk test config (e.g. `DB_CONNECTION=sqlite` pointing to `database/dusk.sqlite`), your local dev app and Dusk tests will share the **same SQLite file**. Dusk truncates operational tables including `users` between every test, so after running Dusk your dev login will break with *"credentials do not match our records"*.
+
+**Rule**: `.env` must always stay as your local dev config. `run-tests.ps1` temporarily swaps it with `.env.dusk.local` and restores it afterward.
+
 ### Dusk Environment Files
 
 - `.env.dusk.local` — used by Dusk tests. Points to `database/dusk.sqlite`, uses `database` session driver, `sync` queue.
