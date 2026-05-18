@@ -104,6 +104,7 @@ return array (
   'status_canceled' => 'Canceled',
   'status_planned' => 'Planned',
   'status_open' => 'Open',
+  'status_closed' => 'Closed',
   'session_type_dinner' => 'Dinner',
   'session_type_event' => 'Event',
   'theme_light' => 'Light',

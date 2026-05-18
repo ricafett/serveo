@@ -347,6 +347,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'status_canceled', 'Cancelado'],
             ['pt-PT', 'app', 'status_planned', 'Planeada'],
             ['pt-PT', 'app', 'status_open', 'Aberta'],
+            ['pt-PT', 'app', 'status_closed', 'Fechada'],
             ['pt-PT', 'app', 'session_type_dinner', 'Jantar'],
             ['pt-PT', 'app', 'session_type_event', 'Evento'],
             ['pt-PT', 'app', 'theme_light', 'Claro'],
@@ -460,6 +461,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'status_canceled', 'Canceled'],
             ['en-US', 'app', 'status_planned', 'Planned'],
             ['en-US', 'app', 'status_open', 'Open'],
+            ['en-US', 'app', 'status_closed', 'Closed'],
             ['en-US', 'app', 'session_type_dinner', 'Dinner'],
             ['en-US', 'app', 'session_type_event', 'Event'],
             ['en-US', 'app', 'theme_light', 'Light'],
@@ -479,6 +481,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'auth', 'user_menu', 'Menu do utilizador'],
             ['pt-PT', 'auth', 'admin_panel', 'Painel de administração'],
             ['pt-PT', 'auth', 'log_out', 'Terminar sessão'],
+            ['pt-PT', 'auth', 'unauthorized', 'Não autorizado'],
+            ['pt-PT', 'auth', 'no_valid_role', 'Nenhuma função válida atribuída'],
 
             ['en-US', 'auth', 'sign_in', 'Sign In'],
             ['en-US', 'auth', 'password', 'Password'],
@@ -488,6 +492,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'auth', 'user_menu', 'User menu'],
             ['en-US', 'auth', 'admin_panel', 'Admin Panel'],
             ['en-US', 'auth', 'log_out', 'Log Out'],
+            ['en-US', 'auth', 'unauthorized', 'Unauthorized'],
+            ['en-US', 'auth', 'no_valid_role', 'No valid role assigned'],
 
             // ---------- floor ----------
             ['pt-PT', 'floor', 'title', 'Plano de sala'],
@@ -736,6 +742,31 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashier', 'open_group_for_reprint', 'Open a billing group from lookup to access reprint options.'],
             ['en-US', 'cashier', 'reprint_documents', 'Reprint & Documents'],
             ['en-US', 'cashier', 'unauthorized', 'Unauthorized'],
+
+            // ---------- dashboard ----------
+            ['pt-PT', 'dashboard', 'title', 'Painel principal'],
+            ['pt-PT', 'dashboard', 'floor_tile', 'Plano de sala'],
+            ['pt-PT', 'dashboard', 'floor_description', 'Ver ocupação e gerir lugares'],
+            ['pt-PT', 'dashboard', 'lookup_tile', 'Grupos de faturação'],
+            ['pt-PT', 'dashboard', 'lookup_description', 'Pesquisar e gerir grupos'],
+            ['pt-PT', 'dashboard', 'reprint_tile', 'Reimpressão'],
+            ['pt-PT', 'dashboard', 'reprint_description', 'Reimprimir contas e documentos'],
+            ['pt-PT', 'dashboard', 'admin_panel_tile', 'Painel de administração'],
+            ['pt-PT', 'dashboard', 'admin_panel_description', 'Configuração e definições do sistema'],
+            ['pt-PT', 'dashboard', 'active_session', 'Sessão ativa'],
+            ['pt-PT', 'dashboard', 'no_session', 'Não existe sessão de serviço aberta'],
+
+            ['en-US', 'dashboard', 'title', 'Dashboard'],
+            ['en-US', 'dashboard', 'floor_tile', 'Floor'],
+            ['en-US', 'dashboard', 'floor_description', 'View occupancy and manage seating'],
+            ['en-US', 'dashboard', 'lookup_tile', 'Billing Groups'],
+            ['en-US', 'dashboard', 'lookup_description', 'Search and manage billing groups'],
+            ['en-US', 'dashboard', 'reprint_tile', 'Reprint'],
+            ['en-US', 'dashboard', 'reprint_description', 'Reprint bills and documents'],
+            ['en-US', 'dashboard', 'admin_panel_tile', 'Admin Panel'],
+            ['en-US', 'dashboard', 'admin_panel_description', 'Configuration and system settings'],
+            ['en-US', 'dashboard', 'active_session', 'Active session'],
+            ['en-US', 'dashboard', 'no_session', 'No open service session'],
 
             // ---------- ticket ----------
             ['pt-PT', 'ticket', 'void', 'ANULAÇÃO'],

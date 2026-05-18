@@ -55,6 +55,7 @@ param(
     [string]$DuskFilter = "",
     [switch]$PestOnly,
     [switch]$DuskOnly,
+    [switch]$NoTranslationCheck,
     [switch]$Help
 )
 
@@ -71,17 +72,19 @@ Usage: .\run-tests.ps1 [OPTIONS]
 Run the Serveo test suite with automatic env management.
 
 Options:
-  -PestFilter <string>   Filter Pest tests (e.g. "MultilingualTest")
-  -DuskFilter <string>   Filter Dusk tests (e.g. "ThemeAndLanguageTest")
-  -PestOnly              Run only Pest tests
-  -DuskOnly              Run only Dusk tests
-  -Help                  Show this help message
+  -PestFilter <string>     Filter Pest tests (e.g. "MultilingualTest")
+  -DuskFilter <string>     Filter Dusk tests (e.g. "ThemeAndLanguageTest")
+  -PestOnly                Run only Pest tests
+  -DuskOnly                Run only Dusk tests
+  -NoTranslationCheck      Skip the translation completeness check
+  -Help                    Show this help message
 
 Examples:
   .\run-tests.ps1                                      # Run everything
   .\run-tests.ps1 -PestFilter "LanguageSwitcherTest"   # Filtered Pest only
   .\run-tests.ps1 -DuskFilter "ThemeAndLanguageTest"   # Filtered Dusk only
   .\run-tests.ps1 -PestOnly                            # Skip Dusk
+  .\run-tests.ps1 -NoTranslationCheck                  # Skip translation check
   .\run-tests.ps1 -PestFilter "Foo" -DuskFilter "Bar"  # Both filtered
 "@ -ForegroundColor Cyan
 }
@@ -89,6 +92,18 @@ Examples:
 function Test-CommandExists {
     param([string]$Command)
     return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+function Invoke-TranslationCheck {
+    Write-Host "`n========================================" -ForegroundColor Blue
+    Write-Host "Running translation check..." -ForegroundColor Blue
+    Write-Host "========================================" -ForegroundColor Blue
+
+    $output = & php "scripts/check-translations.php" 2>&1
+    $output | ForEach-Object { Write-Host $_ }
+    [int]$exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) { $exitCode = 0 }
+    return $exitCode
 }
 
 function Invoke-PestTests {
@@ -259,12 +274,18 @@ if (Test-Path $envMain) {
 Copy-Item -Path $envDusk -Destination $envMain -Force
 Write-Host "Swapped .env -> .env.dusk.local for test run" -ForegroundColor DarkGray
 
+$translationExit = 0
 $pestExit = 0
 $duskExit = 0
 $runPest  = -not $DuskOnly
 $runDusk  = -not $PestOnly
+$runTranslation = -not $NoTranslationCheck
 
 try {
+    if ($runTranslation) {
+        $translationExit = Invoke-TranslationCheck
+    }
+
     if ($runPest) {
         $pestExit = Invoke-PestTests -Filter $PestFilter
     }
@@ -290,22 +311,29 @@ Write-Host "`n========================================" -ForegroundColor Blue
 Write-Host "Test Run Summary" -ForegroundColor Blue
 Write-Host "========================================" -ForegroundColor Blue
 
+if ($runTranslation) {
+    $translationStatus = if ($translationExit -eq 0) { "PASS" } else { "FAIL" }
+    $translationColor  = if ($translationExit -eq 0) { "Green" } else { "Red" }
+    Write-Host "Translations : $translationStatus (exit code $translationExit)" -ForegroundColor $translationColor
+}
+
 if ($runPest) {
     $pestStatus = if ($pestExit -eq 0) { "PASS" } else { "FAIL" }
     $pestColor  = if ($pestExit -eq 0) { "Green" } else { "Red" }
-    Write-Host "Pest tests : $pestStatus (exit code $pestExit)" -ForegroundColor $pestColor
+    Write-Host "Pest tests   : $pestStatus (exit code $pestExit)" -ForegroundColor $pestColor
 }
 
 if ($runDusk) {
     $duskStatus = if ($duskExit -eq 0) { "PASS" } else { "FAIL" }
     $duskColor  = if ($duskExit -eq 0) { "Green" } else { "Red" }
-    Write-Host "Dusk tests : $duskStatus (exit code $duskExit)" -ForegroundColor $duskColor
+    Write-Host "Dusk tests   : $duskStatus (exit code $duskExit)" -ForegroundColor $duskColor
 }
 
 [int]$overallExit = 0
+if ($runTranslation -and $translationExit -ne 0) { $overallExit = 1 }
 if ($runPest -and $pestExit -ne 0) { $overallExit = 1 }
 if ($runDusk -and $duskExit -ne 0) { $overallExit = 1 }
 
-Write-Host "`nOverall    : $(if ($overallExit -eq 0) { 'PASS' } else { 'FAIL' })" -ForegroundColor $(if ($overallExit -eq 0) { "Green" } else { "Red" })
+Write-Host "`nOverall      : $(if ($overallExit -eq 0) { 'PASS' } else { 'FAIL' })" -ForegroundColor $(if ($overallExit -eq 0) { "Green" } else { "Red" })
 
 exit $overallExit

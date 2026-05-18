@@ -31,6 +31,6 @@ class HomeController extends Controller
         }
 
         // Fallback for users with no recognized role
-        abort(403, __('No valid role assigned'));
+        abort(403, __('auth.no_valid_role'));
     }
 }

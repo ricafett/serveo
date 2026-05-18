@@ -9,4 +9,6 @@ return array (
   'user_menu' => 'User menu',
   'admin_panel' => 'Admin Panel',
   'log_out' => 'Log Out',
+  'unauthorized' => 'Unauthorized',
+  'no_valid_role' => 'No valid role assigned',
 );

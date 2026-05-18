@@ -20,7 +20,7 @@ class RequireRole
         }
 
         if (! $request->user()->hasAnyRole($roles)) {
-            abort(403, __('Unauthorized'));
+            abort(403, __('auth.unauthorized'));
         }
 
         return $next($request);

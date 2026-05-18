@@ -11,14 +11,13 @@ use App\Models\BillingStatus;
 use App\Models\OccupiedZone;
 use App\Models\Section;
 use App\Models\ServiceSession;
-use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 
 /**
  * @deprecated Operational floor UI has moved to Livewire at /floor. This Filament page is kept for backward compatibility during transition.
  */
-class Floor extends Page
+class Floor extends BasePage
 {
     protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-squares-2x2';
     protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';

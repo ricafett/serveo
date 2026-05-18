@@ -199,11 +199,11 @@
 
                 <form wire:submit.prevent="addZone" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Row') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('floor.row') }}</label>
                         <select wire:model="zoneRowId" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                             <option value="">{{ __('billing.select_row') }}</option>
                             @foreach(\App\Models\Row::with('section')->where('is_active', true)->get() as $r)
-                                <option value="{{ $r->id }}">{{ $r->section?->name }} · {{ __('Row') }} {{ $r->row_code }}</option>
+                                <option value="{{ $r->id }}">{{ $r->section?->name }} · {{ __('floor.row') }} {{ $r->row_code }}</option>
                             @endforeach
                         </select>
                         @error('zoneRowId') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -221,7 +221,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('Delivery Label') }}</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.delivery_label') }}</label>
                         <input type="text" wire:model="deliveryLabel" placeholder="{{ __('app.delivery_label_example') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
                     </div>
                     <div class="pt-2">

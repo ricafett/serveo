@@ -15,13 +15,30 @@ This document describes the testing setup and conventions for the Serveo applica
 Use the provided PowerShell script to run the full suite with automatic `.env` management:
 
 ```powershell
-.\run-tests.ps1                     # Run both Pest and Dusk
+.\run-tests.ps1                     # Run translation check, Pest, and Dusk
 .\run-tests.ps1 -PestOnly           # Run only Pest tests
 .\run-tests.ps1 -DuskOnly           # Run only Dusk tests
+.\run-tests.ps1 -NoTranslationCheck # Skip translation check
 .\run-tests.ps1 -PestFilter "MultilingualTest" -DuskFilter "ThemeAndLanguageTest"
 ```
 
 The script automatically swaps `.env` with `.env.dusk.local` before tests and restores it after, even on failure or interruption. It also starts the `php -S` server required by Dusk.
+
+### Translation Completeness Check
+
+A standalone script verifies that every translation key referenced in the codebase exists in `lang/*/*.php` **and** in `CoreSeeder.php` for every locale:
+
+```bash
+php scripts/check-translations.php              # Check all locales + CoreSeeder (default)
+php scripts/check-translations.php --no-strict  # Skip CoreSeeder parity check
+php scripts/check-translations.php --locale=en  # Check a single locale only
+```
+
+This is run automatically by `run-tests.ps1` before Pest and Dusk. It catches:
+
+- Missing namespaced keys (e.g. `app.status_closed` used in code but absent from `lang/en/app.php`)
+- Bare English strings passed to `__()` without a namespace (e.g. `__('Unauthorized')`)
+- CoreSeeder mismatches (default)
 
 ### Feature Tests (Pest)
 
