@@ -111,12 +111,51 @@ function Invoke-PestTests {
     return $pestExitCode
 }
 
+function Stop-StaleTestProcesses {
+    # Kill any php -S processes on port 8000 (orphaned dev servers)
+    Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | ForEach-Object {
+        try {
+            $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+            if ($proc -and $proc.Name -eq "php") {
+                Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+                Write-Host "Killed orphaned php -S process (PID: $($_.OwningProcess))" -ForegroundColor DarkGray
+            }
+        } catch {}
+    }
+
+    # Kill any ChromeDriver processes on port 9515
+    Get-NetTCPConnection -LocalPort 9515 -ErrorAction SilentlyContinue | ForEach-Object {
+        try {
+            $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+            if ($proc -and ($proc.Name -like "*chrome*" -or $proc.Name -like "*chromedriver*")) {
+                Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+                Write-Host "Killed orphaned ChromeDriver process (PID: $($_.OwningProcess))" -ForegroundColor DarkGray
+            }
+        } catch {}
+    }
+
+    # Fallback: kill any php process whose command line contains "127.0.0.1:8000"
+    Get-Process -Name "php" -ErrorAction SilentlyContinue | ForEach-Object {
+        try {
+            # WMI query to get command line
+            $cmdLine = (Get-WmiObject Win32_Process -Filter "ProcessId=$($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+            if ($cmdLine -and $cmdLine -like "*127.0.0.1:8000*") {
+                Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+                Write-Host "Killed stale php -S process (PID: $($_.Id)) via command line scan" -ForegroundColor DarkGray
+            }
+        } catch {}
+    }
+}
+
 function Invoke-DuskTests {
     param([string]$Filter)
 
     Write-Host "`n========================================" -ForegroundColor Blue
     Write-Host "Running Dusk tests..." -ForegroundColor Blue
     Write-Host "========================================" -ForegroundColor Blue
+
+    # Always clean up stale processes before starting
+    Stop-StaleTestProcesses
 
     $serverProcess = $null
     [int]$duskExitCode = 1
@@ -164,16 +203,14 @@ function Invoke-DuskTests {
         if ($null -eq $duskExitCode) { $duskExitCode = 0 }
     }
     finally {
-        # Kill the server process
+        # Kill the server process we started
         if ($serverProcess -and -not $serverProcess.HasExited) {
             Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue
             Write-Host "Stopped php -S server (PID: $($serverProcess.Id))" -ForegroundColor DarkGray
         }
 
-        # Also kill any orphaned php -S processes on port 8000
-        Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | ForEach-Object {
-            try { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } catch {}
-        }
+        # Aggressive cleanup: kill ALL php -S and ChromeDriver processes
+        Stop-StaleTestProcesses
     }
 
     return $duskExitCode
