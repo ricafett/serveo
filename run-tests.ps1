@@ -1,20 +1,21 @@
 <#
 .SYNOPSIS
-    Run Pest and/or Dusk tests with automatic .env swapping for Dusk.
+    Run Pest and/or Dusk tests with automatic .env swapping.
 
 .DESCRIPTION
-    This script runs the Serveo test suite. When running Dusk browser tests,
-    it automatically swaps .env with .env.dusk.local because Dusk requires
-    the test environment (SQLite, database sessions) to be loaded by the
-    php -S dev server.
+    This script runs the Serveo test suite. It automatically swaps .env with
+    .env.dusk.local before running tests because the local dev .env uses
+    PostgreSQL/Redis which may not be available in the test context.
+
+    .env.dusk.local configures SQLite, sync queues, array cache, and
+    database-backed sessions — everything needed for both Pest and Dusk.
 
     The original .env is always restored, even if the tests fail or the
     script is interrupted.
 
-    IMPORTANT: The env swap is necessary because Laravel's php artisan dusk
-    command starts a php -S server that reads .env from disk. The local dev
-    .env uses PostgreSQL/Redis which are not available in the Dusk test
-    context. .env.dusk.local configures SQLite and database-backed sessions.
+    IMPORTANT: Dusk tests require a manually started php -S server because
+    php artisan dusk does NOT start a web server automatically on Windows.
+    This script starts the server before Dusk and kills it after.
 
 .PARAMETER PestFilter
     Optional filter string for Pest tests (e.g. "MultilingualTest").
@@ -103,8 +104,6 @@ function Invoke-PestTests {
         Write-Host "Filter: $Filter" -ForegroundColor DarkGray
     }
 
-    # Pest tests run via phpunit.xml which already sets testing env vars
-    # No .env swap needed.
     $pestOutput = & php @args 2>&1
     $pestOutput | ForEach-Object { Write-Host $_ }
     [int]$pestExitCode = $LASTEXITCODE
@@ -119,28 +118,40 @@ function Invoke-DuskTests {
     Write-Host "Running Dusk tests..." -ForegroundColor Blue
     Write-Host "========================================" -ForegroundColor Blue
 
-    # Dusk starts php -S which reads .env from disk.
-    # We MUST use .env.dusk.local (SQLite + database sessions).
-    $envBackup = ".env.backup.tests"
-    $envDusk   = ".env.dusk.local"
-    $envMain   = ".env"
-
-    if (-not (Test-Path $envDusk)) {
-        Write-Error ".env.dusk.local not found. Dusk tests cannot run."
-        return 1
-    }
-
-    # Backup current .env
-    if (Test-Path $envMain) {
-        Copy-Item -Path $envMain -Destination $envBackup -Force
-        Write-Host "Backed up .env -> $envBackup" -ForegroundColor DarkGray
-    }
-
-    # Swap to Dusk env
-    Copy-Item -Path $envDusk -Destination $envMain -Force
-    Write-Host "Swapped .env -> .env.dusk.local for Dusk server" -ForegroundColor DarkGray
+    $serverProcess = $null
+    [int]$duskExitCode = 1
 
     try {
+        # Start php -S server in the background
+        $serverProcess = Start-Process -FilePath "php" `
+            -ArgumentList "-S","127.0.0.1:8000","-t","public" `
+            -WorkingDirectory "." `
+            -WindowStyle Hidden `
+            -PassThru
+        Write-Host "Started php -S server on 127.0.0.1:8000 (PID: $($serverProcess.Id))" -ForegroundColor DarkGray
+
+        # Wait for server to accept connections (max 10s)
+        $ready = $false
+        for ($i = 0; $i -lt 20; $i++) {
+            Start-Sleep -Milliseconds 500
+            try {
+                $tcp = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($tcp -and $tcp.State -eq "Listen") {
+                    $ready = $true
+                    break
+                }
+            } catch {
+                # Port not listening yet
+            }
+        }
+
+        if (-not $ready) {
+            Write-Error "PHP dev server on 127.0.0.1:8000 did not start within 10 seconds."
+            return 1
+        }
+        Write-Host "Server ready on 127.0.0.1:8000" -ForegroundColor DarkGray
+
+        # Run Dusk tests
         $args = @("artisan", "dusk")
         if ($Filter) {
             $args += "--filter=$Filter"
@@ -153,11 +164,15 @@ function Invoke-DuskTests {
         if ($null -eq $duskExitCode) { $duskExitCode = 0 }
     }
     finally {
-        # ALWAYS restore original .env, even on failure/interrupt
-        if (Test-Path $envBackup) {
-            Copy-Item -Path $envBackup -Destination $envMain -Force
-            Write-Host "Restored .env from backup" -ForegroundColor DarkGray
-            Remove-Item -Path $envBackup -Force -ErrorAction SilentlyContinue
+        # Kill the server process
+        if ($serverProcess -and -not $serverProcess.HasExited) {
+            Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue
+            Write-Host "Stopped php -S server (PID: $($serverProcess.Id))" -ForegroundColor DarkGray
+        }
+
+        # Also kill any orphaned php -S processes on port 8000
+        Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | ForEach-Object {
+            try { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } catch {}
         }
     }
 
@@ -184,17 +199,50 @@ if (-not (Test-Path "vendor\autoload.php") -or -not (Test-Path ".env")) {
     exit 1
 }
 
-$pestExit   = 0
-$duskExit   = 0
-$runPest    = -not $DuskOnly
-$runDusk    = -not $PestOnly
+# ---------------------------------------------------------------------------
+# Env management: swap to test env before any tests, restore after
+# ---------------------------------------------------------------------------
 
-if ($runPest) {
-    $pestExit = Invoke-PestTests -Filter $PestFilter
+$envBackup = ".env.backup.tests"
+$envDusk   = ".env.dusk.local"
+$envMain   = ".env"
+
+if (-not (Test-Path $envDusk)) {
+    Write-Error ".env.dusk.local not found. Tests cannot run."
+    exit 1
 }
 
-if ($runDusk) {
-    $duskExit = Invoke-DuskTests -Filter $DuskFilter
+# Backup current .env
+if (Test-Path $envMain) {
+    Copy-Item -Path $envMain -Destination $envBackup -Force
+    Write-Host "Backed up .env -> $envBackup" -ForegroundColor DarkGray
+}
+
+# Swap to test env (needed for both Pest and Dusk)
+Copy-Item -Path $envDusk -Destination $envMain -Force
+Write-Host "Swapped .env -> .env.dusk.local for test run" -ForegroundColor DarkGray
+
+$pestExit = 0
+$duskExit = 0
+$runPest  = -not $DuskOnly
+$runDusk  = -not $PestOnly
+
+try {
+    if ($runPest) {
+        $pestExit = Invoke-PestTests -Filter $PestFilter
+    }
+
+    if ($runDusk) {
+        $duskExit = Invoke-DuskTests -Filter $DuskFilter
+    }
+}
+finally {
+    # ALWAYS restore original .env, even on failure/interrupt
+    if (Test-Path $envBackup) {
+        Copy-Item -Path $envBackup -Destination $envMain -Force
+        Write-Host "Restored .env from backup" -ForegroundColor DarkGray
+        Remove-Item -Path $envBackup -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # ---------------------------------------------------------------------------

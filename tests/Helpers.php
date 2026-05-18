@@ -148,7 +148,7 @@ function makeUser(string $role, ?string $username = null): User
         'email'     => $username.'@example.test',
         'password'  => Hash::make('secret'),
         'is_active' => true,
-        'preferred_language_code' => 'pt-PT',
+        'preferred_language_code' => 'en-US',
     ]);
     $user->assignRole($role);
     return $user;

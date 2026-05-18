@@ -73,7 +73,8 @@ test('server can create billing group and see it as occupied', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Floor', 5)
+            ->pause(300);
 
         // Click free range to open modal
         $browser->with('main', function (Browser $main) {

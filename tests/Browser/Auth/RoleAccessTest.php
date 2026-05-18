@@ -94,7 +94,7 @@ test('navigation shows correct items per role', function () {
             ->type('password', 'secret')
             ->press('Sign In')
             ->waitForText('Billing Groups', 5)
-            ->assertSee('Lookup')
+            ->assertSee('Checkout')
             ->assertDontSee('Floor');
 
         // Admin sees both Floor and Lookup nav

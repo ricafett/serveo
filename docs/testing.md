@@ -10,6 +10,19 @@ This document describes the testing setup and conventions for the Serveo applica
 
 ## Running Tests
 
+### Automated Test Runner (Recommended)
+
+Use the provided PowerShell script to run the full suite with automatic `.env` management:
+
+```powershell
+.\run-tests.ps1                     # Run both Pest and Dusk
+.\run-tests.ps1 -PestOnly           # Run only Pest tests
+.\run-tests.ps1 -DuskOnly           # Run only Dusk tests
+.\run-tests.ps1 -PestFilter "MultilingualTest" -DuskFilter "ThemeAndLanguageTest"
+```
+
+The script automatically swaps `.env` with `.env.dusk.local` before tests and restores it after, even on failure or interruption. It also starts the `php -S` server required by Dusk.
+
 ### Feature Tests (Pest)
 
 ```bash
@@ -18,13 +31,17 @@ This document describes the testing setup and conventions for the Serveo applica
 ./vendor/bin/pest tests/Unit         # Unit tests only
 ```
 
+**Note**: Running Pest directly may fail if your local `.env` uses Redis/PostgreSQL and those services are not available. Use `run-tests.ps1` for a consistent testing environment.
+
 ### Dusk Browser Tests
 
-**Always run Dusk tests via the Artisan command** so `.env.dusk.local` is loaded correctly:
+**Always run Dusk tests via `run-tests.ps1` or manually with `.env.dusk.local` active:**
 
 ```bash
-php artisan dusk                     # Full suite
-php artisan dusk --filter=LoginTest  # Specific test class
+# Manual approach (not recommended — use run-tests.ps1 instead)
+cp .env.dusk.local .env
+php -S 127.0.0.1:8000 -t public &    # Start dev server
+php artisan dusk                     # Run Dusk tests
 ```
 
 Running `./vendor/bin/pest tests/Browser/` directly will fail because `phpunit.xml` overrides `DB_DATABASE` to `:memory:`, which breaks table truncation between tests.
@@ -33,17 +50,14 @@ Running `./vendor/bin/pest tests/Browser/` directly will fail because `phpunit.x
 
 1. **Google Chrome** or **Microsoft Edge** must be installed.
 2. **ChromeDriver** is auto-managed by `laravel/dusk` (`vendor/laravel/dusk/bin/chromedriver-win.exe` on Windows).
-3. A local PHP server must be running with `.env.testing`:
-   ```bash
-   php -S 127.0.0.1:8000 -t public
-   ```
-   The `.env.testing` file ensures the test runner and the server share the same SQLite file (`database/dusk.sqlite`).
+3. A local PHP server must be running on `127.0.0.1:8000` with `.env.dusk.local` active (the script handles this automatically).
 
 ### Dusk Environment Files
 
-- `.env.dusk.local` — used by `php artisan dusk`. Points to `database/dusk.sqlite`, uses `array` session driver, `sync` queue.
-- `.env.testing` — a copy of `.env.dusk.local` so the manual PHP server uses the same database.
+- `.env.dusk.local` — used by Dusk tests. Points to `database/dusk.sqlite`, uses `database` session driver, `sync` queue.
 - `database/dusk.sqlite` — shared SQLite database for the test runner and the web server.
+
+**Important**: `php artisan dusk` does **not** start a web server automatically on Windows. The `run-tests.ps1` script starts `php -S 127.0.0.1:8000 -t public` before running Dusk and kills it afterwards.
 
 ## Test Organization
 
