@@ -25,8 +25,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // Operational UI — requires authentication
 Route::middleware('auth')->group(function () {
-    // Role-based landing
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    // Role-based dashboard homepage
+    Route::get('/home', \App\Livewire\Home\Dashboard::class)->name('home');
 
     // Server routes
     Route::middleware('role:SERVER,ADMIN')->group(function () {
