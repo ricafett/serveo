@@ -82,7 +82,27 @@
         {{-- Open Groups Quick List --}}
         @if($this->openGroups->count() > 0)
             <div class="mt-8">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('floor.open_groups') }}</h2>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('floor.open_groups') }}</h2>
+                    {{-- Filter Toggle --}}
+                    <div class="flex gap-1.5">
+                        <button wire:click="$set('filter', 'all')"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                                {{ $filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                            {{ __('floor.filter_all') }}
+                        </button>
+                        <button wire:click="$set('filter', 'active')"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                                {{ $filter === 'active' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                            {{ __('floor.filter_active') }}
+                        </button>
+                        <button wire:click="$set('filter', 'favorites')"
+                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
+                                {{ $filter === 'favorites' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                            {{ __('floor.filter_favorites') }}
+                        </button>
+                    </div>
+                </div>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
                         <a
@@ -92,13 +112,34 @@
                         >
                             <div class="flex items-center justify-between">
                                 <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
-                                    {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                                    {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
-                                    {{ $group->status?->code === 'CHECK_REQUESTED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
-                                ">
-                                    {{ $group->status?->display_name ?? $group->status?->code }}
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    {{-- Favorite toggle --}}
+                                    @php
+                                        $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
+                                        $isFavorited = (bool) $favPivot;
+                                        $isAutoFavorite = $isFavorited && $favPivot->pivot->is_manual === false;
+                                    @endphp
+                                    <button
+                                        type="button"
+                                        wire:click.prevent="toggleFavorite({{ $group->id }})"
+                                        wire:navigate.stop
+                                        class="text-lg hover:scale-110 transition-transform"
+                                        title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
+                                    >
+                                        @if($isFavorited)
+                                            <span class="text-yellow-500">★</span>
+                                        @else
+                                            <span class="text-gray-300 dark:text-gray-600">☆</span>
+                                        @endif
+                                    </button>
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                                        {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                        {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
+                                        {{ $group->status?->code === 'CHECK_REQUESTED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
+                                    ">
+                                        {{ $group->status?->display_name ?? $group->status?->code }}
+                                    </span>
+                                </div>
                             </div>
                             <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 @foreach($group->occupiedZones as $zone)

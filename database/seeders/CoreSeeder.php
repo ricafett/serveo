@@ -518,6 +518,13 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'floor', 'no_sections', 'Nenhuma sala configurada.'],
             ['pt-PT', 'floor', 'selected_range', 'Intervalo selecionado'],
             ['pt-PT', 'floor', 'unauthorized', 'Não autorizado'],
+            ['pt-PT', 'floor', 'filter_all', 'Todos'],
+            ['pt-PT', 'floor', 'filter_active', 'Ativos'],
+            ['pt-PT', 'floor', 'filter_favorites', 'Favoritos'],
+            ['pt-PT', 'floor', 'favorite', 'Adicionar aos favoritos'],
+            ['pt-PT', 'floor', 'unfavorite', 'Remover dos favoritos'],
+            ['pt-PT', 'floor', 'auto_favorite', 'Auto-favoritado (servidor atribuído)'],
+            ['pt-PT', 'floor', 'cannot_unfavorite_assigned', 'Não pode remover dos favoritos um grupo em que está atribuído.'],
 
             ['en-US', 'floor', 'title', 'Floor'],
             ['en-US', 'floor', 'open_group', 'Open Billing Group'],
@@ -533,6 +540,13 @@ class CoreSeeder extends Seeder
             ['en-US', 'floor', 'no_sections', 'No sections configured.'],
             ['en-US', 'floor', 'selected_range', 'Selected range'],
             ['en-US', 'floor', 'unauthorized', 'Unauthorized'],
+            ['en-US', 'floor', 'filter_all', 'All'],
+            ['en-US', 'floor', 'filter_active', 'Active'],
+            ['en-US', 'floor', 'filter_favorites', 'Favorites'],
+            ['en-US', 'floor', 'favorite', 'Add to favorites'],
+            ['en-US', 'floor', 'unfavorite', 'Remove from favorites'],
+            ['en-US', 'floor', 'auto_favorite', 'Auto-favorited (assigned server)'],
+            ['en-US', 'floor', 'cannot_unfavorite_assigned', 'Cannot unfavorite a group you are assigned to.'],
 
             // ---------- order ----------
             ['pt-PT', 'order', 'title', 'Pedido'],

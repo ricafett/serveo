@@ -15,4 +15,11 @@ return array (
   'no_sections' => 'No sections configured.',
   'selected_range' => 'Selected range',
   'unauthorized' => 'Unauthorized',
+  'filter_all' => 'All',
+  'filter_active' => 'Active',
+  'filter_favorites' => 'Favorites',
+  'favorite' => 'Add to favorites',
+  'unfavorite' => 'Remove from favorites',
+  'auto_favorite' => 'Auto-favorited (assigned server)',
+  'cannot_unfavorite_assigned' => 'Cannot unfavorite a group you are assigned to.',
 );

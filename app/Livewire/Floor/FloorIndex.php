@@ -20,6 +20,9 @@ class FloorIndex extends Component
     #[Url(as: 'session', keep: true)]
     public ?int $serviceSessionId = null;
 
+    #[Url(as: 'filter', keep: true)]
+    public string $filter = 'all'; // 'all' | 'active' | 'favorites'
+
     public bool $showCreateModal = false;
     public ?int $selectedRowId = null;
     public ?int $selectedStartSeq = null;
@@ -79,14 +82,26 @@ class FloorIndex extends Component
             return collect();
         }
 
-        return BillingGroup::with([
+        $user = Auth::user();
+
+        $query = BillingGroup::with([
             'status',
             'occupiedZones' => fn ($q) => $q->where('is_open', true)->with(['row.section', 'server']),
+            'favoritedBy' => fn ($q) => $q->where('user_id', $user?->id),
         ])
-            ->where('service_session_id', $session->id)
-            ->where('is_closed', false)
-            ->orderBy('opened_at', 'desc')
-            ->get();
+            ->where('service_session_id', $session->id);
+
+        if ($this->filter === 'active') {
+            $query->where('is_closed', false)
+                ->whereHas('status', fn ($q) => $q->where('code', 'ACTIVE'));
+        } elseif ($this->filter === 'favorites') {
+            $query->where('is_closed', false)
+                ->whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user?->id));
+        } else {
+            $query->where('is_closed', false);
+        }
+
+        return $query->orderBy('opened_at', 'desc')->get();
     }
 
     /**
@@ -194,6 +209,36 @@ class FloorIndex extends Component
     public function openExistingGroup(int $groupId): void
     {
         $this->redirect(route('billing-groups.detail', ['id' => $groupId]), navigate: true);
+    }
+
+    public function toggleFavorite(int $groupId): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $group = BillingGroup::findOrFail($groupId);
+        $pivot = $group->favoritedBy()->where('user_id', $user->id)->first();
+
+        if ($pivot) {
+            // Cannot unfavorite if auto-assigned (is_manual = false)
+            if ($pivot->pivot->is_manual === false) {
+                $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
+                return;
+            }
+            $group->favoritedBy()->detach($user->id);
+        } else {
+            $group->favoritedBy()->attach($user->id, ['is_manual' => true]);
+        }
+
+        $this->loadGroup(); // Refresh the open groups
+    }
+
+    private function loadGroup(): void
+    {
+        // Force re-computation of openGroups by touching the property
+        $this->openGroups;
     }
 
     public function createBillingGroup(): void
