@@ -107,6 +107,8 @@ return array (
   'status_closed' => 'Closed',
   'session_type_dinner' => 'Dinner',
   'session_type_event' => 'Event',
+  'theme' => 'Theme',
+  'language' => 'Language',
   'theme_light' => 'Light',
   'theme_dark' => 'Dark',
   'theme_system' => 'System',

@@ -63,54 +63,65 @@
                         @yield('header-title')
                     </div>
 
-                    {{-- Right: Language + Theme + User --}}
-                    <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-                        <livewire:language-switcher />
-                        <livewire:theme-toggle />
+                    {{-- Right: User dropdown with theme and language inside --}}
+                    <div class="relative shrink-0" x-data="{ open: false }" @click.away="open = false">
+                        <button
+                            @click="open = !open"
+                            type="button"
+                            class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px]"
+                            aria-label="{{ __('auth.user_menu') }}"
+                        >
+                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            <span class="hidden md:inline max-w-[120px] truncate">{{ auth()->user()?->name }}</span>
+                            <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
 
-                        <div class="relative ml-1" x-data="{ open: false }" @click.away="open = false">
-                            <button
-                                @click="open = !open"
-                                type="button"
-                                class="flex items-center gap-1.5 rounded-lg p-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] justify-center"
-                                aria-label="{{ __('auth.user_menu') }}"
-                            >
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                </svg>
-                                <span class="hidden md:inline max-w-[120px] truncate">{{ auth()->user()?->name }}</span>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-48 rounded-lg bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-50 origin-top-right"
-                                style="display: none;"
-                            >
-                                <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
-                                    <div class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ auth()->user()?->name }}</div>
-                                    <div class="truncate">{{ auth()->user()?->email }}</div>
-                                    <div class="mt-1 capitalize">{{ auth()->user()?->roles?->first()?->name }}</div>
-                                </div>
-
-                                @if(auth()->user()?->hasRole('ADMIN'))
-                                    <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center">
-                                        {{ __('auth.admin_panel') }}
-                                    </a>
-                                @endif
-
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center">
-                                        {{ __('auth.log_out') }}
-                                    </button>
-                                </form>
+                        <div
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-56 rounded-lg bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-50 origin-top-right"
+                            style="display: none;"
+                        >
+                            {{-- User info --}}
+                            <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+                                <div class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ auth()->user()?->name }}</div>
+                                <div class="truncate">{{ auth()->user()?->email }}</div>
+                                <div class="mt-1 capitalize">{{ auth()->user()?->roles?->first()?->name }}</div>
                             </div>
+
+                            {{-- Theme --}}
+                            <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.theme') }}</div>
+                                <livewire:theme-toggle />
+                            </div>
+
+                            {{-- Language --}}
+                            <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.language') }}</div>
+                                <livewire:language-switcher />
+                            </div>
+
+                            @if(auth()->user()?->hasRole('ADMIN'))
+                                <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center border-b border-gray-100 dark:border-gray-800">
+                                    {{ __('auth.admin_panel') }}
+                                </a>
+                            @endif
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center">
+                                    {{ __('auth.log_out') }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

@@ -45,7 +45,7 @@ test('theme toggle switches between light and dark', function () {
         // Default should be dark (system dark or user dark)
         $hasDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
 
-        // Click light theme button
+        // Click light theme button (login page has standalone toggle)
         $browser->click('[title="Light"]')
             ->pause(500);
 
@@ -78,7 +78,7 @@ test('language switcher dropdown is visible on login page', function () {
     });
 });
 
-test('language switcher dropdown is visible on operational layout', function () {
+test('language switcher is inside user menu on operational layout', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -87,14 +87,22 @@ test('language switcher dropdown is visible on operational layout', function () 
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
-        $browser->assertSee('EN')
-            ->assertPresent('[aria-label="Select language"]');
+        // Open user menu
+        $browser->click('[aria-label="User menu"]')
+            ->pause(300);
+
+        // Theme and language options should be present in the page source
+        // (assertSourceHas checks raw HTML; assertSee only checks visible text)
+        $browser->assertSourceHas('Theme')
+            ->assertSourceHas('Language')
+            ->assertSourceHas('English')
+            ->assertSourceHas('Português');
     });
 });
 
-test('language switcher opens dropdown and shows both options', function () {
+test('language options are accessible inside user menu', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -103,13 +111,15 @@ test('language switcher opens dropdown and shows both options', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
-        // Open dropdown
-        $browser->click('[aria-label="Select language"]')
+        // Open user menu, then open nested language dropdown
+        $browser->click('[aria-label="User menu"]')
+            ->pause(300)
+            ->click('[aria-label="Select language"]')
             ->pause(300);
 
-        // Both options should be visible
+        // Both language options should be visible in the nested dropdown
         $browser->assertSee('Português')
             ->assertSee('English');
     });
@@ -139,7 +149,7 @@ test('switching to Portuguese updates login page text on reload', function () {
             ->waitForText('Sign In', 5)
             ->assertSee('Sign In');
 
-        // Switch to Portuguese via dropdown
+        // Switch to Portuguese via standalone dropdown on login page
         $browser->click('[aria-label="Select language"]')
             ->pause(300)
             ->click('@switch-locale-pt-PT')
@@ -160,6 +170,8 @@ test('operational floor page shows English translations', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5);
 
         $browser->assertSee('Floor');
@@ -175,10 +187,14 @@ test('switching to Portuguese updates floor page text', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5);
 
-        // Switch to Portuguese
-        $browser->click('[aria-label="Select language"]')
+        // Open user menu, then open nested language dropdown, then switch
+        $browser->click('[aria-label="User menu"]')
+            ->pause(300)
+            ->click('[aria-label="Select language"]')
             ->pause(300)
             ->click('@switch-locale-pt-PT')
             ->waitForText('Plano de sala', 5);
@@ -241,10 +257,11 @@ test('mobile bottom nav is visible on small screens', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
-        // On mobile, server should see Floor in bottom nav
-        $browser->assertSee('Floor');
+        // On mobile, server should see Dashboard and Floor in bottom nav
+        $browser->assertSee('Dashboard')
+            ->assertSee('Floor');
     });
 });
 
@@ -257,7 +274,7 @@ test('user menu shows role and logout option', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->click('[aria-label="User menu"]')
             ->waitForText('Log Out', 3)
