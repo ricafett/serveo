@@ -13,7 +13,7 @@ class OccupiedZone extends Model
         'default_delivery_mode', 'delivery_center_label',
         'delivery_seat_pair_id',
         'opened_at', 'released_at', 'is_open',
-        'created_by_user_id',
+        'created_by_user_id', 'server_id',
     ];
 
     protected $casts = [
@@ -35,6 +35,12 @@ class OccupiedZone extends Model
     public function deliverySeatPair(): BelongsTo
     {
         return $this->belongsTo(SeatPair::class, 'delivery_seat_pair_id');
+    }
+
+    /** Server actively working this zone during service. */
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'server_id');
     }
 
     public function centerSequence(): int

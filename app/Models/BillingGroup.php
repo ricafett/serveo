@@ -65,6 +65,15 @@ class BillingGroup extends Model
         return $this->hasMany(ProductionTicket::class);
     }
 
+    /** All unique servers assigned to any open zone of this group. */
+    public function assignedServers(): \Illuminate\Support\Collection
+    {
+        return $this->occupiedZones
+            ->pluck('server')
+            ->filter()
+            ->unique('id');
+    }
+
     /** Sum of non-voided order item subtotals. */
     public function chargesTotal(): float
     {

@@ -61,6 +61,7 @@ class OccupancyService
                 'opened_at'                => now(),
                 'is_open'                  => true,
                 'created_by_user_id'       => $actor->id,
+                'server_id'                => $actor->id,
             ]);
 
             Audit::record(

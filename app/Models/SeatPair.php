@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SeatPair extends Model
 {
-    protected $fillable = ['row_id', 'pair_sequence', 'seat_a_id', 'seat_b_id', 'is_active'];
+    protected $fillable = ['row_id', 'pair_sequence', 'seat_a_id', 'seat_b_id', 'is_active', 'default_server_id'];
 
     protected $casts = ['is_active' => 'boolean'];
 
@@ -24,6 +24,12 @@ class SeatPair extends Model
     public function seatB(): BelongsTo
     {
         return $this->belongsTo(Seat::class, 'seat_b_id');
+    }
+
+    /** Default server assigned by admin (venue configuration). */
+    public function defaultServer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'default_server_id');
     }
 
     public function label(): string
