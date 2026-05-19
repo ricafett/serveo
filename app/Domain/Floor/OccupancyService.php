@@ -71,6 +71,13 @@ class OccupancyService
                 ['billing_group_id' => $group->id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
             );
 
+            // Auto-favorite: the server assigning the zone gets the billing group as a favorite.
+            // is_manual = false means it cannot be unfavorited while assigned.
+            $group->favoritedBy()->updateOrCreate(
+                ['user_id' => $actor->id],
+                ['is_manual' => false],
+            );
+
             return $zone;
         });
     }

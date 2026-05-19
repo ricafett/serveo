@@ -74,6 +74,20 @@ class BillingGroup extends Model
             ->unique('id');
     }
 
+    /** Servers who favorited this group. */
+    public function favoritedBy(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'billing_group_favorites')
+            ->withPivot('is_manual')
+            ->withTimestamps();
+    }
+
+    /** Check if a specific user has favorited this group. */
+    public function isFavoritedBy(User $user): bool
+    {
+        return $this->favoritedBy()->where('user_id', $user->id)->exists();
+    }
+
     /** Sum of non-voided order item subtotals. */
     public function chargesTotal(): float
     {

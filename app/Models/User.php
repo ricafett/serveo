@@ -62,4 +62,12 @@ class User extends Authenticatable implements FilamentUser
 
         return $this->hasRole('ADMIN');
     }
+
+    /** Billing groups favorited by this server. */
+    public function favoriteBillingGroups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(BillingGroup::class, 'billing_group_favorites')
+            ->withPivot('is_manual')
+            ->withTimestamps();
+    }
 }
