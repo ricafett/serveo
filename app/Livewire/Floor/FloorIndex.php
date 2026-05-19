@@ -21,7 +21,7 @@ class FloorIndex extends Component
     public ?int $serviceSessionId = null;
 
     #[Url(as: 'filter', keep: true)]
-    public string $filter = 'all'; // 'all' | 'active' | 'favorites'
+    public string $filter = 'all'; // 'all' | 'favorites'
 
     public bool $showCreateModal = false;
     public ?int $selectedRowId = null;
@@ -89,19 +89,28 @@ class FloorIndex extends Component
             'occupiedZones' => fn ($q) => $q->where('is_open', true)->with(['row.section', 'server']),
             'favoritedBy' => fn ($q) => $q->where('user_id', $user?->id),
         ])
-            ->where('service_session_id', $session->id);
+            ->where('service_session_id', $session->id)
+            ->where('is_closed', false);
 
-        if ($this->filter === 'active') {
-            $query->where('is_closed', false)
-                ->whereHas('status', fn ($q) => $q->where('code', 'ACTIVE'));
-        } elseif ($this->filter === 'favorites') {
-            $query->where('is_closed', false)
-                ->whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user?->id));
-        } else {
-            $query->where('is_closed', false);
+        if ($this->filter === 'favorites') {
+            $query->whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user?->id));
         }
 
         return $query->orderBy('opened_at', 'desc')->get();
+    }
+
+    /** IDs of billing groups favorited by the current user (used for floor map filtering). */
+    public function getFavoriteGroupIdsProperty(): array
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return [];
+        }
+
+        return BillingGroup::whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user->id))
+            ->where('is_closed', false)
+            ->pluck('id')
+            ->toArray();
     }
 
     /**
@@ -232,13 +241,7 @@ class FloorIndex extends Component
             $group->favoritedBy()->attach($user->id, ['is_manual' => true]);
         }
 
-        $this->loadGroup(); // Refresh the open groups
-    }
-
-    private function loadGroup(): void
-    {
-        // Force re-computation of openGroups by touching the property
-        $this->openGroups;
+        // Livewire auto-refreshes the view since we modified DB state
     }
 
     public function createBillingGroup(): void

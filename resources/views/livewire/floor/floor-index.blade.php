@@ -14,6 +14,20 @@
             </div>
         </div>
 
+        {{-- Filter Toggle (applies to entire page: map + groups list) --}}
+        <div class="mt-6 mb-4 flex gap-2">
+            <button wire:click="$set('filter', 'all')"
+                class="flex items-center justify-center min-h-[48px] min-w-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-colors
+                    {{ $filter === 'all' ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                {{ __('floor.filter_all') }}
+            </button>
+            <button wire:click="$set('filter', 'favorites')"
+                class="flex items-center justify-center min-h-[48px] min-w-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-colors
+                    {{ $filter === 'favorites' ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                ★ {{ __('floor.filter_favorites') }}
+            </button>
+        </div>
+
         {{-- Sections & Rows --}}
         <div class="space-y-6">
             @forelse($this->sections as $section)
@@ -40,6 +54,7 @@
                                 {{-- Seat Pair Ranges --}}
                                 <div class="flex flex-wrap gap-1.5">
                                     @foreach($this->getRowRanges($row) as $range)
+                                        {{-- Free ranges always visible --}}
                                         @if($range['type'] === 'free')
                                             <button
                                                 type="button"
@@ -49,16 +64,17 @@
                                             >
                                                 {{ $range['start'] }}–{{ $range['end'] }}
                                             </button>
-                                        @else
+                                        {{-- Occupied ranges: hidden if filter=favorites and group not favorited --}}
+                                        @elseif($filter !== 'favorites' || ($range['group'] && in_array($range['group']->id, $this->favoriteGroupIds)))
                                             <button
                                                 type="button"
-                                                wire:click="openExistingGroup({{ $range['group']->id }})"
+                                                wire:click="openExistingGroup({{ $range['group']->id ?? 0 }})"
                                                 class="rounded-lg px-3 py-2 text-sm font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors min-h-[44px] flex items-center gap-1.5"
-                                                title="{{ $range['group']->display_code }} — {{ $range['group']->status?->display_name ?? $range['group']->status?->code }}"
+                                                title="{{ $range['group']->display_code ?? '' }} — {{ $range['group']->status?->display_name ?? $range['group']->status?->code ?? '' }}"
                                             >
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
                                                 {{ $range['start'] }}–{{ $range['end'] }}
-                                                <span class="text-xs opacity-75">{{ $range['group']->display_code }}</span>
+                                                <span class="text-xs opacity-75">{{ $range['group']->display_code ?? '' }}</span>
                                                 @if($range['server'] ?? null)
                                                     <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded px-1.5 py-0.5 font-medium">
                                                         {{ strtoupper(substr($range['server']->name, 0, 2)) }}
@@ -82,56 +98,36 @@
         {{-- Open Groups Quick List --}}
         @if($this->openGroups->count() > 0)
             <div class="mt-8">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('floor.open_groups') }}</h2>
-                    {{-- Filter Toggle --}}
-                    <div class="flex gap-1.5">
-                        <button wire:click="$set('filter', 'all')"
-                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
-                                {{ $filter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                            {{ __('floor.filter_all') }}
-                        </button>
-                        <button wire:click="$set('filter', 'active')"
-                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
-                                {{ $filter === 'active' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                            {{ __('floor.filter_active') }}
-                        </button>
-                        <button wire:click="$set('filter', 'favorites')"
-                            class="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors
-                                {{ $filter === 'favorites' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                            {{ __('floor.filter_favorites') }}
-                        </button>
-                    </div>
-                </div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('floor.open_groups') }}</h2>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
-                        <a
-                            href="{{ route('billing-groups.detail', ['id' => $group->id]) }}"
-                            wire:navigate
-                            class="block rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
-                        >
-                            <div class="flex items-center justify-between">
-                                <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
-                                <div class="flex items-center gap-2">
-                                    {{-- Favorite toggle --}}
-                                    @php
-                                        $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
-                                        $isFavorited = (bool) $favPivot;
-                                        $isAutoFavorite = $isFavorited && $favPivot->pivot->is_manual === false;
-                                    @endphp
-                                    <button
-                                        type="button"
-                                        wire:click.prevent="toggleFavorite({{ $group->id }})"
-                                        wire:navigate.stop
-                                        class="text-lg hover:scale-110 transition-transform"
-                                        title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
-                                    >
-                                        @if($isFavorited)
-                                            <span class="text-yellow-500">★</span>
-                                        @else
-                                            <span class="text-gray-300 dark:text-gray-600">☆</span>
-                                        @endif
-                                    </button>
+                        <div class="relative rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                            {{-- Favorite Button (outside link so it doesn't trigger navigation) --}}
+                            @php
+                                $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
+                                $isFavorited = (bool) $favPivot;
+                                $isAutoFavorite = $isFavorited && $favPivot->pivot->is_manual === false;
+                            @endphp
+                            <button
+                                type="button"
+                                wire:click="toggleFavorite({{ $group->id }})"
+                                class="absolute top-3 right-3 z-10 flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
+                            >
+                                @if($isFavorited)
+                                    <span class="text-2xl text-yellow-500">★</span>
+                                @else
+                                    <span class="text-2xl text-gray-300 dark:text-gray-600">☆</span>
+                                @endif
+                            </button>
+
+                            <a
+                                href="{{ route('billing-groups.detail', ['id' => $group->id]) }}"
+                                wire:navigate
+                                class="block p-4 pr-14 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
                                     <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
                                         {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
                                         {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
@@ -140,21 +136,21 @@
                                         {{ $group->status?->display_name ?? $group->status?->code }}
                                     </span>
                                 </div>
-                            </div>
-                            <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                @foreach($group->occupiedZones as $zone)
-                                    <div>
-                                        {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
-                                        @if($zone->server)
-                                            <span class="text-xs text-blue-600 dark:text-blue-400">({{ $zone->server->name }})</span>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                            @if($group->cover_count)
-                                <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count }} {{ __('app.covers') }}</div>
-                            @endif
-                        </a>
+                                <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    @foreach($group->occupiedZones as $zone)
+                                        <div>
+                                            {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
+                                            @if($zone->server)
+                                                <span class="text-xs text-blue-600 dark:text-blue-400">({{ $zone->server->name }})</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if($group->cover_count)
+                                    <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count }} {{ __('app.covers') }}</div>
+                                @endif
+                            </a>
+                        </div>
                     @endforeach
                 </div>
             </div>
