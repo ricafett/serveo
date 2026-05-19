@@ -74,20 +74,22 @@ test('theme toggle switches between light and dark', function () {
 // Language Switcher UI
 // ------------------------------------------------------------------
 
-test('language switcher dropdown is visible on login page', function () {
+test('language switcher is inline on login page', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
             ->waitForText('Sign In', 5);
 
-        // Trigger button should show active locale code
-        $browser->assertSee('EN')
-            ->assertPresent('[aria-label="Select language"]');
+        // Inline mode shows PT/EN buttons directly, no dropdown trigger
+        $browser->assertSee('PT')
+            ->assertSee('EN')
+            ->assertPresent('@switch-locale-pt-PT')
+            ->assertPresent('@switch-locale-en-US');
     });
 });
 
-test('language switcher is inside user menu on operational layout', function () {
+test('language switcher is inline inside user menu on operational layout', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -98,20 +100,18 @@ test('language switcher is inside user menu on operational layout', function () 
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
 
-        // Open user menu
+        // Open user menu — inline PT/EN buttons should be visible immediately
         $browser->click('[aria-label="User menu"]')
             ->pause(300);
 
-        // Theme and language options should be present in the page source
-        // (assertSourceHas checks raw HTML; assertSee only checks visible text)
         $browser->assertSourceHas('Theme')
             ->assertSourceHas('Language')
-            ->assertSourceHas('English')
-            ->assertSourceHas('Português');
+            ->assertPresent('@switch-locale-pt-PT')
+            ->assertPresent('@switch-locale-en-US');
     });
 });
 
-test('language options are accessible inside user menu', function () {
+test('language options are accessible inside user menu without nested dropdown', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -122,15 +122,13 @@ test('language options are accessible inside user menu', function () {
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
 
-        // Open user menu, then open nested language dropdown
+        // Open user menu — inline buttons are visible immediately, no nested dropdown
         $browser->click('[aria-label="User menu"]')
-            ->pause(300)
-            ->click('[aria-label="Select language"]')
             ->pause(300);
 
-        // Both language options should be visible in the nested dropdown
-        $browser->assertSee('Português')
-            ->assertSee('English');
+        // PT and EN buttons should be directly visible
+        $browser->assertPresent('@switch-locale-pt-PT')
+            ->assertPresent('@switch-locale-en-US');
     });
 });
 
@@ -158,10 +156,8 @@ test('switching to Portuguese updates login page text on reload', function () {
             ->waitForText('Sign In', 5)
             ->assertSee('Sign In');
 
-        // Switch to Portuguese via standalone dropdown on login page
-        $browser->click('[aria-label="Select language"]')
-            ->pause(300)
-            ->click('@switch-locale-pt-PT')
+        // Switch to Portuguese via inline button on login page
+        $browser->click('@switch-locale-pt-PT')
             ->waitForText('Iniciar sessão', 5);
 
         $browser->assertSee('Iniciar sessão')
@@ -200,10 +196,8 @@ test('switching to Portuguese updates floor page text', function () {
             ->visit('/floor')
             ->waitForText('Floor', 5);
 
-        // Open user menu, then open nested language dropdown, then switch
+        // Open user menu, then click inline PT button directly
         $browser->click('[aria-label="User menu"]')
-            ->pause(300)
-            ->click('[aria-label="Select language"]')
             ->pause(300)
             ->click('@switch-locale-pt-PT')
             ->waitForText('Plano de sala', 5);
