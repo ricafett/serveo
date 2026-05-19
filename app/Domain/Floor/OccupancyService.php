@@ -73,10 +73,11 @@ class OccupancyService
 
             // Auto-favorite: the server assigning the zone gets the billing group as a favorite.
             // is_manual = false means it cannot be unfavorited while assigned.
-            $group->favoritedBy()->updateOrCreate(
-                ['user_id' => $actor->id],
-                ['is_manual' => false],
-            );
+            if ($group->favoritedBy()->where('user_id', $actor->id)->exists()) {
+                $group->favoritedBy()->updateExistingPivot($actor->id, ['is_manual' => false]);
+            } else {
+                $group->favoritedBy()->attach($actor->id, ['is_manual' => false]);
+            }
 
             return $zone;
         });
