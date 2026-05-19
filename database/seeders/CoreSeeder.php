@@ -207,6 +207,7 @@ class CoreSeeder extends Seeder
         // ---- Sample open billing group spanning two zones ----
         $rowA1 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'A'))->where('row_code', '1')->first();
         $rowA2 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'A'))->where('row_code', '2')->first();
+        $rowB1 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'B'))->where('row_code', '1')->first();
 
         $group = BillingGroup::updateOrCreate(
             ['service_session_id' => $session->id, 'display_code' => 'G-001'],
@@ -228,6 +229,7 @@ class CoreSeeder extends Seeder
                 'opened_at'             => now(),
                 'is_open'               => true,
                 'created_by_user_id'    => $server->id,
+                'server_id'             => $server->id,
             ]
         );
         OccupiedZone::updateOrCreate(
@@ -238,8 +240,16 @@ class CoreSeeder extends Seeder
                 'opened_at'             => now(),
                 'is_open'               => true,
                 'created_by_user_id'    => $server->id,
+                'server_id'             => $server->id,
             ]
         );
+
+        // ---- Default server assignments for seat pairs ----
+        // Row A1 → server1
+        SeatPair::where('row_id', $rowA1->id)->update(['default_server_id' => $server->id]);
+        // Row A2 → server1
+        SeatPair::where('row_id', $rowA2->id)->update(['default_server_id' => $server->id]);
+        // Row B1 → no default (unassigned)
 
         // ---- Translations (complete operational UI set) ----
         $translations = [
