@@ -166,6 +166,11 @@ class OrderEntry extends Component
             return;
         }
 
+        if (! $group->serviceSession?->isOpen()) {
+            $this->errorMessage = __('No open service session.');
+            return;
+        }
+
         if (empty($this->cart)) {
             $this->errorMessage = __('Cart is empty.');
             return;

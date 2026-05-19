@@ -29,6 +29,10 @@ class OccupancyService
     ): OccupiedZone {
         $this->ensureCan($actor, 'floor.assign_zone');
 
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
         if ($startSeq > $endSeq) {
             throw new RuntimeException('start_seat_pair_sequence must be <= end_seat_pair_sequence');
         }
@@ -73,6 +77,10 @@ class OccupancyService
     public function releaseZone(OccupiedZone $zone, User $actor): void
     {
         $this->ensureCan($actor, 'floor.release_zone');
+
+        if (! $zone->billingGroup?->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         DB::transaction(function () use ($zone, $actor) {
             if (! $zone->is_open) {

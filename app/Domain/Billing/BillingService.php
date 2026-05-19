@@ -27,6 +27,9 @@ class BillingService
         if ($group->is_closed) {
             throw new RuntimeException('Cannot bill a closed group.');
         }
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         return DB::transaction(function () use ($group, $cashier) {
             $printer = $this->resolveCashierPrinter($cashier);
@@ -78,6 +81,11 @@ class BillingService
     {
         $this->ensureCan($cashier, 'billing_document.reprint');
 
+        $session = $original->billingGroup?->serviceSession;
+        if (! $session?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
         $printer = $this->resolveCashierPrinter($cashier) ?? $original->printer;
         if (! $printer) {
             throw new RuntimeException('No cashier printer available for reprint.');
@@ -117,6 +125,10 @@ class BillingService
     public function recordPayment(BillingGroup $group, User $cashier, float $amount, string $label, ?string $notes = null): PaymentRecord
     {
         $this->ensureCan($cashier, 'payment.record');
+
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         if ($amount <= 0) {
             throw new RuntimeException('Payment amount must be greater than zero.');
@@ -169,6 +181,10 @@ class BillingService
     public function voidPayment(PaymentRecord $payment, User $cashier, ?string $notes = null): void
     {
         $this->ensureCan($cashier, 'payment.void');
+
+        if (! $payment->billingGroup?->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         if ($payment->is_voided) {
             return;

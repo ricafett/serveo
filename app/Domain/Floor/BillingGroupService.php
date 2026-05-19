@@ -72,6 +72,10 @@ class BillingGroupService
     {
         $this->ensureCan($actor, 'billing_group.set_status');
 
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
         }
@@ -119,6 +123,10 @@ class BillingGroupService
     {
         $this->ensureCan($actor, 'billing_group.set_status');
 
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
         }
@@ -146,6 +154,10 @@ class BillingGroupService
     public function reopen(BillingGroup $group, User $actor, ?int $expectedVersion = null): BillingGroup
     {
         $this->ensureCan($actor, 'billing_group.reopen');
+
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');

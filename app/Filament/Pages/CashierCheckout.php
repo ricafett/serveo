@@ -64,6 +64,10 @@ class CashierCheckout extends BasePage
             Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
             return;
         }
+        if (! ServiceSession::where('status', 'OPEN')->exists()) {
+            Notification::make()->title(__('floor.no_session'))->danger()->send();
+            return;
+        }
         $group = BillingGroup::findOrFail($groupId);
         try {
             app(BillingService::class)->generateInternalBill($group, Auth::user());
@@ -77,6 +81,10 @@ class CashierCheckout extends BasePage
     {
         if (! Auth::user()?->can('billing_document.reprint')) {
             Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
+            return;
+        }
+        if (! ServiceSession::where('status', 'OPEN')->exists()) {
+            Notification::make()->title(__('floor.no_session'))->danger()->send();
             return;
         }
         $bill = BillingDocument::where('billing_group_id', $groupId)
@@ -99,6 +107,10 @@ class CashierCheckout extends BasePage
     {
         if (! Auth::user()?->can('billing_group.reopen')) {
             Notification::make()->title(__('cashier.unauthorized'))->danger()->send();
+            return;
+        }
+        if (! ServiceSession::where('status', 'OPEN')->exists()) {
+            Notification::make()->title(__('floor.no_session'))->danger()->send();
             return;
         }
         $group = BillingGroup::findOrFail($groupId);
@@ -129,6 +141,10 @@ class CashierCheckout extends BasePage
                 Forms\Components\Textarea::make('notes')->label(__('app.notes'))->rows(2),
             ])
             ->action(function (array $data) {
+                if (! ServiceSession::where('status', 'OPEN')->exists()) {
+                    Notification::make()->title(__('floor.no_session'))->danger()->send();
+                    return;
+                }
                 $group = BillingGroup::findOrFail($data['group_id']);
                 app(BillingService::class)->recordPayment(
                     $group, Auth::user(),

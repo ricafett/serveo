@@ -43,6 +43,11 @@ class BillingGroupLookup extends Component
         return $query->orderBy('opened_at', 'desc')->get();
     }
 
+    public function hasOpenSession(): bool
+    {
+        return ServiceSession::where('status', 'OPEN')->exists();
+    }
+
     public function openCheckout(int $groupId): void
     {
         $this->redirect(route('checkout', ['id' => $groupId]), navigate: true);

@@ -44,6 +44,9 @@ class OrderService
         if ($group->is_closed) {
             throw new RuntimeException('Cannot order on a closed billing group.');
         }
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
         if ($zone && $zone->billing_group_id !== $group->id) {
             throw new RuntimeException('Occupied zone does not belong to this billing group.');
         }
@@ -156,6 +159,10 @@ class OrderService
     public function voidItem(OrderItem $item, User $actor, ?string $reason = null): void
     {
         $this->ensureCan($actor, 'order.void_item');
+
+        if (! $item->header->billingGroup?->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
 
         if ($item->voided_at) {
             return;

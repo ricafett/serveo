@@ -24,9 +24,10 @@ class Dashboard extends Component
     private function buildTiles(): array
     {
         $user = Auth::user();
+        $hasSession = $this->activeSession !== null;
         $tiles = [];
 
-        if ($user?->hasRole('SERVER') || $user?->hasRole('ADMIN')) {
+        if ($hasSession && ($user?->hasRole('SERVER') || $user?->hasRole('ADMIN'))) {
             $tiles[] = [
                 'route' => 'floor',
                 'label' => __('dashboard.floor_tile'),
@@ -36,7 +37,7 @@ class Dashboard extends Component
             ];
         }
 
-        if ($user?->hasRole('CASHIER') || $user?->hasRole('ADMIN')) {
+        if ($hasSession && ($user?->hasRole('CASHIER') || $user?->hasRole('ADMIN'))) {
             $tiles[] = [
                 'route' => 'lookup',
                 'label' => __('dashboard.lookup_tile'),

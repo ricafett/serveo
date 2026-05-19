@@ -759,6 +759,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'dashboard', 'admin_panel_description', 'Configuração e definições do sistema'],
             ['pt-PT', 'dashboard', 'active_session', 'Sessão ativa'],
             ['pt-PT', 'dashboard', 'no_session', 'Não existe sessão de serviço aberta'],
+            ['pt-PT', 'dashboard', 'no_session_help', 'Abra uma sessão de serviço em Configuração → Sessões de serviço antes de fazer pedidos, gerar contas ou registar pagamentos.'],
 
             ['en-US', 'dashboard', 'title', 'Dashboard'],
             ['en-US', 'dashboard', 'floor_tile', 'Floor'],
@@ -771,6 +772,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'dashboard', 'admin_panel_description', 'Configuration and system settings'],
             ['en-US', 'dashboard', 'active_session', 'Active session'],
             ['en-US', 'dashboard', 'no_session', 'No open service session'],
+            ['en-US', 'dashboard', 'no_session_help', 'Open a service session in Configuration → Service Sessions before placing orders, generating bills, or recording payments.'],
 
             // ---------- ticket ----------
             ['pt-PT', 'ticket', 'void', 'ANULAÇÃO'],

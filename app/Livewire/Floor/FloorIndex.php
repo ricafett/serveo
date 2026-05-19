@@ -44,6 +44,12 @@ class FloorIndex extends Component
             $session = ServiceSession::where('status', 'OPEN')->latest('starts_at')->first();
             $this->serviceSessionId = $session?->id;
         }
+
+        if (! $this->serviceSessionId) {
+            $this->redirect(route('home'), navigate: true);
+            return;
+        }
+
         $this->statusCode = BillingStatus::ACTIVE;
     }
 

@@ -146,7 +146,7 @@ test('closed billing group hides add order button', function () {
     });
 });
 
-test('floor shows no session warning when no open session', function () {
+test('floor redirects to dashboard when no open session', function () {
     ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
 
     $this->browse(function (Browser $browser) {
@@ -159,7 +159,6 @@ test('floor shows no session warning when no open session', function () {
             ->press('Sign In')
             ->waitForText('Dashboard', 5)
             ->visit('/floor')
-            ->waitForText('Floor', 5)
-            ->assertSee('No open service session.');
+            ->waitForText('No open service session', 5);
     });
 });

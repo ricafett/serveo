@@ -1,5 +1,18 @@
 <div class="p-4 sm:p-6 lg:p-8">
     <div class="max-w-7xl mx-auto">
+        {{-- No Session Warning --}}
+        @if(! $this->hasOpenSession())
+            <div class="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-4 text-sm">
+                <svg class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <div class="text-red-700 dark:text-red-300">
+                    <p class="font-semibold">{{ __('dashboard.no_session') }}</p>
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ __('dashboard.no_session_help') }}</p>
+                </div>
+            </div>
+        @endif
+
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>

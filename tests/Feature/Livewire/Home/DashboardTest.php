@@ -58,6 +58,46 @@ it('shows floor tile for server', function () {
     $response->assertDontSee('Admin Panel');
 });
 
+it('hides operational tiles for server when no session is open', function () {
+    ServiceSession::query()->delete();
+
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('SERVER');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertSee('No open service session');
+    // Tile labels should not appear in the tile grid
+    $response->assertDontSee('View occupancy and manage seating');
+    $response->assertDontSee('Search and manage billing groups');
+    $response->assertDontSee('Reprint bills and documents');
+});
+
+it('hides operational tiles for cashier when no session is open', function () {
+    ServiceSession::query()->delete();
+
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('CASHIER');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertSee('No open service session');
+    $response->assertDontSee('Search and manage billing groups');
+    $response->assertDontSee('Reprint bills and documents');
+});
+
+it('shows admin panel tile even when no session is open', function () {
+    ServiceSession::query()->delete();
+
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('ADMIN');
+
+    $response = $this->actingAs($user)->get('/home');
+    $response->assertSee('No open service session');
+    $response->assertDontSee('View occupancy and manage seating');
+    $response->assertDontSee('Search and manage billing groups');
+    $response->assertDontSee('Reprint bills and documents');
+    $response->assertSee('Configuration and system settings');
+});
+
 it('shows lookup and reprint tiles for cashier', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
@@ -88,6 +128,7 @@ it('shows all tiles for admin', function () {
 // ------------------------------------------------------------------
 
 it('shows active session name when one exists', function () {
+    ServiceSession::query()->delete();
     $session = ServiceSession::create([
         'venue_id' => 1,
         'session_label' => 'Test Session',
@@ -101,7 +142,7 @@ it('shows active session name when one exists', function () {
 
     $response = $this->actingAs($user)->get('/home');
     $response->assertSee('Active session');
-    $response->assertSee($session->name);
+    $response->assertSee($session->session_label);
 });
 
 it('shows no session warning when none is open', function () {

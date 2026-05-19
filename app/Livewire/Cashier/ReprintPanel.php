@@ -7,6 +7,7 @@ use App\Domain\Printing\PrintQueueService;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\ProductionTicket;
+use App\Models\ServiceSession;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -44,6 +45,11 @@ class ReprintPanel extends Component
             return;
         }
 
+        if (! ServiceSession::where('status', 'OPEN')->exists()) {
+            $this->errorMessage = __('No open service session.');
+            return;
+        }
+
         try {
             $original = BillingDocument::findOrFail($billId);
             app(BillingService::class)->reprintBill($original, Auth::user());
@@ -61,6 +67,11 @@ class ReprintPanel extends Component
 
         if (! Auth::user()?->can('production_ticket.reprint')) {
             $this->errorMessage = __('Unauthorized to reprint tickets.');
+            return;
+        }
+
+        if (! ServiceSession::where('status', 'OPEN')->exists()) {
+            $this->errorMessage = __('No open service session.');
             return;
         }
 

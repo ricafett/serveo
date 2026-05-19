@@ -83,8 +83,7 @@ it('shows no session warning when no open session exists', function () {
     ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
 
     $response = $this->actingAs($this->server)->get('/floor');
-    $response->assertOk();
-    $response->assertSee('No open service session.');
+    $response->assertRedirect(route('home'));
 });
 
 // ------------------------------------------------------------------

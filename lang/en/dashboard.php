@@ -12,4 +12,5 @@ return array (
   'admin_panel_description' => 'Configuration and system settings',
   'active_session' => 'Active session',
   'no_session' => 'No open service session',
+  'no_session_help' => 'Open a service session in Configuration → Service Sessions before placing orders, generating bills, or recording payments.',
 );
