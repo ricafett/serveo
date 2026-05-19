@@ -359,6 +359,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'route_bar', 'Bar'],
             ['pt-PT', 'app', 'type_session_summary', 'Resumo de sessão'],
             ['pt-PT', 'app', 'type_full_ledger', 'Livro completo'],
+            ['pt-PT', 'app', 'assign_server', 'Atribuir servidor'],
+            ['pt-PT', 'app', 'server', 'Servidor'],
 
             ['en-US', 'app', 'name', 'Serveo'],
             ['en-US', 'app', 'cancel', 'Cancel'],
@@ -475,6 +477,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'route_bar', 'Bar'],
             ['en-US', 'app', 'type_session_summary', 'Session Summary'],
             ['en-US', 'app', 'type_full_ledger', 'Full Ledger'],
+            ['en-US', 'app', 'assign_server', 'Assign Server'],
+            ['en-US', 'app', 'server', 'Server'],
 
             // ---------- auth ----------
             ['pt-PT', 'auth', 'sign_in', 'Iniciar sessão'],
