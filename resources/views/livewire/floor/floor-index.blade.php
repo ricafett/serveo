@@ -59,6 +59,11 @@
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
                                                 {{ $range['start'] }}–{{ $range['end'] }}
                                                 <span class="text-xs opacity-75">{{ $range['group']->display_code }}</span>
+                                                @if($range['server'] ?? null)
+                                                    <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded px-1.5 py-0.5 font-medium">
+                                                        {{ strtoupper(substr($range['server']->name, 0, 2)) }}
+                                                    </span>
+                                                @endif
                                             </button>
                                         @endif
                                     @endforeach
@@ -97,7 +102,12 @@
                             </div>
                             <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 @foreach($group->occupiedZones as $zone)
-                                    <div>{{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}</div>
+                                    <div>
+                                        {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
+                                        @if($zone->server)
+                                            <span class="text-xs text-blue-600 dark:text-blue-400">({{ $zone->server->name }})</span>
+                                        @endif
+                                    </div>
                                 @endforeach
                             </div>
                             @if($group->cover_count)

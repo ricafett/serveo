@@ -65,7 +65,7 @@ class FloorIndex extends Component
         return Section::with([
             'rows' => fn ($q) => $q->orderBy('sort_order')->where('is_active', true),
             'rows.seatPairs' => fn ($q) => $q->orderBy('pair_sequence')->where('is_active', true),
-            'rows.occupiedZones' => fn ($q) => $q->where('is_open', true)->with('billingGroup.status'),
+            'rows.occupiedZones' => fn ($q) => $q->where('is_open', true)->with(['billingGroup.status', 'server']),
         ])
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -81,7 +81,7 @@ class FloorIndex extends Component
 
         return BillingGroup::with([
             'status',
-            'occupiedZones' => fn ($q) => $q->where('is_open', true)->with('row.section'),
+            'occupiedZones' => fn ($q) => $q->where('is_open', true)->with(['row.section', 'server']),
         ])
             ->where('service_session_id', $session->id)
             ->where('is_closed', false)
@@ -105,6 +105,7 @@ class FloorIndex extends Component
                     $map[$seq]['status'] = 'occupied';
                     $map[$seq]['zone'] = $zone;
                     $map[$seq]['group'] = $zone->billingGroup;
+                    $map[$seq]['server'] = $zone->server;
                 }
             }
         }

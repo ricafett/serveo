@@ -58,10 +58,15 @@
             <div class="divide-y divide-gray-200 dark:divide-gray-800">
                 @forelse($group?->occupiedZones ?? [] as $zone)
                     <div class="px-4 py-3 flex items-center justify-between">
-                        <div>
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $zone->rangeLabel() }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $zone->defaultDeliveryLabel() }}</div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $zone->rangeLabel() }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $zone->defaultDeliveryLabel() }}
+                            @if($zone->server)
+                                · {{ $zone->server->name }}
+                            @endif
                         </div>
+                    </div>
                         @if($zone->is_open && ! $group?->is_closed)
                             @can('floor.release_zone')
                                 <button type="button" wire:click="releaseZone({{ $zone->id }})" wire:confirm="{{ __('billing.release_confirm') }}" class="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px]">

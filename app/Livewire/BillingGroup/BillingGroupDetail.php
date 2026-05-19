@@ -39,6 +39,7 @@ class BillingGroupDetail extends Component
         $this->group = BillingGroup::with([
             'status',
             'occupiedZones.row.section',
+            'occupiedZones.server',
             'orderHeaders' => fn ($q) => $q->orderBy('ordered_at', 'desc')->with(['items.menuItem', 'occupiedZone.row.section', 'orderedBy']),
             'paymentRecords' => fn ($q) => $q->orderBy('recorded_at', 'desc'),
             'billingDocuments' => fn ($q) => $q->orderBy('created_at', 'desc'),
