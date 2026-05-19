@@ -225,7 +225,7 @@ The following domain subfolders exist under `app/Domain/`:
 - `Orders` — order creation, validation, and voiding (contains `OrderService.php`)
 - `Printing` — print adapter registry, queue service, ticket renderer, and contracts (contains `PrintQueueService.php`, `PrintResult.php`, `PrinterAdapterRegistry.php`, `TicketRenderer.php`, plus `Adapters/` and `Contracts/` subfolders)
 
-New domain logic for Auth, Users, RolesPermissions, Menu, ServiceSessions, VenueLayout, Payments, AccountingExport, EventLog, Localization, and Admin is currently handled through Filament resources and flat Models. When adding new domain logic, create a new subfolder under `app/Domain/` following the existing pattern.
+New domain logic for Auth, Users, RolesPermissions, Menu, ServiceSessions, VenueLayout, Payments, AccountingExport, EventLog, and Admin is currently handled through Filament resources and flat Models. When adding new domain logic, create a new subfolder under `app/Domain/` following the existing pattern.
 
 ### Implemented Eloquent models
 
@@ -336,6 +336,17 @@ Use stronger protection for:
 - Print-job state transitions
 
 If needed, use optimistic locking or equivalent conflict handling.
+
+## Localization
+
+**Read `docs/localization.md` before adding or modifying translations.**
+
+The project uses a **hybrid file + database** translation system:
+- `lang/en/*.php` files serve as English fallbacks only.
+- **There is no `lang/pt-PT/` directory.** Portuguese translations live in the `translation_keys` database table.
+- `DatabaseTranslationLoader` merges file and DB translations, with DB values overriding file values.
+- Both `pt-PT` and `en-US` translations are seeded by `CoreSeeder`.
+- Adding a new translation requires updating **three places**: the `lang/en/` file, and both locale entries in `CoreSeeder`.
 
 ## Printing implementation guidance
 
