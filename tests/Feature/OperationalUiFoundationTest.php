@@ -34,28 +34,34 @@ it('redirects authenticated users from login to home', function () {
     $response->assertRedirect('/home');
 });
 
-it('redirects server to floor on home', function () {
+it('shows dashboard for server on home', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('SERVER');
 
     $response = $this->actingAs($user)->get('/home');
-    $response->assertRedirect('/floor');
+    $response->assertOk();
+    $response->assertSee('Dashboard');
+    $response->assertSee('Floor');
 });
 
-it('redirects cashier to lookup on home', function () {
+it('shows dashboard for cashier on home', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
 
     $response = $this->actingAs($user)->get('/home');
-    $response->assertRedirect('/lookup');
+    $response->assertOk();
+    $response->assertSee('Dashboard');
+    $response->assertSee('Billing Groups');
 });
 
-it('redirects admin to filament dashboard on home', function () {
+it('shows dashboard for admin on home', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('ADMIN');
 
     $response = $this->actingAs($user)->get('/home');
-    $response->assertRedirect(route('filament.admin.pages.dashboard'));
+    $response->assertOk();
+    $response->assertSee('Dashboard');
+    $response->assertSee('Admin Panel');
 });
 
 // ------------------------------------------------------------------

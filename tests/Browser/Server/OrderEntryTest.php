@@ -42,7 +42,7 @@ test('order entry page loads for open billing group', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Order Entry', 5)
@@ -61,7 +61,7 @@ test('server can add items and submit order', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Order Entry', 5);
@@ -94,7 +94,7 @@ test('submitted order appears in billing group detail', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/billing-groups/{$this->group->id}")
             ->waitForText($menuItem->display_name, 5)
@@ -114,7 +114,7 @@ test('order entry blocked for closed billing group', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Closed', 5);

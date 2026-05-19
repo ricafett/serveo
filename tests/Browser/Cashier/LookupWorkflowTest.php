@@ -41,6 +41,8 @@ test('lookup renders open billing groups', function () {
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/lookup')
             ->waitForText('Billing Groups', 5)
             ->assertSee($this->group->display_code);
     });
@@ -57,6 +59,8 @@ test('closed groups hidden by default', function () {
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/lookup')
             ->waitForText('Billing Groups', 5)
             ->assertDontSee($this->group->display_code);
     });
@@ -73,6 +77,8 @@ test('show closed groups when filter enabled', function () {
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/lookup')
             ->waitForText('Billing Groups', 5);
 
         $browser->check('#show-closed')
@@ -89,6 +95,8 @@ test('search by display code filters results', function () {
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/lookup')
             ->waitForText('Billing Groups', 5);
 
         $browser->type('#search', $this->group->display_code)

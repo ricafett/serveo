@@ -12,33 +12,34 @@ test('login with valid credentials redirects to role-appropriate page', function
     $admin = makeUser('ADMIN');
 
     $this->browse(function (Browser $browser) use ($server, $cashier, $admin) {
-        // Server lands on Floor
+        // Server lands on Dashboard
         $browser->visit('/login')
             ->waitForText('Sign In', 5)
             ->type('username', $server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5)
-            ->assertPathIs('/floor');
+            ->waitForText('Dashboard', 5)
+            ->assertPathIs('/home');
 
-        // Cashier lands on Lookup
+        // Cashier lands on Dashboard
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/login')
             ->waitForText('Sign In', 5)
             ->type('username', $cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5)
-            ->assertPathIs('/lookup');
+            ->waitForText('Dashboard', 5)
+            ->assertPathIs('/home');
 
-        // Admin lands on Filament dashboard
+        // Admin lands on frontend Dashboard
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/login')
             ->waitForText('Sign In', 5)
             ->type('username', $admin->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Dashboard', 5);
+            ->waitForText('Dashboard', 5)
+            ->assertPathIs('/home');
     });
 });
 

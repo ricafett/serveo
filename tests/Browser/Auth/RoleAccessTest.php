@@ -97,13 +97,16 @@ test('navigation shows correct items per role', function () {
             ->assertSee('Checkout')
             ->assertDontSee('Floor');
 
-        // Admin sees both Floor and Lookup nav
+        // Admin sees all tiles on dashboard
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/login')
             ->waitForText('Sign In', 5)
             ->type('username', $admin->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Dashboard', 5);
+            ->waitForText('Dashboard', 5)
+            ->assertSee('Floor')
+            ->assertSee('Billing Groups')
+            ->assertSee('Admin Panel');
     });
 });

@@ -39,6 +39,8 @@ test('floor renders sections rows and free ranges', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5)
             ->assertSee('Test Section')
             ->assertSee('Row T1')
@@ -55,6 +57,8 @@ test('clicking free range opens billing group creation modal', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5);
 
         $browser->with('main', function (Browser $main) {
@@ -73,6 +77,8 @@ test('server can create billing group and see it as occupied', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5)
             ->pause(300);
 
@@ -104,7 +110,7 @@ test('billing group detail shows zones orders and totals', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/billing-groups/{$group->id}")
             ->waitForText($group->display_code, 5)
@@ -130,7 +136,7 @@ test('closed billing group hides add order button', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/billing-groups/{$group->id}")
             ->waitForText('Closed', 5)
@@ -151,6 +157,8 @@ test('floor shows no session warning when no open session', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
             ->waitForText('Floor', 5)
             ->assertSee('No open service session.');
     });
