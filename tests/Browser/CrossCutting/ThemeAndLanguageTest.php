@@ -39,22 +39,31 @@ test('theme toggle switches between light and dark', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
+        // Visit the page first so we have a real origin before touching localStorage.
         $browser->visit('/login')
             ->waitForText('Sign In', 5);
 
-        // Default should be dark (system dark or user dark)
-        $hasDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        // Clear any persisted theme from a previous test run and reload.
+        $browser->script('localStorage.clear();');
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->pause(300); // Give Livewire time to initialise its event listeners
 
-        // Click light theme button (login page has standalone toggle)
+        // Start from a known dark state by clicking Dark first.
+        // This avoids depending on the browser's system colour scheme.
+        $browser->click('[title="Dark"]')
+            ->pause(300);
+
+        // Now switch to Light and assert the dark class is removed
         $browser->click('[title="Light"]')
-            ->pause(500);
+            ->pause(300);
 
         $hasDarkAfterLight = $browser->script('return document.documentElement.classList.contains("dark");')[0];
         $this->assertFalse($hasDarkAfterLight, 'Expected <html> to NOT have dark class after clicking light');
 
-        // Click dark theme button
+        // Switch back to Dark and assert the dark class is present
         $browser->click('[title="Dark"]')
-            ->pause(500);
+            ->pause(300);
 
         $hasDarkAfterDark = $browser->script('return document.documentElement.classList.contains("dark");')[0];
         $this->assertTrue($hasDarkAfterDark, 'Expected <html> to have dark class after clicking dark');
