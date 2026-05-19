@@ -116,4 +116,6 @@ return array (
   'route_bar' => 'Bar',
   'type_session_summary' => 'Session Summary',
   'type_full_ledger' => 'Full Ledger',
+  'assign_server' => 'Assign Server',
+  'server' => 'Server',
 );

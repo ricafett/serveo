@@ -8,6 +8,7 @@ use UnitEnum;
 use App\Filament\Resources\RowResource\Pages;
 use App\Models\Row;
 use App\Models\Section;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
@@ -15,6 +16,7 @@ use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class RowResource extends BaseResource
 {
@@ -67,7 +69,24 @@ class RowResource extends BaseResource
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([Actions\EditAction::make()])
-            ->bulkActions([Actions\DeleteBulkAction::make()]);
+            ->bulkActions([
+                Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkAction::make('assignServer')
+                    ->label(__('app.assign_server'))
+                    ->icon('heroicon-o-user-group')
+                    ->form([
+                        Forms\Components\Select::make('server_id')
+                            ->label(__('app.server'))
+                            ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
+                            ->required(),
+                    ])
+                    ->action(function (array $data, \Illuminate\Database\Eloquent\Collection $records): void {
+                        $records->each(function (Row $row) use ($data): void {
+                            $row->seatPairs()->update(['default_server_id' => $data['server_id']]);
+                        });
+                    })
+                    ->deselectRecordsAfterCompletion(),
+            ]);
     }
 
     public static function getPages(): array
