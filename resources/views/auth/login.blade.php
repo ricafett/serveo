@@ -47,7 +47,7 @@
     <header class="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
             <div class="flex items-center justify-end h-14 gap-2">
-                <livewire:language-switcher />
+                <livewire:language-switcher :inline="true" />
                 <livewire:theme-toggle />
             </div>
         </div>

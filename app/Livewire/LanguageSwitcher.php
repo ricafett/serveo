@@ -9,8 +9,12 @@ class LanguageSwitcher extends Component
 {
     public string $locale = 'pt-PT';
 
-    public function mount(): void
+    public bool $inline = false;
+
+    public function mount(bool $inline = false): void
     {
+        $this->inline = $inline;
+
         $locale = Auth::check()
             ? (Auth::user()->preferred_language_code ?? session('locale'))
             : session('locale');

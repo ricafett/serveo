@@ -107,7 +107,7 @@
                             {{-- Language --}}
                             <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
                                 <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.language') }}</div>
-                                <livewire:language-switcher />
+                                <livewire:language-switcher :inline="true" />
                             </div>
 
                             @if(auth()->user()?->hasRole('ADMIN'))
