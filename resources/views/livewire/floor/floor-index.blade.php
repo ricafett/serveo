@@ -1,30 +1,32 @@
 <div class="p-4 sm:p-6 lg:p-8" x-data="{ createModalOpen: @entangle('showCreateModal') }">
     <div class="max-w-7xl mx-auto">
         {{-- Header --}}
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('floor.title') }}</h1>
-                @if($this->session)
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ $this->session->session_label }} · {{ $this->openGroups->count() }} {{ __('floor.open_groups') }}
-                    </p>
-                @else
-                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ __('floor.no_session') }}</p>
-                @endif
-            </div>
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('floor.title') }}</h1>
+            @if($this->session)
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ $this->session->session_label }}
+                </p>
+            @else
+                <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ __('floor.no_session') }}</p>
+            @endif
         </div>
 
         {{-- Filter Toggle (applies to entire page: map + groups list) --}}
-        <div class="mt-6 mb-4 flex gap-2">
+        <div class="mb-4 flex gap-2">
             <button wire:click="$set('filter', 'all')"
-                class="flex items-center justify-center min-h-[48px] min-w-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-colors
-                    {{ $filter === 'all' ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-all
+                    {{ $filter === 'all'
+                        ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 dark:ring-indigo-800'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600' }}">
                 {{ __('floor.filter_all') }}
             </button>
             <button wire:click="$set('filter', 'favorites')"
-                class="flex items-center justify-center min-h-[48px] min-w-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-colors
-                    {{ $filter === 'favorites' ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
-                ★ {{ __('floor.filter_favorites') }}
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-all
+                    {{ $filter === 'favorites'
+                        ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 dark:ring-indigo-800'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600' }}">
+                <span class="text-lg">★</span> {{ __('floor.filter_favorites') }}
             </button>
         </div>
 
@@ -98,7 +100,12 @@
         {{-- Open Groups Quick List --}}
         @if($this->openGroups->count() > 0)
             <div class="mt-8">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ __('floor.open_groups') }}</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    {{ __('floor.open_groups') }}
+                    <span class="ml-2 inline-flex items-center justify-center min-w-[28px] h-7 px-2 text-sm font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 rounded-full">
+                        {{ $this->openGroups->count() }}
+                    </span>
+                </h2>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
                         <div class="relative rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">

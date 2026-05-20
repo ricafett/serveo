@@ -41,6 +41,20 @@
                     document.documentElement.classList.remove('dark');
                 }
             });
+
+            // Re-apply theme after every wire:navigate SPA navigation.
+            // Livewire replaces the DOM during navigate, which can wipe
+            // the `dark` class set by the IIFE above.
+            document.addEventListener('livewire:navigated', () => {
+                const theme = localStorage.getItem('theme') || '{{ auth()->user()?->theme ?? 'system' }}';
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            });
         });
     </script>
 </head>

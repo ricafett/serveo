@@ -244,6 +244,12 @@ class CoreSeeder extends Seeder
             ]
         );
 
+        // ---- Auto-favorite billing groups for assigned servers ----
+        // When a server is assigned to a zone, the group is auto-favorited.
+        // The seeder creates zones directly (bypassing OccupancyService),
+        // so we must create the favorite entries manually.
+        $group->favoritedBy()->syncWithoutDetaching([$server->id]);
+
         // ---- Default server assignments for seat pairs ----
         // Row A1 → server1
         SeatPair::where('row_id', $rowA1->id)->update(['default_server_id' => $server->id]);

@@ -287,6 +287,94 @@ test('user menu shows role and logout option', function () {
 });
 
 // ------------------------------------------------------------------
+// Theme Persistence Across Navigation
+// ------------------------------------------------------------------
+
+test('theme persists when navigating to billing group detail via wire:navigate', function () {
+    $group = createBillingGroup($this->scenario, $this->server);
+
+    $this->browse(function (Browser $browser) use ($group) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5)
+            ->visit('/floor')
+            ->waitForText('Floor', 5);
+
+        // Set theme to dark via the user menu
+        $browser->click('[aria-label="User menu"]')
+            ->pause(300)
+            ->click('[title="Dark"]')
+            ->pause(500);
+
+        // Verify dark class is present on floor page
+        $hasDarkOnFloor = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkOnFloor, 'Expected dark class on floor page after selecting dark theme');
+
+        // Navigate to billing group detail via direct visit (simulates wire:navigate destination)
+        $browser->visit("/billing-groups/{$group->id}")
+            ->waitForText($group->display_code, 5)
+            ->pause(500);
+
+        // Verify dark class persists on billing group detail page
+        $hasDarkOnDetail = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkOnDetail, 'Expected dark class to persist on billing group detail page');
+
+        // Navigate back to floor
+        $browser->visit('/floor')
+            ->waitForText('Floor', 5)
+            ->pause(500);
+
+        // Verify dark class persists after navigating back
+        $hasDarkAfterBack = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkAfterBack, 'Expected dark class to persist after navigating back to floor');
+    });
+});
+
+test('theme persists when navigating through order entry flow', function () {
+    $group = createBillingGroup($this->scenario, $this->server);
+
+    $this->browse(function (Browser $browser) use ($group) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        // Set theme to dark
+        $browser->click('[aria-label="User menu"]')
+            ->pause(300)
+            ->click('[title="Dark"]')
+            ->pause(500);
+
+        // Navigate to billing group detail
+        $browser->visit("/billing-groups/{$group->id}")
+            ->waitForText($group->display_code, 5)
+            ->pause(500);
+
+        // Verify dark class
+        $hasDarkOnDetail = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkOnDetail, 'Expected dark class on billing group detail');
+
+        // Navigate to order entry
+        $browser->visit("/orders/new/{$group->id}")
+            ->waitForText('Order Entry', 5)
+            ->pause(500);
+
+        // Verify dark class persists on order entry
+        $hasDarkOnOrderEntry = $browser->script('return document.documentElement.classList.contains("dark");')[0];
+        $this->assertTrue($hasDarkOnOrderEntry, 'Expected dark class to persist on order entry page');
+    });
+});
+
+// ------------------------------------------------------------------
 // Admin / Filament
 // ------------------------------------------------------------------
 
