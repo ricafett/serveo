@@ -39,6 +39,7 @@ class DemoTransactionSeeder extends Seeder
 
         $rowA1 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'A'))->where('row_code', '1')->first();
         $rowA2 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'A'))->where('row_code', '2')->first();
+        $rowB1 = Row::whereHas('section', fn ($q) => $q->where('section_code', 'B'))->where('row_code', '1')->first();
 
         // ---- G-001 group (already created by CoreSeeder) ----
         $group = BillingGroup::where('display_code', 'G-001')->first();
@@ -85,27 +86,36 @@ class DemoTransactionSeeder extends Seeder
             ->limit(2)
             ->update(['ticket_status' => 'PRINTED', 'printed_at' => now()]);
 
-        // Generate internal bill for G-001
-        $bill = app(BillingService::class)->generateInternalBill($group->refresh(), $cashier);
+        // Generate internal bill for G-001 (skip if already generated)
+        if ($group->billingDocuments()->count() === 0) {
+            $bill = app(BillingService::class)->generateInternalBill($group->refresh(), $cashier);
 
-        // Generate bill reprint
-        app(BillingService::class)->reprintBill($bill, $cashier);
+            // Generate bill reprint
+            app(BillingService::class)->reprintBill($bill, $cashier);
 
-        // Partial payment for G-001
-        app(BillingService::class)->recordPayment($group->refresh(), $cashier, 20.00, 'Numerário');
+            // Partial payment for G-001
+            app(BillingService::class)->recordPayment($group->refresh(), $cashier, 20.00, 'Numerário');
+        }
 
         // ---- Second group: closed with full payment ----
-        $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Grupo fechado de demonstração');
-        $zone2a = app(OccupancyService::class)->assignZone($group2, $rowA1, 5, 6, $server);
+        // Use row B1 (unassigned by CoreSeeder) to avoid overlap with previous runs.
+        // Idempotent: skip if demo group already exists.
+        $group2 = BillingGroup::where('display_code', 'G-DEMO')->first();
+        if (! $group2) {
+            $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Grupo fechado de demonstração');
+            // Update display_code for idempotency check
+            $group2->update(['display_code' => 'G-DEMO']);
+            $zone2a = app(OccupancyService::class)->assignZone($group2, $rowB1, 1, 2, $server);
 
-        app(OrderService::class)->submit($group2, $server, [
-            ['menu_item_id' => $bitoque->id, 'quantity' => 2],
-            ['menu_item_id' => $cerveja->id, 'quantity' => 2],
-            ['menu_item_id' => $pudim->id, 'quantity' => 1],
-        ], $zone2a);
+            app(OrderService::class)->submit($group2, $server, [
+                ['menu_item_id' => $bitoque->id, 'quantity' => 2],
+                ['menu_item_id' => $cerveja->id, 'quantity' => 2],
+                ['menu_item_id' => $pudim->id, 'quantity' => 1],
+            ], $zone2a);
 
-        $total = $group2->refresh()->chargesTotal();
-        app(BillingService::class)->recordPayment($group2, $cashier, $total, 'MBWay');
+            $total = $group2->refresh()->chargesTotal();
+            app(BillingService::class)->recordPayment($group2, $cashier, $total, 'MBWay');
+        }
 
         $this->command->info('Demo transactions seeded successfully.');
         $this->command->info("  - G-001: 3 orders, 1 bill + reprint, 1 partial payment (20 EUR)");
