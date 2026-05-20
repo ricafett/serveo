@@ -26,13 +26,13 @@
             <button
                 type="button"
                 wire:click="toggleFavorite"
-                class="flex items-center justify-center min-h-[56px] min-w-[56px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                class="flex items-center justify-center min-h-[64px] min-w-[64px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
             >
                 @if($isFavorited)
-                    <span class="text-5xl text-yellow-500">★</span>
+                    <span class="text-[4rem] leading-none text-yellow-500">★</span>
                 @else
-                    <span class="text-5xl text-gray-300 dark:text-gray-600">☆</span>
+                    <span class="text-[4rem] leading-none text-gray-300 dark:text-gray-600">☆</span>
                 @endif
             </button>
         </div>
