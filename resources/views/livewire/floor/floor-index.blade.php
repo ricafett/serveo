@@ -15,17 +15,17 @@
         {{-- Filter Toggle (applies to entire page: map + groups list) --}}
         <div class="mb-4 flex gap-2">
             <button wire:click="$set('filter', 'all')"
-                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-all
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-all
                     {{ $filter === 'all'
-                        ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 dark:ring-indigo-800'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600' }}">
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-2 border-primary-200 dark:border-primary-800'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
                 {{ __('floor.filter_all') }}
             </button>
             <button wire:click="$set('filter', 'favorites')"
-                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-semibold transition-all
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-all
                     {{ $filter === 'favorites'
-                        ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 dark:ring-indigo-800'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600' }}">
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-2 border-primary-200 dark:border-primary-800'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
                 <span class="text-lg">★</span> {{ __('floor.filter_favorites') }}
             </button>
         </div>
