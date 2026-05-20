@@ -122,7 +122,9 @@
                                             $isFavorited = (bool) $favPivot;
                                         @endphp
                                         @if($isFavorited)
-                                            <span class="text-sm text-yellow-500">★</span>
+                                            <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
                                         @endif
                                         <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
                                             {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
