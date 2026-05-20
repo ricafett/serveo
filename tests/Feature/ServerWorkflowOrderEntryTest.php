@@ -48,6 +48,9 @@ beforeEach(function () {
     $kitchen = MenuCategory::where('route_type', 'KITCHEN')->first();
     $bar = MenuCategory::where('route_type', 'BAR')->first();
 
+    $this->kitchenCategoryId = $kitchen->id;
+    $this->barCategoryId = $bar->id;
+
     $this->kitchenItem = MenuItem::create(['menu_category_id' => $kitchen->id, 'display_name' => 'Test Dish', 'unit_price' => 12.50, 'is_active' => true]);
     $this->barItem = MenuItem::create(['menu_category_id' => $bar->id, 'display_name' => 'Test Drink', 'unit_price' => 3.50, 'is_active' => true]);
 });
@@ -219,4 +222,78 @@ it('calculates cart total correctly', function () {
         ->call('addToCart', $this->kitchenItem->id)
         ->call('addToCart', $this->barItem->id)
         ->assertSet('cartTotal', 12.50 * 2 + 3.50);
+});
+
+// ------------------------------------------------------------------
+// Item Cart Quantity Lookup
+// ------------------------------------------------------------------
+
+it('returns 0 for item not in cart', function () {
+    $this->actingAs($this->server);
+
+    $component = \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id]);
+
+    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(0);
+});
+
+it('returns correct quantity for item in cart', function () {
+    $this->actingAs($this->server);
+
+    $component = \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('addToCart', $this->kitchenItem->id);
+
+    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(2);
+});
+
+it('returns 0 after item removed from cart', function () {
+    $this->actingAs($this->server);
+
+    $component = \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('decrementCartItem', 0);
+
+    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(0);
+});
+
+// ------------------------------------------------------------------
+// View: Item Card Rendering (no "+", quantity badge, subtotal)
+// ------------------------------------------------------------------
+
+it('does not render plus badge on menu item cards', function () {
+    $this->actingAs($this->server);
+
+    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->assertDontSeeHtml('>+<');
+});
+
+it('shows quantity badge on item card when item is in cart', function () {
+    $this->actingAs($this->server);
+
+    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('selectCategory', $this->kitchenCategoryId)
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('addToCart', $this->kitchenItem->id)
+        ->assertSee('×2');
+});
+
+it('does not show quantity badge when item is not in cart', function () {
+    $this->actingAs($this->server);
+
+    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('decrementCartItem', 0)
+        ->assertDontSee('×');
+});
+
+it('shows subtotal for items in cart', function () {
+    $this->actingAs($this->server);
+
+    // 12.50 × 3 = 37.50
+    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('selectCategory', $this->kitchenCategoryId)
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('addToCart', $this->kitchenItem->id)
+        ->call('addToCart', $this->kitchenItem->id)
+        ->assertSee('37.50');
 });

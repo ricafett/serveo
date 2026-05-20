@@ -87,6 +87,13 @@ class OrderEntry extends Component
         return collect($this->cart)->sum('quantity');
     }
 
+    public function getItemCartQuantity(int $menuItemId): int
+    {
+        $item = collect($this->cart)->firstWhere('menu_item_id', $menuItemId);
+
+        return $item ? $item['quantity'] : 0;
+    }
+
     public function selectCategory(int $categoryId): void
     {
         $this->selectedCategoryId = $categoryId;
