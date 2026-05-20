@@ -98,23 +98,34 @@ class DemoTransactionSeeder extends Seeder
         }
 
         // ---- Second group: closed with full payment ----
-        // Use row B1 (unassigned by CoreSeeder) to avoid overlap with previous runs.
-        // Idempotent: skip if demo group already exists.
-        $group2 = BillingGroup::where('display_code', 'G-DEMO')->first();
+        // Idempotent: skip if any billing group with demo notes already exists.
+        $group2 = BillingGroup::where('notes', 'like', '%demonstração%')->first();
         if (! $group2) {
-            $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Grupo fechado de demonstração');
-            // Update display_code for idempotency check
-            $group2->update(['display_code' => 'G-DEMO']);
-            $zone2a = app(OccupancyService::class)->assignZone($group2, $rowB1, 1, 2, $server);
+            // Find a row with no open zones to avoid overlap.
+            // Prefer row B1 (unassigned by CoreSeeder), fall back to any available row.
+            $targetRow = null;
+            foreach ([$rowB1, $rowA1, $rowA2] as $candidate) {
+                if ($candidate && ! OccupiedZone::where('row_id', $candidate->id)->where('is_open', true)->exists()) {
+                    $targetRow = $candidate;
+                    break;
+                }
+            }
 
-            app(OrderService::class)->submit($group2, $server, [
-                ['menu_item_id' => $bitoque->id, 'quantity' => 2],
-                ['menu_item_id' => $cerveja->id, 'quantity' => 2],
-                ['menu_item_id' => $pudim->id, 'quantity' => 1],
-            ], $zone2a);
+            if ($targetRow) {
+                $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Grupo fechado de demonstração');
+                $zone2a = app(OccupancyService::class)->assignZone($group2, $targetRow, 1, 2, $server);
 
-            $total = $group2->refresh()->chargesTotal();
-            app(BillingService::class)->recordPayment($group2, $cashier, $total, 'MBWay');
+                app(OrderService::class)->submit($group2, $server, [
+                    ['menu_item_id' => $bitoque->id, 'quantity' => 2],
+                    ['menu_item_id' => $cerveja->id, 'quantity' => 2],
+                    ['menu_item_id' => $pudim->id, 'quantity' => 1],
+                ], $zone2a);
+
+                $total = $group2->refresh()->chargesTotal();
+                app(BillingService::class)->recordPayment($group2, $cashier, $total, 'MBWay');
+            } else {
+                $this->command->warn('No available row for demo group (all rows have open zones). Skipping second group.');
+            }
         }
 
         $this->command->info('Demo transactions seeded successfully.');
