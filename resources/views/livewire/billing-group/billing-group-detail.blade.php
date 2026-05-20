@@ -16,6 +16,25 @@
                     </p>
                 </div>
             </div>
+
+            {{-- Favorite toggle (large, touch-friendly) --}}
+            @php
+                $isFavorited = $this->isFavorited;
+                $favPivot = $group?->favoritedBy?->where('id', Auth::id())->first();
+                $isAutoFavorite = $isFavorited && ($favPivot?->pivot?->is_manual === false);
+            @endphp
+            <button
+                type="button"
+                wire:click="toggleFavorite"
+                class="flex items-center justify-center min-h-[48px] min-w-[48px] rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
+            >
+                @if($isFavorited)
+                    <span class="text-3xl text-yellow-500">★</span>
+                @else
+                    <span class="text-3xl text-gray-300 dark:text-gray-600">☆</span>
+                @endif
+            </button>
         </div>
 
         {{-- Actions Bar --}}

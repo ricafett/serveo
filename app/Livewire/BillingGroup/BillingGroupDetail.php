@@ -43,6 +43,7 @@ class BillingGroupDetail extends Component
             'orderHeaders' => fn ($q) => $q->orderBy('ordered_at', 'desc')->with(['items.menuItem', 'occupiedZone.row.section', 'orderedBy']),
             'paymentRecords' => fn ($q) => $q->orderBy('recorded_at', 'desc'),
             'billingDocuments' => fn ($q) => $q->orderBy('created_at', 'desc'),
+            'favoritedBy',
         ])->findOrFail($this->id);
     }
 
@@ -172,6 +173,37 @@ class BillingGroupDetail extends Component
     public function addOrder(): void
     {
         $this->redirect(route('orders.new', ['billingGroupId' => $this->group->id]), navigate: true);
+    }
+
+    public function toggleFavorite(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $pivot = $this->group->favoritedBy()->where('user_id', $user->id)->first();
+
+        if ($pivot) {
+            if ($pivot->pivot->is_manual === false) {
+                $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
+                return;
+            }
+            $this->group->favoritedBy()->detach($user->id);
+        } else {
+            $this->group->favoritedBy()->attach($user->id, ['is_manual' => true]);
+        }
+
+        $this->loadGroup();
+    }
+
+    public function getIsFavoritedProperty(): bool
+    {
+        $user = Auth::user();
+        if (! $user || ! $this->group) {
+            return false;
+        }
+        return $this->group->favoritedBy->where('id', $user->id)->isNotEmpty();
     }
 
     public function render()

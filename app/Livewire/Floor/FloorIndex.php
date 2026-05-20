@@ -220,30 +220,6 @@ class FloorIndex extends Component
         $this->redirect(route('billing-groups.detail', ['id' => $groupId]), navigate: true);
     }
 
-    public function toggleFavorite(int $groupId): void
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return;
-        }
-
-        $group = BillingGroup::findOrFail($groupId);
-        $pivot = $group->favoritedBy()->where('user_id', $user->id)->first();
-
-        if ($pivot) {
-            // Cannot unfavorite if auto-assigned (is_manual = false)
-            if ($pivot->pivot->is_manual === false) {
-                $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
-                return;
-            }
-            $group->favoritedBy()->detach($user->id);
-        } else {
-            $group->favoritedBy()->attach($user->id, ['is_manual' => true]);
-        }
-
-        // Livewire auto-refreshes the view since we modified DB state
-    }
-
     public function createBillingGroup(): void
     {
         $this->errorMessage = null;

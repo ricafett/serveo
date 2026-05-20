@@ -109,29 +109,21 @@
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
                         <div class="relative rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                            {{-- Favorite Button (outside link so it doesn't trigger navigation) --}}
+                            {{-- Favorite indicator (read-only) --}}
                             @php
                                 $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
                                 $isFavorited = (bool) $favPivot;
-                                $isAutoFavorite = $isFavorited && $favPivot->pivot->is_manual === false;
                             @endphp
-                            <button
-                                type="button"
-                                wire:click="toggleFavorite({{ $group->id }})"
-                                class="absolute top-3 right-3 z-10 flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                title="{{ $isAutoFavorite ? __('floor.auto_favorite') : ($isFavorited ? __('floor.unfavorite') : __('floor.favorite')) }}"
-                            >
-                                @if($isFavorited)
-                                    <span class="text-2xl text-yellow-500">★</span>
-                                @else
-                                    <span class="text-2xl text-gray-300 dark:text-gray-600">☆</span>
-                                @endif
-                            </button>
+                            @if($isFavorited)
+                                <div class="absolute top-3 right-3 z-10">
+                                    <span class="text-lg text-yellow-500">★</span>
+                                </div>
+                            @endif
 
                             <a
                                 href="{{ route('billing-groups.detail', ['id' => $group->id]) }}"
                                 wire:navigate
-                                class="block p-4 pr-14 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+                                class="block p-4 @if($isFavorited)pr-12 @else pr-4 @endif hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
                             >
                                 <div class="flex items-center justify-between">
                                     <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
