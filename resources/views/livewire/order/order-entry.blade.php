@@ -147,15 +147,15 @@
                     <div class="text-sm font-medium text-gray-900 dark:text-white leading-tight">{{ $menuItem->display_name }}</div>
                     @php $qty = $this->getItemCartQuantity($menuItem->id); @endphp
                     <div class="mt-2 flex items-center justify-between">
-                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
                             @if($qty > 0)
                                 {{ number_format($menuItem->unit_price * $qty, 2) }}
                             @else
-                                <span class="font-normal text-gray-500 dark:text-gray-400">{{ number_format($menuItem->unit_price, 2) }}</span>
+                                {{ number_format($menuItem->unit_price, 2) }}
                             @endif
                         </span>
                         @if($qty > 0)
-                            <span class="rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 min-w-[1.75rem] h-7 flex items-center justify-center text-xs font-bold px-1.5">×{{ $qty }}</span>
+                            <span class="rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 min-w-[1.75rem] h-7 flex items-center justify-center text-sm font-bold px-1.5">×{{ $qty }}</span>
                         @endif
                     </div>
                 </button>
