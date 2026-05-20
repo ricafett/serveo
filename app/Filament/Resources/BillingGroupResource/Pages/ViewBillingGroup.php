@@ -48,8 +48,9 @@ class ViewBillingGroup extends ViewRecord
                                     ->label(__('app.room')),
                                 Components\TextEntry::make('row.row_code')
                                     ->label(__('floor.row')),
-                                Components\TextEntry::make('rangeLabel')
-                                    ->label(__('app.range')),
+                                Components\TextEntry::make('range_label')
+                                    ->label(__('app.range'))
+                                    ->state(fn (\App\Models\OccupiedZone $record): string => $record->rangeLabel()),
                                 Components\TextEntry::make('server.name')
                                     ->label(__('app.server')),
                                 Components\IconEntry::make('is_open')
