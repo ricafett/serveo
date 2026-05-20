@@ -18,9 +18,14 @@ class OrderEntry extends Component
     public ?int $selectedZoneId = null;
     public ?int $selectedDeliveryPairId = null;
     public ?string $notes = null;
-    public ?int $selectedCategoryId = null;
 
-    public array $cart = [];
+    /** @var array<int, array{id: int, display_name: string, unit_price: float, category_id: int, route_type: string}> */
+    public array $menuItemsData = [];
+
+    /** @var array<int, array{id: int, display_name: string}> */
+    public array $menuCategoriesData = [];
+
+    public ?int $defaultCategoryId = null;
 
     public ?string $errorMessage = null;
     public ?string $successMessage = null;
@@ -34,7 +39,29 @@ class OrderEntry extends Component
             $this->selectedZoneId = $zones->first()->id;
         }
 
-        $this->selectedCategoryId = MenuCategory::where('is_active', true)->orderBy('sort_order')->value('id');
+        $this->defaultCategoryId = MenuCategory::where('is_active', true)->orderBy('sort_order')->value('id');
+
+        $this->menuCategoriesData = MenuCategory::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (MenuCategory $c) => [
+                'id' => $c->id,
+                'display_name' => $c->display_name,
+            ])
+            ->all();
+
+        $this->menuItemsData = MenuItem::with('category')
+            ->where('is_active', true)
+            ->orderBy('display_name')
+            ->get()
+            ->map(fn (MenuItem $item) => [
+                'id' => $item->id,
+                'display_name' => $item->display_name,
+                'unit_price' => (float) $item->unit_price,
+                'category_id' => $item->menu_category_id,
+                'route_type' => $item->category?->route_type ?? 'NONE',
+            ])
+            ->all();
     }
 
     public function getGroupProperty(): ?BillingGroup
@@ -43,24 +70,6 @@ class OrderEntry extends Component
             'occupiedZones' => fn ($q) => $q->where('is_open', true)->with('row.section', 'row.seatPairs'),
             'status',
         ])->find($this->billingGroupId);
-    }
-
-    public function getMenuCategoriesProperty()
-    {
-        return MenuCategory::where('is_active', true)->orderBy('sort_order')->get();
-    }
-
-    public function getMenuItemsProperty()
-    {
-        $query = MenuItem::with('category')
-            ->where('is_active', true)
-            ->orderBy('display_name');
-
-        if ($this->selectedCategoryId) {
-            $query->where('menu_category_id', $this->selectedCategoryId);
-        }
-
-        return $query->get();
     }
 
     public function getZonesProperty()
@@ -77,93 +86,6 @@ class OrderEntry extends Component
         return $this->zones->firstWhere('id', $this->selectedZoneId);
     }
 
-    public function getCartTotalProperty(): float
-    {
-        return collect($this->cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
-    }
-
-    public function getCartItemCountProperty(): int
-    {
-        return collect($this->cart)->sum('quantity');
-    }
-
-    public function getCartQuantitiesProperty(): array
-    {
-        $quantities = [];
-        foreach ($this->cart as $item) {
-            $quantities[$item['menu_item_id']] = $item['quantity'];
-        }
-
-        return $quantities;
-    }
-
-    public function selectCategory(int $categoryId): void
-    {
-        $this->selectedCategoryId = $categoryId;
-    }
-
-    public function addToCart(int $menuItemId): void
-    {
-        // Plain foreach is faster than collect()->search() for small arrays
-        $existingIndex = false;
-        foreach ($this->cart as $index => $item) {
-            if ($item['menu_item_id'] === $menuItemId) {
-                $existingIndex = $index;
-                break;
-            }
-        }
-
-        if ($existingIndex !== false) {
-            $this->cart[$existingIndex]['quantity']++;
-        } else {
-            // Look up from already-loaded menu items to avoid a DB query.
-            // Fall back to DB if the item is in a different category
-            // (e.g. tests that call addToCart without switching categories first).
-            $menuItem = $this->menuItems->firstWhere('id', $menuItemId)
-                ?? MenuItem::find($menuItemId);
-
-            if (! $menuItem) {
-                return;
-            }
-
-            $this->cart[] = [
-                'menu_item_id' => $menuItem->id,
-                'display_name' => $menuItem->display_name,
-                'unit_price' => (float) $menuItem->unit_price,
-                'quantity' => 1,
-                'route_type' => $menuItem->category?->route_type ?? 'NONE',
-            ];
-        }
-
-        $this->errorMessage = null;
-    }
-
-    public function removeFromCart(int $index): void
-    {
-        if (isset($this->cart[$index])) {
-            unset($this->cart[$index]);
-            $this->cart = array_values($this->cart);
-        }
-    }
-
-    public function incrementCartItem(int $index): void
-    {
-        if (isset($this->cart[$index])) {
-            $this->cart[$index]['quantity']++;
-        }
-    }
-
-    public function decrementCartItem(int $index): void
-    {
-        if (isset($this->cart[$index])) {
-            if ($this->cart[$index]['quantity'] > 1) {
-                $this->cart[$index]['quantity']--;
-            } else {
-                $this->removeFromCart($index);
-            }
-        }
-    }
-
     public function setZone(?int $zoneId): void
     {
         $this->selectedZoneId = $zoneId;
@@ -176,7 +98,7 @@ class OrderEntry extends Component
         $this->selectedDeliveryPairId = $pairId;
     }
 
-    public function submitOrder(): void
+    public function submitOrder(array $cart = []): void
     {
         $this->errorMessage = null;
         $this->successMessage = null;
@@ -184,27 +106,32 @@ class OrderEntry extends Component
         $group = $this->group;
         if (! $group) {
             $this->errorMessage = __('Billing group not found.');
+
             return;
         }
 
         if ($group->is_closed) {
             $this->errorMessage = __('Cannot add orders to a closed group.');
+
             return;
         }
 
         if (! $group->serviceSession?->isOpen()) {
             $this->errorMessage = __('No open service session.');
+
             return;
         }
 
-        if (empty($this->cart)) {
+        if (empty($cart)) {
             $this->errorMessage = __('Cart is empty.');
+
             return;
         }
 
         $zone = $this->selectedZone;
         if ($zone && $zone->billing_group_id !== $group->id) {
             $this->errorMessage = __('Invalid zone for this billing group.');
+
             return;
         }
 
@@ -215,12 +142,13 @@ class OrderEntry extends Component
                 || $pair->pair_sequence < $zone->start_seat_pair_sequence
                 || $pair->pair_sequence > $zone->end_seat_pair_sequence) {
                 $this->errorMessage = __('Delivery pair must be within the selected zone.');
+
                 return;
             }
         }
 
         try {
-            $lines = collect($this->cart)->map(fn ($item) => [
+            $lines = collect($cart)->map(fn ($item) => [
                 'menu_item_id' => $item['menu_item_id'],
                 'quantity' => $item['quantity'],
                 'delivery_seat_pair_id' => $this->selectedDeliveryPairId,
@@ -235,7 +163,6 @@ class OrderEntry extends Component
             );
 
             $this->successMessage = __('Order submitted successfully.');
-            $this->cart = [];
             $this->notes = null;
             $this->selectedDeliveryPairId = null;
 

@@ -1,4 +1,8 @@
-<div class="p-4 sm:p-6 lg:p-8">
+<div
+    x-data="orderEntry(@js($menuItemsData), @js($menuCategoriesData), {{ $defaultCategoryId }})"
+    @order-submitted.window="cart = []"
+    class="p-4 sm:p-6 lg:p-8"
+>
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
         <div class="mb-4 flex items-center justify-between">
@@ -84,82 +88,92 @@
             </div>
         @endif
 
-        {{-- Cart Summary --}}
-        @if(count($cart) > 0)
+        {{-- Cart Summary (Alpine) --}}
+        <template x-if="cart.length > 0">
             <div class="mb-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('order.cart') }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">({{ $this->cartItemCount }})</span></h2>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($this->cartTotal, 2) }}</span>
+                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('order.cart') }} <span class="text-sm font-normal text-gray-500 dark:text-gray-400" x-text="'(' + cartItemCount + ')'"></span></h2>
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="cartTotal.toFixed(2)"></span>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                    @foreach($cart as $index => $item)
+                    <template x-for="(item, index) in cart" :key="item.menu_item_id">
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $item['display_name'] }}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ number_format($item['unit_price'], 2) }} · {{ $item['route_type'] }}</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400" x-text="item.unit_price.toFixed(2) + ' · ' + item.route_type"></div>
                             </div>
                             <div class="flex items-center gap-2 ml-3">
                                 <button
                                     type="button"
-                                    wire:click="decrementCartItem({{ $index }})"
+                                    @click="decrement(index)"
                                     class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                                 >
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
                                 </button>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white w-6 text-center">{{ $item['quantity'] }}</span>
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white w-6 text-center" x-text="item.quantity"></span>
                                 <button
                                     type="button"
-                                    wire:click="incrementCartItem({{ $index }})"
+                                    @click="increment(index)"
                                     class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                                 >
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                                 </button>
                             </div>
                         </div>
-                    @endforeach
+                    </template>
                 </div>
             </div>
-        @endif
+        </template>
 
-        {{-- Menu Categories --}}
+        {{-- Menu Categories (Alpine) --}}
         <div class="mb-4">
             <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-                @foreach($this->menuCategories as $category)
+                <template x-for="category in menuCategories" :key="category.id">
                     <button
                         type="button"
-                        wire:click="selectCategory({{ $category->id }})"
-                        class="shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium min-h-[44px] transition-colors {{ $selectedCategoryId === $category->id ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
-                    >
-                        {{ $category->display_name }}
-                    </button>
-                @endforeach
+                        @click="selectCategory(category.id)"
+                        class="shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium min-h-[44px] transition-colors"
+                        :class="selectedCategoryId === category.id
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                        x-text="category.display_name"
+                    ></button>
+                </template>
             </div>
         </div>
 
-        {{-- Menu Items Grid --}}
+        {{-- Menu Items Grid (Alpine) --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-            @foreach($this->menuItems as $menuItem)
+            <template x-for="menuItem in filteredItems" :key="menuItem.id">
                 <button
                     type="button"
-                    wire:click="addToCart({{ $menuItem->id }})"
+                    @click="addToCart(menuItem.id)"
                     class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-left hover:border-primary-300 dark:hover:border-primary-700 transition-colors min-h-[80px] flex flex-col justify-between"
                 >
-                    <div class="text-sm font-medium text-gray-900 dark:text-white leading-tight">{{ $menuItem->display_name }}</div>
-                    @php $qty = $this->cartQuantities[$menuItem->id] ?? 0; @endphp
+                    <div class="text-sm font-medium text-gray-900 dark:text-white leading-tight" x-text="menuItem.display_name"></div>
                     <div class="mt-2 flex items-center justify-between">
                         <span class="text-sm text-gray-500 dark:text-gray-400">
-                            @if($qty > 0)
-                                {{ number_format($menuItem->unit_price * $qty, 2) }}
-                            @else
-                                {{ number_format($menuItem->unit_price, 2) }}
-                            @endif
+                            <template x-if="getItemQuantity(menuItem.id) > 0">
+                                <span x-text="(menuItem.unit_price * getItemQuantity(menuItem.id)).toFixed(2)"></span>
+                            </template>
+                            <template x-if="getItemQuantity(menuItem.id) === 0">
+                                <span x-text="menuItem.unit_price.toFixed(2)"></span>
+                            </template>
                         </span>
-                        @if($qty > 0)
-                            <span class="rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 min-w-[1.75rem] h-7 flex items-center justify-center text-sm font-bold px-1.5">×{{ $qty }}</span>
-                        @endif
+                        <template x-if="getItemQuantity(menuItem.id) > 0">
+                            <span
+                                class="rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 min-w-[1.75rem] h-7 flex items-center justify-center text-sm font-bold px-1.5"
+                                x-text="'×' + getItemQuantity(menuItem.id)"
+                            ></span>
+                        </template>
                     </div>
                 </button>
-            @endforeach
+            </template>
+            <template x-if="filteredItems.length === 0">
+                <div class="col-span-full text-center py-8 text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('order.no_items') }}
+                </div>
+            </template>
         </div>
 
         {{-- Notes --}}
@@ -172,15 +186,78 @@
         <div class="sticky bottom-0 -mx-4 px-4 py-3 bg-gray-50/90 dark:bg-gray-950/90 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-t border-gray-200 dark:border-gray-800 sm:static sm:bg-transparent sm:border-0 sm:px-0 sm:mx-0">
             <button
                 type="button"
-                wire:click="submitOrder"
-                @disabled($this->group?->is_closed || count($cart) === 0)
+                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity }; }))"
+                :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
                 class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {{ __('order.submit') }}
-                @if(count($cart) > 0)
-                    <span class="ml-2 text-xs opacity-75">({{ $this->cartItemCount }} · {{ number_format($this->cartTotal, 2) }})</span>
-                @endif
+                <template x-if="cart.length > 0">
+                    <span class="ml-2 text-xs opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ')'"></span>
+                </template>
             </button>
         </div>
     </div>
 </div>
+
+<script>
+function orderEntry(menuItems, menuCategories, defaultCategoryId) {
+    return {
+        cart: [],
+        selectedCategoryId: defaultCategoryId,
+        menuItems: menuItems,
+        menuCategories: menuCategories,
+
+        get filteredItems() {
+            if (!this.selectedCategoryId) return this.menuItems;
+            return this.menuItems.filter(function (i) { return i.category_id === this.selectedCategoryId; }.bind(this));
+        },
+
+        get cartItemCount() {
+            return this.cart.reduce(function (sum, i) { return sum + i.quantity; }, 0);
+        },
+
+        get cartTotal() {
+            return this.cart.reduce(function (sum, i) { return sum + (i.unit_price * i.quantity); }, 0);
+        },
+
+        getItemQuantity(menuItemId) {
+            var item = this.cart.find(function (i) { return i.menu_item_id === menuItemId; });
+            return item ? item.quantity : 0;
+        },
+
+        addToCart(menuItemId) {
+            var menuItem = this.menuItems.find(function (i) { return i.id === menuItemId; });
+            if (!menuItem) return;
+
+            var existing = this.cart.find(function (i) { return i.menu_item_id === menuItemId; });
+            if (existing) {
+                existing.quantity++;
+            } else {
+                this.cart.push({
+                    menu_item_id: menuItem.id,
+                    display_name: menuItem.display_name,
+                    unit_price: menuItem.unit_price,
+                    quantity: 1,
+                    route_type: menuItem.route_type
+                });
+            }
+        },
+
+        increment(index) {
+            this.cart[index].quantity++;
+        },
+
+        decrement(index) {
+            if (this.cart[index].quantity > 1) {
+                this.cart[index].quantity--;
+            } else {
+                this.cart.splice(index, 1);
+            }
+        },
+
+        selectCategory(id) {
+            this.selectedCategoryId = id;
+        }
+    };
+}
+</script>
