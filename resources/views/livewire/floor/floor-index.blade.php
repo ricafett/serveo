@@ -108,31 +108,29 @@
                 </h2>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($this->openGroups as $group)
-                        <div class="relative rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                            {{-- Favorite indicator (read-only) --}}
-                            @php
-                                $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
-                                $isFavorited = (bool) $favPivot;
-                            @endphp
-                            @if($isFavorited)
-                                <div class="absolute top-3 right-3 z-10">
-                                    <span class="text-lg text-yellow-500">★</span>
-                                </div>
-                            @endif
-
+                        <div class="rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                             <a
                                 href="{{ route('billing-groups.detail', ['id' => $group->id]) }}"
                                 wire:navigate
-                                class="block p-4 @if($isFavorited)pr-12 @else pr-4 @endif hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+                                class="block p-4 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
                             >
                                 <div class="flex items-center justify-between">
                                     <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
-                                        {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                                        {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
-                                        {{ $group->status?->code === 'CHECK_REQUESTED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
-                                    ">
-                                        {{ $group->status?->display_name ?? $group->status?->code }}
+                                    <span class="inline-flex items-center gap-1">
+                                        @php
+                                            $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
+                                            $isFavorited = (bool) $favPivot;
+                                        @endphp
+                                        @if($isFavorited)
+                                            <span class="text-sm text-yellow-500">★</span>
+                                        @endif
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                                            {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                            {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
+                                            {{ $group->status?->code === 'CHECK_REQUESTED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
+                                        ">
+                                            {{ $group->status?->display_name ?? $group->status?->code }}
+                                        </span>
                                     </span>
                                 </div>
                                 <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
