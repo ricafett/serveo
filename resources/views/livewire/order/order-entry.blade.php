@@ -145,7 +145,7 @@
                     class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-left hover:border-primary-300 dark:hover:border-primary-700 transition-colors min-h-[80px] flex flex-col justify-between"
                 >
                     <div class="text-sm font-medium text-gray-900 dark:text-white leading-tight">{{ $menuItem->display_name }}</div>
-                    @php $qty = $this->getItemCartQuantity($menuItem->id); @endphp
+                    @php $qty = $this->cartQuantities[$menuItem->id] ?? 0; @endphp
                     <div class="mt-2 flex items-center justify-between">
                         <span class="text-sm text-gray-500 dark:text-gray-400">
                             @if($qty > 0)

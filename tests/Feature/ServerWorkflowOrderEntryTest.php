@@ -232,8 +232,9 @@ it('returns 0 for item not in cart', function () {
     $this->actingAs($this->server);
 
     $component = \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id]);
+    $quantities = $component->get('cartQuantities');
 
-    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(0);
+    expect($quantities[$this->kitchenItem->id] ?? 0)->toBe(0);
 });
 
 it('returns correct quantity for item in cart', function () {
@@ -243,7 +244,8 @@ it('returns correct quantity for item in cart', function () {
         ->call('addToCart', $this->kitchenItem->id)
         ->call('addToCart', $this->kitchenItem->id);
 
-    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(2);
+    $quantities = $component->get('cartQuantities');
+    expect($quantities[$this->kitchenItem->id])->toBe(2);
 });
 
 it('returns 0 after item removed from cart', function () {
@@ -253,7 +255,8 @@ it('returns 0 after item removed from cart', function () {
         ->call('addToCart', $this->kitchenItem->id)
         ->call('decrementCartItem', 0);
 
-    expect($component->instance()->getItemCartQuantity($this->kitchenItem->id))->toBe(0);
+    $quantities = $component->get('cartQuantities');
+    expect($quantities[$this->kitchenItem->id] ?? 0)->toBe(0);
 });
 
 // ------------------------------------------------------------------

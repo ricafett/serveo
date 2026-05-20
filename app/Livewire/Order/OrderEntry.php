@@ -87,11 +87,14 @@ class OrderEntry extends Component
         return collect($this->cart)->sum('quantity');
     }
 
-    public function getItemCartQuantity(int $menuItemId): int
+    public function getCartQuantitiesProperty(): array
     {
-        $item = collect($this->cart)->firstWhere('menu_item_id', $menuItemId);
+        $quantities = [];
+        foreach ($this->cart as $item) {
+            $quantities[$item['menu_item_id']] = $item['quantity'];
+        }
 
-        return $item ? $item['quantity'] : 0;
+        return $quantities;
     }
 
     public function selectCategory(int $categoryId): void
@@ -101,12 +104,28 @@ class OrderEntry extends Component
 
     public function addToCart(int $menuItemId): void
     {
-        $existingIndex = collect($this->cart)->search(fn ($item) => $item['menu_item_id'] === $menuItemId);
+        // Plain foreach is faster than collect()->search() for small arrays
+        $existingIndex = false;
+        foreach ($this->cart as $index => $item) {
+            if ($item['menu_item_id'] === $menuItemId) {
+                $existingIndex = $index;
+                break;
+            }
+        }
 
         if ($existingIndex !== false) {
             $this->cart[$existingIndex]['quantity']++;
         } else {
-            $menuItem = MenuItem::with('category')->findOrFail($menuItemId);
+            // Look up from already-loaded menu items to avoid a DB query.
+            // Fall back to DB if the item is in a different category
+            // (e.g. tests that call addToCart without switching categories first).
+            $menuItem = $this->menuItems->firstWhere('id', $menuItemId)
+                ?? MenuItem::find($menuItemId);
+
+            if (! $menuItem) {
+                return;
+            }
+
             $this->cart[] = [
                 'menu_item_id' => $menuItem->id,
                 'display_name' => $menuItem->display_name,
