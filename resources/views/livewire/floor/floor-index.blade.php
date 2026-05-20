@@ -5,21 +5,21 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('floor.title') }}</h1>
         </div>
 
-        {{-- Filter Toggle (applies to entire page: map + groups list) --}}
+        {{-- Filter Toggles (independent, combinable) --}}
         <div class="mb-4 flex gap-2">
-            <button wire:click="$set('filter', 'all')"
-                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-all
-                    {{ $filter === 'all'
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-2 border-primary-200 dark:border-primary-800'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
-                {{ __('floor.filter_all') }}
-            </button>
-            <button wire:click="$set('filter', 'favorites')"
-                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-all
-                    {{ $filter === 'favorites'
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-2 border-primary-200 dark:border-primary-800'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
+            <button wire:click="$toggle('favoritesOnly')"
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-colors
+                    {{ $favoritesOnly
+                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                 <span class="text-lg">★</span> {{ __('floor.filter_favorites') }}
+            </button>
+            <button wire:click="$toggle('showFreeSeats')"
+                class="flex-1 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 text-base rounded-xl font-medium transition-colors
+                    {{ $showFreeSeats
+                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                {{ __('floor.filter_free_seats') }}
             </button>
         </div>
 
@@ -49,18 +49,20 @@
                                 {{-- Seat Pair Ranges --}}
                                 <div class="flex flex-wrap gap-1.5">
                                     @foreach($this->getRowRanges($row) as $range)
-                                        {{-- Free ranges always visible --}}
+                                        {{-- Free ranges: hidden when Free Seats off, or when Favorites on and seat not assigned to this server --}}
                                         @if($range['type'] === 'free')
-                                            <button
-                                                type="button"
-                                                wire:click="selectRange({{ $row->id }}, {{ $range['start'] }}, {{ $range['end'] }})"
-                                                class="rounded-lg px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30 transition-colors min-h-[44px] flex items-center"
-                                                title="{{ __('floor.tap_to_open') }}"
-                                            >
-                                                {{ $range['start'] }}–{{ $range['end'] }}
-                                            </button>
-                                        {{-- Occupied ranges: hidden if filter=favorites and group not favorited --}}
-                                        @elseif($filter !== 'favorites' || ($range['group'] && in_array($range['group']->id, $this->favoriteGroupIds)))
+                                            @if($showFreeSeats && (!$favoritesOnly || ($range['default_server_id'] ?? null) === auth()->id()))
+                                                <button
+                                                    type="button"
+                                                    wire:click="selectRange({{ $row->id }}, {{ $range['start'] }}, {{ $range['end'] }})"
+                                                    class="rounded-lg px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30 transition-colors min-h-[44px] flex items-center"
+                                                    title="{{ __('floor.tap_to_open') }}"
+                                                >
+                                                    {{ $range['start'] }}–{{ $range['end'] }}
+                                                </button>
+                                            @endif
+                                        {{-- Occupied ranges: hidden when Favorites on and group not favorited --}}
+                                        @elseif(!$favoritesOnly || ($range['group'] && in_array($range['group']->id, $this->favoriteGroupIds)))
                                             <button
                                                 type="button"
                                                 wire:click="openExistingGroup({{ $range['group']->id ?? 0 }})"

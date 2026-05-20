@@ -61,6 +61,7 @@ class RowResource extends BaseResource
     public static function table(Table $table): Table
     {
         return $table
+            ->selectable()
             ->columns([
                 Tables\Columns\TextColumn::make('section.section_code')->label(__('app.room'))->sortable(),
                 Tables\Columns\TextColumn::make('row_code')->sortable(),
@@ -68,24 +69,26 @@ class RowResource extends BaseResource
                 Tables\Columns\TextColumn::make('seat_pairs_count')->counts('seatPairs')->label(__('app.pairs')),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
-            ->actions([Actions\EditAction::make()])
-            ->bulkActions([
-                Actions\DeleteBulkAction::make(),
-                Tables\Actions\BulkAction::make('assignServer')
-                    ->label(__('app.assign_server'))
-                    ->icon('heroicon-o-user-group')
-                    ->form([
-                        Forms\Components\Select::make('server_id')
-                            ->label(__('app.server'))
-                            ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
-                            ->required(),
-                    ])
-                    ->action(function (array $data, \Illuminate\Database\Eloquent\Collection $records): void {
-                        $records->each(function (Row $row) use ($data): void {
-                            $row->seatPairs()->update(['default_server_id' => $data['server_id']]);
-                        });
-                    })
-                    ->deselectRecordsAfterCompletion(),
+            ->recordActions([Actions\EditAction::make()])
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
+                    Actions\BulkAction::make('assignServer')
+                        ->label(__('app.assign_server'))
+                        ->icon('heroicon-o-user-group')
+                        ->schema([
+                            Forms\Components\Select::make('server_id')
+                                ->label(__('app.server'))
+                                ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
+                                ->required(),
+                        ])
+                        ->action(function (array $data, \Illuminate\Database\Eloquent\Collection $records): void {
+                            $records->each(function (Row $row) use ($data): void {
+                                $row->seatPairs()->update(['default_server_id' => $data['server_id']]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                ]),
             ]);
     }
 

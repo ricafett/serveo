@@ -12,6 +12,7 @@ use App\Models\Row;
 use App\Models\Section;
 use App\Models\ServiceSession;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -20,8 +21,15 @@ class FloorIndex extends Component
     #[Url(as: 'session', keep: true)]
     public ?int $serviceSessionId = null;
 
-    #[Url(as: 'filter', keep: true)]
-    public string $filter = 'all'; // 'all' | 'favorites'
+    /** When true, show only favorited groups (occupied) and only free seats assigned to this server. */
+    #[Url(as: 'fav', keep: true)]
+    #[Session(key: 'floor.favorites_only')]
+    public bool $favoritesOnly = false;
+
+    /** When false, hide all free seat ranges from the map. Does not affect the open groups list. */
+    #[Url(as: 'free', keep: true)]
+    #[Session(key: 'floor.show_free_seats')]
+    public bool $showFreeSeats = true;
 
     public bool $showCreateModal = false;
     public ?int $selectedRowId = null;
@@ -43,6 +51,14 @@ class FloorIndex extends Component
 
     public function mount(): void
     {
+        // URL params take priority over session-stored preferences
+        if (request()->has('fav')) {
+            $this->favoritesOnly = filter_var(request()->query('fav'), FILTER_VALIDATE_BOOLEAN);
+        }
+        if (request()->has('free')) {
+            $this->showFreeSeats = filter_var(request()->query('free'), FILTER_VALIDATE_BOOLEAN);
+        }
+
         if (! $this->serviceSessionId) {
             $session = ServiceSession::where('status', 'OPEN')->latest('starts_at')->first();
             $this->serviceSessionId = $session?->id;
@@ -92,7 +108,7 @@ class FloorIndex extends Component
             ->where('service_session_id', $session->id)
             ->where('is_closed', false);
 
-        if ($this->filter === 'favorites') {
+        if ($this->favoritesOnly) {
             $query->whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user?->id));
         }
 
@@ -120,7 +136,7 @@ class FloorIndex extends Component
     {
         $map = [];
         foreach ($row->seatPairs as $pair) {
-            $map[$pair->pair_sequence] = ['status' => 'free', 'pair' => $pair];
+            $map[$pair->pair_sequence] = ['status' => 'free', 'pair' => $pair, 'default_server_id' => $pair->default_server_id];
         }
 
         foreach ($row->occupiedZones as $zone) {
