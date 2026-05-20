@@ -185,7 +185,13 @@ class BillingGroupDetail extends Component
         $pivot = $this->group->favoritedBy()->where('user_id', $user->id)->first();
 
         if ($pivot) {
-            if ($pivot->pivot->is_manual === false) {
+            // Cannot unfavorite if this server has open zones assigned to this group.
+            $hasAssignedZone = \App\Models\OccupiedZone::where('billing_group_id', $this->group->id)
+                ->where('server_id', $user->id)
+                ->where('is_open', true)
+                ->exists();
+
+            if ($hasAssignedZone || ($pivot->pivot->is_manual === false)) {
                 $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
                 return;
             }
