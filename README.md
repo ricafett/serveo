@@ -181,6 +181,8 @@ For full deployment, hardening and operational steps, see `deployment.md`.
 
 ## Tests
 
+> **Timeout:** The full suite (`run-tests.ps1`) can take 10+ minutes. Use a **20-minute timeout** when running via agent tasks or CI.
+
 Use the PowerShell script for a consistent test environment (automatic `.env` swapping and Dusk server management):
 
 ```powershell
