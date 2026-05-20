@@ -43,7 +43,7 @@
                                         <span class="text-xs text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->format('H:i') }} · {{ number_format($doc->total_amount, 2) }} · {{ $doc->document_status }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }} · {{ $doc->document_status }}</div>
                             </div>
                             @can('billing_document.reprint')
                                 <button type="button" wire:click="reprintBill({{ $doc->id }})" class="rounded-lg px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 min-h-[44px] transition-colors">
@@ -76,7 +76,7 @@
                                         <span class="text-xs text-red-600 dark:text-red-400">({{ __('ticket.void') }})</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $ticket->requested_at?->format('H:i') }} · {{ $ticket->ticket_status }} · {{ $ticket->items?->count() ?? 0 }} {{ __('cashier.items') }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $ticket->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $ticket->ticket_status }} · {{ $ticket->items?->count() ?? 0 }} {{ __('cashier.items') }}</div>
                             </div>
                             @can('production_ticket.reprint')
                                 @if(! $ticket->is_void_slip)

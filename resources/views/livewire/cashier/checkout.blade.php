@@ -92,7 +92,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">#{{ $order->id }}</span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $order->ordered_at?->format('H:i') }}</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $order->ordered_at?->timezone(config('app.timezone'))->format('H:i') }}</span>
                             </div>
                             <span class="text-xs rounded-full px-2 py-0.5 font-medium
                                 {{ $order->submission_status === 'SUBMITTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
@@ -131,7 +131,7 @@
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div>
                                 <div class="text-sm text-gray-900 dark:text-white">{{ number_format($payment->amount, 2) }}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->format('H:i') }} · {{ $payment->payment_label }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $payment->payment_label }}</div>
                             </div>
                             @if($payment->is_voided)
                                 <span class="text-xs text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
@@ -158,7 +158,7 @@
                                         <span class="text-xs text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->format('H:i') }} · {{ number_format($doc->total_amount, 2) }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }}</div>
                             </div>
                             @can('billing_document.reprint')
                                 <button type="button" wire:click="reprintBill({{ $doc->id }})" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 px-2 py-1 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[44px]">

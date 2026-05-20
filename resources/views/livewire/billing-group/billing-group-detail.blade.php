@@ -131,7 +131,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">#{{ $order->id }}</span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $order->ordered_at?->format('H:i') }}</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $order->ordered_at?->timezone(config('app.timezone'))->format('H:i') }}</span>
                                 @if($order->occupiedZone)
                                     <span class="text-xs text-gray-400 dark:text-gray-500">{{ $order->occupiedZone->rangeLabel() }}</span>
                                 @endif
@@ -173,7 +173,7 @@
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div>
                                 <div class="text-sm text-gray-900 dark:text-white">{{ number_format($payment->amount, 2) }}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->format('H:i') }} · {{ $payment->payment_label }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $payment->payment_label }}</div>
                             </div>
                             @if($payment->is_voided)
                                 <span class="text-xs text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>

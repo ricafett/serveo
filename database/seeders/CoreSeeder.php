@@ -390,6 +390,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'opened_at', 'Aberto em'],
             ['pt-PT', 'app', 'closed_at', 'Fechado em'],
             ['pt-PT', 'app', 'range', 'Intervalo'],
+            ['pt-PT', 'app', 'session_already_open', 'Já existe uma sessão aberta neste espaço de evento. Feche-a antes de abrir uma nova.'],
 
             ['en-US', 'app', 'name', 'Serveo'],
             ['en-US', 'app', 'cancel', 'Cancel'],
@@ -521,6 +522,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'opened_at', 'Opened at'],
             ['en-US', 'app', 'closed_at', 'Closed at'],
             ['en-US', 'app', 'range', 'Range'],
+            ['en-US', 'app', 'session_already_open', 'There is already an open session in this venue. Please close it before opening a new one.'],
 
             // ---------- auth ----------
             ['pt-PT', 'auth', 'sign_in', 'Iniciar sessão'],

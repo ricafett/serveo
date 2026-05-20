@@ -8,6 +8,7 @@ use UnitEnum;
 use App\Filament\Resources\ServiceSessionResource\Pages;
 use App\Models\ServiceSession;
 use App\Models\Venue;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
@@ -57,8 +58,26 @@ class ServiceSessionResource extends BaseResource
             ])->required(),
             Forms\Components\TextInput::make('session_label')->required()
                 ->helperText(__('app.helper_text_session_label')),
-            Forms\Components\DateTimePicker::make('starts_at')->required(),
-            Forms\Components\DateTimePicker::make('ends_at')->nullable(),
+            Forms\Components\DateTimePicker::make('starts_at')
+                ->required()
+                ->suffixAction(
+                    Action::make('nowStartsAt')
+                        ->icon('heroicon-o-clock')
+                        ->label('Now')
+                        ->action(function (Action $action) {
+                            $action->getSchemaComponent()?->state(now());
+                        }),
+                ),
+            Forms\Components\DateTimePicker::make('ends_at')
+                ->nullable()
+                ->suffixAction(
+                    Action::make('nowEndsAt')
+                        ->icon('heroicon-o-clock')
+                        ->label('Now')
+                        ->action(function (Action $action) {
+                            $action->getSchemaComponent()?->state(now());
+                        }),
+                ),
             Forms\Components\Select::make('status')->options([
                 'PLANNED' => __('app.status_planned'),
                 'OPEN'    => __('app.status_open'),

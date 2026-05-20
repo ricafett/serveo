@@ -33,7 +33,7 @@ class TicketRenderer
         if ($ticket->delivery_reference_label) {
             $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;
         }
-        $lines[] = __('ticket.time').':  '.$ticket->requested_at?->format('Y-m-d H:i');
+        $lines[] = __('ticket.time').':  '.$this->localTime($ticket->requested_at);
         $lines[] = str_repeat('-', self::WIDTH);
 
         /** @var OrderItem $item */
@@ -65,7 +65,7 @@ class TicketRenderer
         $lines[] = str_repeat('=', self::WIDTH);
         $lines[] = __('ticket.group').':    '.$bill->billingGroup?->display_code;
         $lines[] = __('ticket.document').': '.($bill->document_number ?: '#'.$bill->id);
-        $lines[] = __('ticket.time').':      '.$bill->requested_at?->format('Y-m-d H:i');
+        $lines[] = __('ticket.time').':      '.$this->localTime($bill->requested_at);
         $lines[] = str_repeat('-', self::WIDTH);
 
         $items = collect();
@@ -99,6 +99,11 @@ class TicketRenderer
         $lines[] = $this->center(__('ticket.no_fiscal'));
 
         return implode("\n", $lines)."\n";
+    }
+
+    private function localTime(?\Illuminate\Support\Carbon $carbon): string
+    {
+        return $carbon?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '-';
     }
 
     private function center(string $text): string

@@ -58,14 +58,14 @@ class AccountingExportService
             })->implode('; ');
 
             $paymentsStr = $group->paymentRecords->where('is_voided', false)->map(function ($payment) {
-                return number_format($payment->amount, 2) . ' ' . $payment->payment_label . ' ' . $payment->recorded_at->format('Y-m-d H:i:s');
+                return number_format($payment->amount, 2) . ' ' . $payment->payment_label . ' ' . $payment->recorded_at->timezone(config('app.timezone'))->format('Y-m-d H:i:s');
             })->implode('; ');
 
             fputcsv($handle, [
                 $group->display_code,
                 $group->status?->code ?? '',
-                $group->opened_at?->format('Y-m-d H:i:s') ?? '',
-                $group->closed_at?->format('Y-m-d H:i:s') ?? '',
+                $group->opened_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? '',
+                $group->closed_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? '',
                 number_format($charges, 2, '.', ''),
                 number_format($payments, 2, '.', ''),
                 number_format($balance, 2, '.', ''),

@@ -128,6 +128,7 @@ return array (
   'servers' => 'Servers',
   'closed' => 'Closed',
   'details' => 'Details',
+  'session_already_open' => 'There is already an open session in this venue. Please close it before opening a new one.',
   'opened_at' => 'Opened at',
   'closed_at' => 'Closed at',
   'range' => 'Range',

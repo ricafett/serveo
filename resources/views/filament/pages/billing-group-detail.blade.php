@@ -55,7 +55,7 @@
             @foreach ($group->orderHeaders as $header)
                 <div class="mb-3 rounded border p-3 dark:border-gray-700">
                     <div class="mb-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ __('order.title') }} #{{ $header->id }} · {{ $header->ordered_at?->format('H:i') }} · {{ $header->submission_status }}</span>
+                        <span>{{ __('order.title') }} #{{ $header->id }} · {{ $header->ordered_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $header->submission_status }}</span>
                     </div>
                     <table class="w-full text-sm">
                         <thead>
@@ -104,7 +104,7 @@
                 @forelse ($group->paymentRecords as $p)
                     <div class="text-sm {{ $p->is_voided ? 'line-through text-gray-400 dark:text-gray-500' : '' }}">
                         {{ $p->payment_label }} · {{ number_format((float)$p->amount, 2, ',', ' ') }} EUR ·
-                        {{ $p->recorded_at?->format('Y-m-d H:i') }}
+                        {{ $p->recorded_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
                     </div>
                 @empty
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.no_payments') }}</p>
