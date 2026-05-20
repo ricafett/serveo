@@ -3,13 +3,6 @@
         {{-- Header --}}
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('floor.title') }}</h1>
-            @if($this->session)
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {{ $this->session->session_label }}
-                </p>
-            @else
-                <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ __('floor.no_session') }}</p>
-            @endif
         </div>
 
         {{-- Filter Toggle (applies to entire page: map + groups list) --}}
