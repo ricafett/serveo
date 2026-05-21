@@ -156,8 +156,8 @@ it('renders operational layout with navigation for server', function () {
     $response = $this->actingAs($user)->get('/floor');
     $response->assertOk();
     $response->assertSee('Floor');
-    // Navigation should be present
-    $response->assertSee('User menu', false); // Alpine.js dropdown trigger
+    // Bottom/sidebar navigation should be present on all operational pages
+    $response->assertSee('Dashboard');
 });
 
 it('renders operational layout with navigation for cashier', function () {
@@ -173,7 +173,8 @@ it('includes language switcher in layout', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('SERVER');
 
-    $response = $this->actingAs($user)->get('/floor');
+    // Header (with language switcher) is only on the dashboard
+    $response = $this->actingAs($user)->get('/home');
     $response->assertOk();
     $response->assertSee('language-switcher', false);
     $response->assertSee('EN'); // active locale shown in dropdown trigger
@@ -183,7 +184,8 @@ it('includes theme toggle in layout', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('SERVER');
 
-    $response = $this->actingAs($user)->get('/floor');
+    // Header (with theme toggle) is only on the dashboard
+    $response = $this->actingAs($user)->get('/home');
     $response->assertOk();
     $response->assertSee('theme-toggle', false);
     $response->assertSee('Light');

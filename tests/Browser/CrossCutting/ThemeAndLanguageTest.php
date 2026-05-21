@@ -192,14 +192,17 @@ test('switching to Portuguese updates floor page text', function () {
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Dashboard', 5)
-            ->visit('/floor')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
-        // Open user menu, then click inline PT button directly
+        // Header (with user menu + language switcher) is only on dashboard.
+        // Switch language here before navigating to floor.
         $browser->click('[aria-label="User menu"]')
             ->pause(300)
             ->click('@switch-locale-pt-PT')
+            ->waitForText('Painel', 5);
+
+        // Now navigate to floor and verify Portuguese translations
+        $browser->visit('/floor')
             ->waitForText('Plano de sala', 5);
 
         $browser->assertSee('Plano de sala');
@@ -301,15 +304,18 @@ test('theme persists when navigating to billing group detail via wire:navigate',
             ->type('username', $this->server->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Dashboard', 5)
-            ->visit('/floor')
-            ->waitForText('Floor', 5);
+            ->waitForText('Dashboard', 5);
 
-        // Set theme to dark via the user menu
+        // Header (with user menu + theme toggle) is only on dashboard.
+        // Set theme to dark here before navigating to floor.
         $browser->click('[aria-label="User menu"]')
             ->pause(300)
             ->click('[title="Dark"]')
             ->pause(500);
+
+        // Navigate to floor
+        $browser->visit('/floor')
+            ->waitForText('Floor', 5);
 
         // Verify dark class is present on floor page
         $hasDarkOnFloor = $browser->script('return document.documentElement.classList.contains("dark");')[0];
