@@ -26,7 +26,7 @@
                 @foreach ($group->occupiedZones as $zone)
                     <li class="flex items-center justify-between py-2 text-sm">
                         <div>
-                            <span class="font-medium">{{ $zone->row?->section?->section_code }} · {{ $zone->rangeLabel() }}</span>
+                            <span class="font-medium">{{ $zone->rangeLabel() }}</span>
                             <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('billing.delivery') }}: {{ $zone->defaultDeliveryLabel() }}</span>
                             @if (! $zone->is_open)
                                 <span class="ml-2 rounded-full bg-gray-200 px-2 py-0.5 text-xs dark:bg-gray-700">{{ __('billing.released') }}</span>

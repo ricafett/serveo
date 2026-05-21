@@ -27,8 +27,7 @@ class TicketRenderer
         $lines[] = __('ticket.group').': '.($ticket->billingGroup?->display_code ?? '-');
         if ($ticket->occupiedZone) {
             $z = $ticket->occupiedZone;
-            $section = $z->row?->section?->section_code ?? '?';
-            $lines[] = __('ticket.zone').":  {$section}-{$z->row?->row_code} pares {$z->start_seat_pair_sequence}-{$z->end_seat_pair_sequence}";
+            $lines[] = __('ticket.zone').':  '.$z->rangeLabel();
         }
         if ($ticket->delivery_reference_label) {
             $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;

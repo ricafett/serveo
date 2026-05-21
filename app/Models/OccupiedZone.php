@@ -53,31 +53,80 @@ class OccupiedZone extends Model
     public function defaultDeliveryLabel(): string
     {
         if ($this->default_delivery_mode === 'SPECIFIC' && $this->delivery_seat_pair_id) {
-            return "Pair {$this->deliverySeatPair?->pair_sequence}";
+            return $this->locationForSequence($this->deliverySeatPair?->pair_sequence) ?? "Pair {$this->deliverySeatPair?->pair_sequence}";
         }
 
         return $this->delivery_center_label
-            ?: "Center pair {$this->centerSequence()}";
+            ?: $this->locationForSequence($this->centerSequence()) ?? "Center pair {$this->centerSequence()}";
     }
 
     public function rangeLabel(): string
     {
-        $row = $this->row?->row_code ?? "row {$this->row_id}";
-        return "{$row} pairs {$this->start_seat_pair_sequence}-{$this->end_seat_pair_sequence}";
+        $start = $this->location();
+        $end = $this->endLocation();
+
+        if ($start === $end) {
+            return $start;
+        }
+
+        return "{$start}-{$end}";
+    }
+
+    public function rangeLabelWithCount(): string
+    {
+        $label = $this->rangeLabel();
+        $count = $this->end_seat_pair_sequence - $this->start_seat_pair_sequence + 1;
+
+        if ($count > 1) {
+            $label .= " ({$count})";
+        }
+
+        return $label;
+    }
+
+    public function endLocation(): string
+    {
+        $this->ensureRowSectionLoaded();
+
+        $sectionCode = $this->row?->section?->section_code ?? '';
+        $rowCode = $this->row?->row_code ?? '';
+        $pair = str_pad((string) $this->end_seat_pair_sequence, 2, '0', STR_PAD_LEFT);
+
+        return $sectionCode . $rowCode . $pair;
     }
 
     public function location(): string
     {
-        if (! $this->relationLoaded('row')) {
-            $this->load('row.section');
-        } elseif (! $this->row?->relationLoaded('section')) {
-            $this->row->load('section');
-        }
+        $this->ensureRowSectionLoaded();
 
         $sectionCode = $this->row?->section?->section_code ?? '';
         $rowCode = $this->row?->row_code ?? '';
         $pair = str_pad((string) $this->start_seat_pair_sequence, 2, '0', STR_PAD_LEFT);
 
         return $sectionCode . $rowCode . $pair;
+    }
+
+    private function locationForSequence(?int $sequence): ?string
+    {
+        if ($sequence === null) {
+            return null;
+        }
+
+        $this->ensureRowSectionLoaded();
+
+        $sectionCode = $this->row?->section?->section_code ?? '';
+        $rowCode = $this->row?->row_code ?? '';
+        $pair = str_pad((string) $sequence, 2, '0', STR_PAD_LEFT);
+
+        return $sectionCode . $rowCode . $pair;
+    }
+
+    private function ensureRowSectionLoaded(): void
+    {
+        if (! $this->relationLoaded('row')) {
+            $this->load('row.section');
+        } elseif (! $this->row?->relationLoaded('section')) {
+            $this->row->load('section');
+        }
     }
 }

@@ -49,10 +49,6 @@ class ViewBillingGroup extends ViewRecord
                                 Components\TextEntry::make('location')
                                     ->label(__('app.location'))
                                     ->state(fn (\App\Models\OccupiedZone $record): string => $record->location()),
-                                Components\TextEntry::make('row.section.section_code')
-                                    ->label(__('app.room')),
-                                Components\TextEntry::make('row.row_code')
-                                    ->label(__('floor.row')),
                                 Components\TextEntry::make('range_label')
                                     ->label(__('app.range'))
                                     ->state(fn (\App\Models\OccupiedZone $record): string => $record->rangeLabel()),
@@ -62,7 +58,7 @@ class ViewBillingGroup extends ViewRecord
                                     ->label(__('app.open'))
                                     ->boolean(),
                             ])
-                            ->columns(5),
+                            ->columns(4),
                     ]),
             ]);
     }

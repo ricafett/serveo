@@ -143,9 +143,9 @@
                                         @if($selectedZoneId === null)
                                             {{ __('order.group_level') }}
                                         @else
-                                            {{ $this->selectedZone?->row?->section?->section_code }} · {{ $this->selectedZone?->row?->row_code }} · {{ $this->selectedZone?->rangeLabel() }}
+                                            {{ $this->selectedZone?->rangeLabel() }}
                                                 @if($this->selectedDeliveryPair)
-                                                    · Par {{ $this->selectedDeliveryPair->pair_sequence }}
+                                                    · {{ $this->selectedDeliveryPair->pair_sequence }}
                                                 @endif
                                         @endif
                                     </span>
@@ -172,7 +172,7 @@
                                                 wire:click="setZone({{ $zone->id }})"
                                                 class="rounded-lg px-3 py-2 text-sm font-medium min-h-[44px] transition-colors {{ $selectedZoneId === $zone->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                                             >
-                                                {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
+                                                {{ $zone->rangeLabel() }}
                                             </button>
                                         @endforeach
                                     </div>

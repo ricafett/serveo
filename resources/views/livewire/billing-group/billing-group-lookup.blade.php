@@ -64,7 +64,7 @@
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                             @foreach($group->occupiedZones as $zone)
-                                <div>{{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}</div>
+                                <div>{{ $zone->rangeLabel() }}</div>
                             @endforeach
                         </div>
                         <div class="mt-2 flex items-center justify-between">

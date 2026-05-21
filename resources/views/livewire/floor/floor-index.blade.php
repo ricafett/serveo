@@ -133,7 +133,7 @@
                                 <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                     @foreach($group->occupiedZones as $zone)
                                         <div>
-                                            {{ $zone->row?->section?->section_code }} · {{ $zone->row?->row_code }} · {{ $zone->rangeLabel() }}
+                                            {{ $zone->rangeLabel() }}
                                             @if($zone->server)
                                                 <span class="text-xs text-blue-600 dark:text-blue-400">({{ $zone->server->name }})</span>
                                             @endif
@@ -208,10 +208,13 @@
                 @if($selectedRowId && $zoneStartSeq && $zoneEndSeq)
                     @php
                         $selectedRow = \App\Models\Row::with('section')->find($selectedRowId);
+                        $startLoc = $selectedRow?->section?->section_code . $selectedRow?->row_code . str_pad((string) $zoneStartSeq, 2, '0', STR_PAD_LEFT);
+                        $endLoc = $selectedRow?->section?->section_code . $selectedRow?->row_code . str_pad((string) $zoneEndSeq, 2, '0', STR_PAD_LEFT);
+                        $pairCount = $zoneEndSeq - $zoneStartSeq + 1;
                     @endphp
                     <div class="mb-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-3 text-sm text-primary-700 dark:text-primary-300">
                         <div class="font-medium">{{ __('floor.selected_range') }}</div>
-                        <div>{{ $selectedRow?->section?->name }} · {{ __('floor.row') }} {{ $selectedRow?->row_code }} · {{ __('app.pairs') }} {{ $zoneStartSeq }}–{{ $zoneEndSeq }}</div>
+                        <div>{{ $startLoc }}–{{ $endLoc }}@if($pairCount > 1) ({{ $pairCount }})@endif</div>
                     </div>
                 @endif
 

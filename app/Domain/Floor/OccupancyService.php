@@ -47,7 +47,7 @@ class OccupancyService
 
             if ($conflict) {
                 throw new ZoneOverlapException(
-                    "Range overlaps zone #{$conflict->id} (pairs {$conflict->start_seat_pair_sequence}-{$conflict->end_seat_pair_sequence})"
+                    "Range overlaps zone #{$conflict->id} ({$conflict->rangeLabel()})"
                 );
             }
 
@@ -66,7 +66,7 @@ class OccupancyService
 
             Audit::record(
                 'OCCUPIED_ZONE_OPENED',
-                "Zona aberta em {$row->row_code} pares {$startSeq}-{$endSeq} para grupo {$group->display_code}",
+                "Zona aberta {$zone->rangeLabel()} para grupo {$group->display_code}",
                 ['start' => $startSeq, 'end' => $endSeq, 'row_id' => $row->id],
                 ['billing_group_id' => $group->id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
             );

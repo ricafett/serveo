@@ -52,9 +52,7 @@ class AccountingExportService
             $balance = round($charges - $payments, 2);
 
             $zones = $group->occupiedZones->map(function ($zone) {
-                $section = $zone->row?->section?->section_code ?? '';
-                $row = $zone->row?->row_code ?? '';
-                return "{$section}/{$row} pairs {$zone->start_seat_pair_sequence}-{$zone->end_seat_pair_sequence}";
+                return $zone->rangeLabel();
             })->implode('; ');
 
             $paymentsStr = $group->paymentRecords->where('is_voided', false)->map(function ($payment) {

@@ -97,7 +97,7 @@ it('shows billing group detail with zones', function () {
     $response = $this->actingAs($this->server)->get("/billing-groups/{$group->id}");
     $response->assertOk();
     $response->assertSee($group->display_code);
-    $response->assertSee('pairs 1-5');
+    $response->assertSee('TESTT101-TESTT105');
     $response->assertSee('Occupied Zones');
 });
 
