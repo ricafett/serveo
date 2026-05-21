@@ -51,7 +51,7 @@
                         class="block rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-left hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
                     >
                         <div class="flex items-center justify-between mb-2">
-                            <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">{{ $group->longLabel() }}</span>
                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
                                 {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
                                 {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}

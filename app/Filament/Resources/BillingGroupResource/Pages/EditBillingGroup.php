@@ -3,17 +3,15 @@
 namespace App\Filament\Resources\BillingGroupResource\Pages;
 
 use App\Filament\Resources\BillingGroupResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
 
-class ListBillingGroups extends ListRecords
+class EditBillingGroup extends EditRecord
 {
     protected static string $resource = BillingGroupResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [DeleteAction::make()];
     }
 }

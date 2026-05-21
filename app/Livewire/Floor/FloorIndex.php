@@ -37,6 +37,7 @@ class FloorIndex extends Component
     public ?int $selectedEndSeq = null;
 
     // Create billing group form
+    public ?string $name = null;
     public ?string $statusCode = null;
     public ?int $coverCount = null;
     public ?string $notes = null;
@@ -252,6 +253,7 @@ class FloorIndex extends Component
         }
 
         $this->validate([
+            'name' => 'required|string|max:255',
             'statusCode' => 'required|string',
             'coverCount' => 'nullable|integer|min:1',
             'notes' => 'nullable|string|max:500',
@@ -270,6 +272,7 @@ class FloorIndex extends Component
                 $this->coverCount,
                 $this->notes,
                 $this->statusCode,
+                $this->name,
             );
 
             app(OccupancyService::class)->assignZone(
@@ -282,7 +285,7 @@ class FloorIndex extends Component
             );
 
             $this->showCreateModal = false;
-            $this->reset(['statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
+            $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
             $this->statusCode = BillingStatus::ACTIVE;
 
             $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
@@ -297,7 +300,7 @@ class FloorIndex extends Component
     {
         $this->showCreateModal = false;
         $this->errorMessage = null;
-        $this->reset(['statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
+        $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
         $this->statusCode = BillingStatus::ACTIVE;
     }
 

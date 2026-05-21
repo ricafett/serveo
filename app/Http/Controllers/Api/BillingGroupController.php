@@ -24,6 +24,7 @@ class BillingGroupController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'name'       => ['nullable', 'string', 'max:255'],
             'statusCode' => ['required', 'string', 'exists:billing_statuses,code'],
             'coverCount' => ['nullable', 'integer', 'min:1'],
             'notes'      => ['nullable', 'string', 'max:500'],
@@ -50,6 +51,7 @@ class BillingGroupController extends ApiController
                     $validated['coverCount'] ?? null,
                     $validated['notes'] ?? null,
                     $validated['statusCode'] ?? null,
+                    $validated['name'] ?? null,
                 );
 
                 // Create zones if provided
@@ -239,6 +241,7 @@ class BillingGroupController extends ApiController
         return $this->success([
             'billingGroupId' => $billingGroup->id,
             'displayCode'    => $billingGroup->display_code,
+            'displayLabel'   => $billingGroup->longLabel(),
             'statusCode'     => $billingGroup->status?->code,
             'zones'          => $billingGroup->occupiedZones->map(fn ($z) => [
                 'occupiedZoneId' => $z->id,
@@ -293,6 +296,8 @@ class BillingGroupController extends ApiController
         $dto = [
             'billingGroupId' => $group->id,
             'displayCode'    => $group->display_code,
+            'name'           => $group->name,
+            'displayLabel'   => $group->longLabel(),
             'statusCode'     => $group->status?->code,
             'statusLabel'    => $group->status?->display_name,
             'coverCount'     => $group->cover_count,

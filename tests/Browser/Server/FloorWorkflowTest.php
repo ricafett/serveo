@@ -86,6 +86,7 @@ test('server can create billing group and see it as occupied', function () {
         $browser->with('main', function (Browser $main) {
             $main->press('1–10')
                 ->waitForText('Open Billing Group', 3)
+                ->type('#name', 'Test Group')
                 ->type('#cover-count', 4)
                 ->press('Open Billing Group')
                 ->waitForText('Occupied Zones', 5);

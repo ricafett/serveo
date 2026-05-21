@@ -12,7 +12,7 @@
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('billing.checkout') }}</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $group?->display_code }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $group?->longLabel() }}</p>
                 </div>
             </div>
             @if($group?->is_closed)

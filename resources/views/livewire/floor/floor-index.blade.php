@@ -67,11 +67,11 @@
                                                 type="button"
                                                 wire:click="openExistingGroup({{ $range['group']->id ?? 0 }})"
                                                 class="rounded-lg px-3 py-2 text-sm font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors min-h-[44px] flex items-center gap-1.5"
-                                                title="{{ $range['group']->display_code ?? '' }} — {{ $range['group']->status?->display_name ?? $range['group']->status?->code ?? '' }}"
+                                                title="{{ $range['group']->name ?? $range['group']->display_code ?? '' }} — {{ $range['group']->status?->display_name ?? $range['group']->status?->code ?? '' }}"
                                             >
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
                                                 {{ $range['start'] }}–{{ $range['end'] }}
-                                                <span class="text-xs opacity-75">{{ $range['group']->display_code ?? '' }}</span>
+                                                <span class="text-xs opacity-75">{{ \Illuminate\Support\Str::limit($range['group']->name ?? $range['group']->display_code, 20) }}</span>
                                                 @if($range['server'] ?? null)
                                                     <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded px-1.5 py-0.5 font-medium">
                                                         {{ strtoupper(substr($range['server']->name, 0, 2)) }}
@@ -110,7 +110,7 @@
                                 class="block p-4 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
                             >
                                 <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $group->display_code }}</span>
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $group->name ?? $group->display_code }}</span>
                                     <span class="inline-flex items-center gap-1">
                                         @php
                                             $favPivot = $group->favoritedBy->where('id', Auth::id())->first();
@@ -217,6 +217,12 @@
 
                 {{-- Form --}}
                 <form wire:submit.prevent="createBillingGroup" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.name') }}</label>
+                        <input id="name" type="text" wire:model="name" required maxlength="255" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
+                        @error('name') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.status') }}</label>
                         <select id="status-code" wire:model="statusCode" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">

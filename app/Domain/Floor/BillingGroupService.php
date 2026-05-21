@@ -21,6 +21,7 @@ class BillingGroupService
         ?int $coverCount = null,
         ?string $notes = null,
         ?string $initialStatusCode = null,
+        ?string $name = null,
     ): BillingGroup {
         $this->ensureCan($actor, 'floor.open_billing_group');
 
@@ -28,7 +29,7 @@ class BillingGroupService
             throw new RuntimeException('Service session is not open.');
         }
 
-        return DB::transaction(function () use ($session, $actor, $coverCount, $notes, $initialStatusCode) {
+        return DB::transaction(function () use ($session, $actor, $coverCount, $notes, $initialStatusCode, $name) {
             $statusId = BillingStatus::where('code', $initialStatusCode ?? BillingStatus::ACTIVE)->value('id');
 
             $next = (int) BillingGroup::where('service_session_id', $session->id)->count() + 1;
@@ -37,6 +38,7 @@ class BillingGroupService
             $group = BillingGroup::create([
                 'service_session_id' => $session->id,
                 'display_code'       => $code,
+                'name'               => $name,
                 'billing_status_id'  => $statusId,
                 'cover_count'        => $coverCount,
                 'notes'              => $notes,
@@ -46,9 +48,11 @@ class BillingGroupService
                 'version_number'     => 1,
             ]);
 
+            $groupName = $name ? "\"{$name}\" ({$code})" : $code;
+
             Audit::record(
                 'BILLING_GROUP_OPENED',
-                "Grupo {$code} aberto por {$actor->name}",
+                "Grupo {$groupName} aberto por {$actor->name}",
                 ['cover_count' => $coverCount],
                 ['billing_group_id' => $group->id, 'service_session_id' => $session->id, 'actor_user_id' => $actor->id],
             );

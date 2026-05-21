@@ -19,6 +19,8 @@ class ViewBillingGroup extends ViewRecord
             ->schema([
                 \Filament\Schemas\Components\Section::make(__('app.details'))
                     ->schema([
+                        Components\TextEntry::make('name')
+                            ->label(__('billing.name')),
                         Components\TextEntry::make('display_code')
                             ->label(__('app.code')),
                         Components\TextEntry::make('status.display_name')
@@ -44,6 +46,9 @@ class ViewBillingGroup extends ViewRecord
                         Components\RepeatableEntry::make('occupiedZones')
                             ->label('')
                             ->schema([
+                                Components\TextEntry::make('location')
+                                    ->label(__('app.location'))
+                                    ->state(fn (\App\Models\OccupiedZone $record): string => $record->location()),
                                 Components\TextEntry::make('row.section.section_code')
                                     ->label(__('app.room')),
                                 Components\TextEntry::make('row.row_code')

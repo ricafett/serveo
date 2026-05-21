@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BillingGroup extends Model
 {
     protected $fillable = [
-        'service_session_id', 'display_code', 'billing_status_id',
+        'service_session_id', 'display_code', 'name', 'billing_status_id',
         'cover_count', 'notes', 'opened_by_user_id',
         'opened_at', 'closed_at', 'is_closed', 'version_number',
     ];
@@ -109,5 +109,25 @@ class BillingGroup extends Model
     public function balance(): float
     {
         return round($this->chargesTotal() - $this->paymentsTotal(), 2);
+    }
+
+    public function longLabel(): string
+    {
+        $label = $this->name ?: $this->display_code;
+
+        $zones = $this->relationLoaded('occupiedZones')
+            ? $this->occupiedZones
+            : $this->occupiedZones()->with('row.section')->get();
+
+        $locations = $zones
+            ->map(fn ($z) => $z->location())
+            ->filter()
+            ->values();
+
+        if ($locations->isNotEmpty()) {
+            $label .= ' (' . $locations->join(', ') . ')';
+        }
+
+        return $label;
     }
 }

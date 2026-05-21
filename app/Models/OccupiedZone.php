@@ -65,4 +65,19 @@ class OccupiedZone extends Model
         $row = $this->row?->row_code ?? "row {$this->row_id}";
         return "{$row} pairs {$this->start_seat_pair_sequence}-{$this->end_seat_pair_sequence}";
     }
+
+    public function location(): string
+    {
+        if (! $this->relationLoaded('row')) {
+            $this->load('row.section');
+        } elseif (! $this->row?->relationLoaded('section')) {
+            $this->row->load('section');
+        }
+
+        $sectionCode = $this->row?->section?->section_code ?? '';
+        $rowCode = $this->row?->row_code ?? '';
+        $pair = str_pad((string) $this->start_seat_pair_sequence, 2, '0', STR_PAD_LEFT);
+
+        return $sectionCode . $rowCode . $pair;
+    }
 }

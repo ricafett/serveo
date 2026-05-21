@@ -1,8 +1,10 @@
 <?php
 
 return array (
-  'group_title' => 'Group',
-  'assign_zone' => 'Assign Zone',
+    'group_title' => 'Group',
+    'name' => 'Name',
+    'name_placeholder' => 'e.g. Smith Family',
+    'assign_zone' => 'Assign Zone',
   'start_pair' => 'Start Pair',
   'end_pair' => 'End Pair',
   'delivery_label' => 'Delivery Label',

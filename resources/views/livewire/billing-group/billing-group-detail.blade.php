@@ -7,7 +7,7 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                 </a>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $group?->display_code }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $group?->longLabel() }}</h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $group?->status?->display_name ?? $group?->status?->code }}
                         @if($group?->is_closed)

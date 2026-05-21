@@ -41,7 +41,7 @@ class BillingGroupDetail extends Page
 
     public static function getSlug(?\Filament\Panel $panel = null): string
     {
-        return 'billing-groups/{record}';
+        return 'billing-groups-detail/{record}';
     }
 
     public ?int $record = null;

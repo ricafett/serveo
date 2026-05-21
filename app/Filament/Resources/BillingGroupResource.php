@@ -4,9 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BillingGroupResource\Pages;
 use App\Models\BillingGroup;
+use App\Models\BillingStatus;
+use App\Models\ServiceSession;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -27,11 +30,56 @@ class BillingGroupResource extends BaseResource
         return Auth::user()?->can('venue.configure') ?? false;
     }
 
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->can('venue.configure') ?? false;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->schema([
+            Forms\Components\TextInput::make('name')
+                ->label(__('billing.name'))
+                ->required()
+                ->maxLength(255),
+
+            Forms\Components\Select::make('billing_status_id')
+                ->label(__('app.status'))
+                ->options(BillingStatus::where('is_active', true)->orderBy('sort_order')->pluck('display_name', 'id'))
+                ->required(),
+
+            Forms\Components\Select::make('service_session_id')
+                ->label(__('app.session'))
+                ->options(ServiceSession::orderBy('starts_at', 'desc')->pluck('session_label', 'id'))
+                ->required(),
+
+            Forms\Components\TextInput::make('cover_count')
+                ->label(__('app.cover_count'))
+                ->numeric()
+                ->minValue(1),
+
+            Forms\Components\Textarea::make('notes')
+                ->label(__('app.notes'))
+                ->maxLength(500)
+                ->rows(2),
+        ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->selectable()
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('billing.name'))
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('display_code')
                     ->label(__('app.code'))
                     ->sortable()
@@ -119,8 +167,10 @@ class BillingGroupResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBillingGroups::route('/'),
-            'view'  => Pages\ViewBillingGroup::route('/{record}'),
+            'index'  => Pages\ListBillingGroups::route('/'),
+            'create' => Pages\CreateBillingGroup::route('/create'),
+            'edit'   => Pages\EditBillingGroup::route('/{record}/edit'),
+            'view'   => Pages\ViewBillingGroup::route('/{record}/view'),
         ];
     }
 }

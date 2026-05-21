@@ -26,7 +26,7 @@ return array (
   'no_bill_reprint' => 'No bill to reprint',
   'reprint_sent' => 'Reprint sent',
   'billing_groups' => 'Billing Groups',
-  'search_placeholder' => 'Search by code or section...',
+    'search_placeholder' => 'Search by name, code or section...',
   'no_groups_found' => 'No billing groups found.',
   'amount' => 'Amount',
   'payment_method' => 'Payment Method',

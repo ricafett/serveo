@@ -61,6 +61,7 @@ return array (
   'agent_internal_id' => 'Internal agent ID',
   'last_seen' => 'Last seen',
   'room' => 'Room',
+  'location' => 'Location',
   'navigation_group_operation' => 'Operation',
   'navigation_group_config' => 'Configuration',
   'navigation_label_accounting_exports' => 'Accounting Exports',
