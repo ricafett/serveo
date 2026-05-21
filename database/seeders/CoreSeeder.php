@@ -612,6 +612,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'order', 'center', 'Centro'],
             ['pt-PT', 'order', 'order_entry', 'Novo pedido'],
             ['pt-PT', 'order', 'unauthorized', 'Não autorizado'],
+            ['pt-PT', 'order', 'menu_tab', 'Menu'],
+            ['pt-PT', 'order', 'order_tab', 'Pedido'],
+            ['pt-PT', 'order', 'delivery', 'Entrega'],
+            ['pt-PT', 'order', 'no_items', 'Sem items nesta categoria.'],
 
             ['en-US', 'order', 'title', 'Order'],
             ['en-US', 'order', 'new_order', 'New Order'],
@@ -632,6 +636,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'order', 'center', 'Center'],
             ['en-US', 'order', 'order_entry', 'Order Entry'],
             ['en-US', 'order', 'unauthorized', 'Unauthorized'],
+            ['en-US', 'order', 'menu_tab', 'Menu'],
+            ['en-US', 'order', 'order_tab', 'Order'],
+            ['en-US', 'order', 'delivery', 'Delivery'],
+            ['en-US', 'order', 'no_items', 'No items in this category.'],
 
             // ---------- billing ----------
             ['pt-PT', 'billing', 'group_title', 'Grupo'],

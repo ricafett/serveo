@@ -18,6 +18,10 @@ return array (
   'order_failed' => 'Failed to submit order',
   'group_level' => 'Group level',
   'center' => 'Center',
-  'order_entry' => 'Order Entry',
-  'unauthorized' => 'Unauthorized',
+    'order_entry' => 'Order Entry',
+    'unauthorized' => 'Unauthorized',
+    'menu_tab' => 'Menu',
+    'order_tab' => 'Order',
+    'delivery' => 'Delivery',
+    'no_items' => 'No items in this category.',
 );
