@@ -156,7 +156,7 @@ class FloorIndex extends Component
 
     /**
      * Build contiguous ranges from the occupancy map.
-     * Returns array of ['type' => 'free'|'occupied', 'start' => int, 'end' => int, 'zone' => ?, 'group' => ?].
+     * Returns array of ['type' => 'free'|'occupied', 'start' => int, 'end' => int, 'zone' => ?, 'group' => ?, 'server' => ?, 'default_server_id' => int|null].
      */
     public function getRowRanges(Row $row): array
     {
@@ -170,6 +170,8 @@ class FloorIndex extends Component
         $currentStart = null;
         $currentZone = null;
         $currentGroup = null;
+        $currentServer = null;
+        $currentDefaultServerId = null;
 
         // Sort by pair sequence
         ksort($map);
@@ -178,12 +180,16 @@ class FloorIndex extends Component
             $type = $data['status'];
             $zone = $data['zone'] ?? null;
             $group = $data['group'] ?? null;
+            $server = $data['server'] ?? null;
+            $defaultServerId = $data['default_server_id'] ?? null;
 
             if ($currentType === null) {
                 $currentType = $type;
                 $currentStart = $seq;
                 $currentZone = $zone;
                 $currentGroup = $group;
+                $currentServer = $server;
+                $currentDefaultServerId = $defaultServerId;
                 continue;
             }
 
@@ -199,12 +205,16 @@ class FloorIndex extends Component
                 'end' => $seq - 1,
                 'zone' => $currentZone,
                 'group' => $currentGroup,
+                'server' => $currentServer,
+                'default_server_id' => $currentDefaultServerId,
             ];
 
             $currentType = $type;
             $currentStart = $seq;
             $currentZone = $zone;
             $currentGroup = $group;
+            $currentServer = $server;
+            $currentDefaultServerId = $defaultServerId;
         }
 
         // Close last range
@@ -215,6 +225,8 @@ class FloorIndex extends Component
             'end' => $lastSeq,
             'zone' => $currentZone,
             'group' => $currentGroup,
+            'server' => $currentServer,
+            'default_server_id' => $currentDefaultServerId,
         ];
 
         return $ranges;
@@ -230,6 +242,29 @@ class FloorIndex extends Component
         $this->zoneEndSeq = $endSeq;
         $this->showCreateModal = true;
         $this->errorMessage = null;
+    }
+
+    public function rowHasVisibleRanges(Row $row): bool
+    {
+        $ranges = $this->getRowRanges($row);
+        $favoriteGroupIds = $this->favoriteGroupIds;
+        $favoritesOnly = $this->favoritesOnly;
+        $showFreeSeats = $this->showFreeSeats;
+        $userId = auth()->id();
+
+        foreach ($ranges as $range) {
+            if ($range['type'] === 'free') {
+                if ($showFreeSeats && (! $favoritesOnly || ($range['default_server_id'] ?? null) === $userId)) {
+                    return true;
+                }
+            } else {
+                if (! $favoritesOnly || ($range['group'] && in_array($range['group']->id, $favoriteGroupIds))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function openExistingGroup(int $groupId): void

@@ -25,7 +25,10 @@
 
         {{-- Sections & Rows --}}
         <div class="space-y-6">
-            @forelse($this->sections as $section)
+            @php
+                $visibleSections = $this->sections->filter(fn($s) => $s->rows->contains(fn($r) => $this->rowHasVisibleRanges($r)));
+            @endphp
+            @forelse($visibleSections as $section)
                 <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
                     {{-- Section Header --}}
                     <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
@@ -35,6 +38,7 @@
                     {{-- Rows --}}
                     <div class="p-4 space-y-4">
                         @foreach($section->rows as $row)
+                            @continue(!$this->rowHasVisibleRanges($row))
                             <div>
                                 {{-- Row Label --}}
                                 <div class="flex items-center justify-between mb-2">
@@ -72,11 +76,6 @@
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
                                                 {{ $range['start'] }}–{{ $range['end'] }}
                                                 <span class="text-xs opacity-75">{{ \Illuminate\Support\Str::limit($range['group']->name ?? $range['group']->display_code, 20) }}</span>
-                                                @if($range['server'] ?? null)
-                                                    <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded px-1.5 py-0.5 font-medium">
-                                                        {{ strtoupper(substr($range['server']->name, 0, 2)) }}
-                                                    </span>
-                                                @endif
                                             </button>
                                         @endif
                                     @endforeach

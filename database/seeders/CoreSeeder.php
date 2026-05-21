@@ -289,7 +289,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'select', 'Selecionar'],
             ['pt-PT', 'app', 'pairs', 'Lugares'],
             ['pt-PT', 'app', 'pair', 'Lugar'],
-            ['pt-PT', 'app', 'covers', 'Coberturas'],
+            ['pt-PT', 'app', 'covers', 'Pessoas'],
             ['pt-PT', 'app', 'charges', 'Consumo'],
             ['pt-PT', 'app', 'venue', 'Espaço'],
             ['pt-PT', 'app', 'category', 'Categoria'],
