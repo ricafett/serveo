@@ -86,6 +86,15 @@ class OrderEntry extends Component
         return $this->zones->firstWhere('id', $this->selectedZoneId);
     }
 
+    public function getSelectedDeliveryPairProperty(): ?SeatPair
+    {
+        if (! $this->selectedDeliveryPairId) {
+            return null;
+        }
+
+        return SeatPair::find($this->selectedDeliveryPairId);
+    }
+
     public function setZone(?int $zoneId): void
     {
         $this->selectedZoneId = $zoneId;

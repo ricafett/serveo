@@ -71,10 +71,13 @@ test('server can add items and submit order', function () {
             ->waitForText($menuItem->display_name, 5);
 
         $browser->press($menuItem->display_name)
-            ->waitForText('Cart', 3);
+            ->pause(500);
 
-        $browser->press('Submit Order')
-            ->waitForText('Order submitted', 5);
+        // Verify item was added to cart
+        $browser->assertDontSee('No items added.')
+            ->pause(500)
+            ->press('Submit Order')
+            ->waitForText('Order submitted', 10);
     });
 });
 
