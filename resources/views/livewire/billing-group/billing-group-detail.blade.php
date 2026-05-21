@@ -9,7 +9,7 @@
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $group?->longLabel() }}</h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {{ $group?->status?->display_name ?? $group?->status?->code }}
+                        {{ $group?->display_code }} · {{ $group?->status?->display_name ?? $group?->status?->code }}
                         @if($group?->is_closed)
                             <span class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('app.closed') }}</span>
                         @endif
@@ -82,7 +82,7 @@
                 @forelse($group?->occupiedZones ?? [] as $zone)
                     <div class="px-4 py-3 flex items-center justify-between">
                     <div>
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $zone->rangeLabel() }}</div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $zone->rangeLabelWithCount() }}</div>
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             {{ $zone->defaultDeliveryLabel() }}
                             @if($zone->server)
