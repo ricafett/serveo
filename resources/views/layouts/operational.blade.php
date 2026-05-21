@@ -60,7 +60,8 @@
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <div class="min-h-screen flex flex-col">
-        {{-- Top Bar --}}
+        {{-- Top Bar — only on the home/dashboard page --}}
+        @if(request()->routeIs('home'))
         <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
                 <div class="flex items-center justify-between h-14">
@@ -141,6 +142,7 @@
                 </div>
             </div>
         </header>
+        @endif
 
         {{-- Main Content --}}
         <main class="flex-1 overflow-y-auto pb-20 sm:pb-6">
