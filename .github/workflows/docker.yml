@@ -57,17 +57,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push app image
+      - name: Build app image (load for validation)
         uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           file: docker/app/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          push: false
+          load: true
+          tags: serveo-app:ci
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: ${{ github.event_name == 'workflow_dispatch' && inputs.no_cache }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Validate app image
+        run: |
+          echo "Verifying image structure..."
+          docker run --rm --entrypoint php serveo-app:ci -v
+          docker run --rm --entrypoint php serveo-app:ci -m | grep -qE 'pdo_pgsql|redis|gd|intl|bcmath|pcntl' && echo "Required extensions OK"
+          docker run --rm --entrypoint ls serveo-app:ci /var/www/html/vendor/autoload.php && echo "Composer autoload OK"
+          echo "Image validation passed."
+
+      - name: Push app image
+        if: github.event_name != 'pull_request'
+        run: |
+          for tag in ${{ steps.meta.outputs.tags }}; do
+            docker tag serveo-app:ci "$tag"
+            docker push "$tag"
+          done
 
   build-web:
     runs-on: ubuntu-latest

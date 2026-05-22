@@ -24,13 +24,16 @@ docs/
 # CI
 .github/
 
-# Storage (runtime data, not needed in image)
+# Storage & bootstrap cache (runtime data, not needed in image)
 storage/logs/
 storage/framework/cache/
 storage/framework/sessions/
 storage/framework/views/
 storage/framework/testing/
 storage/debugbar/
+
+# Bootstrap cache files (generated at runtime by artisan optimize)
+bootstrap/cache/*.php
 
 # IDE
 .idea/
