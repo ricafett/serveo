@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-8" x-data="{ createModalOpen: @entangle('showCreateModal') }">
+<div class="p-4 sm:p-6 lg:p-8" x-data="{ createModalOpen: @entangle('showCreateModal') }" wire:poll.15s>
     <div class="max-w-7xl mx-auto">
         {{-- Header --}}
         <div class="mb-6">

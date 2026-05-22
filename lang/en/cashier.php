@@ -38,4 +38,6 @@ return array (
   'open_group_for_reprint' => 'Open a billing group from lookup to access reprint options.',
   'reprint_documents' => 'Reprint & Documents',
   'unauthorized' => 'Unauthorized',
+  'last_updated' => 'Last updated',
+  'refresh' => 'Refresh',
 );

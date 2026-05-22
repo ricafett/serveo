@@ -15,6 +15,8 @@ class BillingGroupLookup extends Component
     #[Url(as: 'showClosed')]
     public bool $showClosed = false;
 
+    public ?string $lastUpdated = null;
+
     public function getGroupsProperty()
     {
         $session = ServiceSession::where('status', 'OPEN')->latest('starts_at')->first();
@@ -47,6 +49,11 @@ class BillingGroupLookup extends Component
     public function hasOpenSession(): bool
     {
         return ServiceSession::where('status', 'OPEN')->exists();
+    }
+
+    public function refreshList(): void
+    {
+        $this->lastUpdated = now()->format('H:i');
     }
 
     public function openCheckout(int $groupId): void

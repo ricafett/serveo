@@ -784,6 +784,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'cashier', 'open_group_for_reprint', 'Abra um grupo a partir da pesquisa para aceder a reimpressões.'],
             ['pt-PT', 'cashier', 'reprint_documents', 'Reimpressão e documentos'],
             ['pt-PT', 'cashier', 'unauthorized', 'Não autorizado'],
+            ['pt-PT', 'cashier', 'last_updated', 'Última atualização'],
+            ['pt-PT', 'cashier', 'refresh', 'Atualizar'],
 
             ['en-US', 'cashier', 'title', 'Checkout'],
             ['en-US', 'cashier', 'no_session', 'No open service session.'],
@@ -822,6 +824,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashier', 'open_group_for_reprint', 'Open a billing group from lookup to access reprint options.'],
             ['en-US', 'cashier', 'reprint_documents', 'Reprint & Documents'],
             ['en-US', 'cashier', 'unauthorized', 'Unauthorized'],
+            ['en-US', 'cashier', 'last_updated', 'Last updated'],
+            ['en-US', 'cashier', 'refresh', 'Refresh'],
 
             // ---------- dashboard ----------
             ['pt-PT', 'dashboard', 'title', 'Painel principal'],

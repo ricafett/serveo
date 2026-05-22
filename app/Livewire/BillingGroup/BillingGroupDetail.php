@@ -212,6 +212,11 @@ class BillingGroupDetail extends Component
         return $this->group->favoritedBy->where('id', $user->id)->isNotEmpty();
     }
 
+    public function refreshData(): void
+    {
+        $this->loadGroup();
+    }
+
     public function render()
     {
         return view('livewire.billing-group.billing-group-detail')

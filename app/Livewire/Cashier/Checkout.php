@@ -150,6 +150,13 @@ class Checkout extends Component
         $this->redirect(route('lookup'), navigate: true);
     }
 
+    public function refreshData(): void
+    {
+        $this->loadGroup();
+        $this->errorMessage = null;
+        $this->successMessage = null;
+    }
+
     public function render()
     {
         return view('livewire.cashier.checkout')

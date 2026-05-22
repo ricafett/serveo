@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-8">
+<div class="p-4 sm:p-6 lg:p-8" wire:poll.10s="refreshData">
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
