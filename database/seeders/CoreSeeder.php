@@ -571,6 +571,13 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'floor', 'unfavorite', 'Remover dos favoritos'],
             ['pt-PT', 'floor', 'auto_favorite', 'Auto-favoritado (servidor atribuído)'],
             ['pt-PT', 'floor', 'cannot_unfavorite_assigned', 'Não pode remover dos favoritos um grupo em que está atribuído.'],
+            ['pt-PT', 'floor', 'number_of_seats', 'Número de Lugares'],
+            ['pt-PT', 'floor', 'end_pair', 'Par Final'],
+            ['pt-PT', 'floor', 'starting_pair', 'A partir de'],
+            ['pt-PT', 'floor', 'zone_preview', 'Zona'],
+            ['pt-PT', 'floor', 'pairs_count', ':count par|:count pares'],
+            ['pt-PT', 'floor', 'invalid_end_pair', 'Identificação de par final inválida.'],
+            ['pt-PT', 'floor', 'range_too_large', 'Apenas :max pares de lugares livres disponíveis a partir desta posição.'],
 
             ['en-US', 'floor', 'title', 'Floor'],
             ['en-US', 'floor', 'open_group', 'Open Billing Group'],
@@ -593,6 +600,13 @@ class CoreSeeder extends Seeder
             ['en-US', 'floor', 'unfavorite', 'Remove from favorites'],
             ['en-US', 'floor', 'auto_favorite', 'Auto-favorited (assigned server)'],
             ['en-US', 'floor', 'cannot_unfavorite_assigned', 'Cannot unfavorite a group you are assigned to.'],
+            ['en-US', 'floor', 'number_of_seats', 'Number of Seats'],
+            ['en-US', 'floor', 'end_pair', 'End Pair'],
+            ['en-US', 'floor', 'starting_pair', 'Starting from'],
+            ['en-US', 'floor', 'zone_preview', 'Zone'],
+            ['en-US', 'floor', 'pairs_count', ':count pair|:count pairs'],
+            ['en-US', 'floor', 'invalid_end_pair', 'Invalid end pair label.'],
+            ['en-US', 'floor', 'range_too_large', 'Only :max free seat pairs available from this position.'],
 
             // ---------- order ----------
             ['pt-PT', 'order', 'title', 'Pedido'],

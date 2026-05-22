@@ -32,9 +32,8 @@ WORKDIR /var/www/html
 # Copy app as ROOT so composer can write composer.lock
 COPY . /var/www/html
 
-# Run composer as root (can write composer.lock), mark git safe directory
-RUN git config --global --add safe.directory /var/www/html \
-    && composer update --no-interaction --no-dev --optimize-autoloader
+# Install dependencies
+RUN composer install --no-dev --no-interaction --optimize-autoloader --no-progress
 
 # Set up directories and permissions
 RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \

@@ -50,32 +50,35 @@
                                     </span>
                                 </div>
 
-                                {{-- Seat Pair Ranges --}}
+                                {{-- Seat Pair Buttons --}}
                                 <div class="flex flex-wrap gap-1.5">
-                                    @foreach($this->getRowRanges($row) as $range)
-                                        {{-- Free ranges: hidden when Free Seats off, or when Favorites on and seat not assigned to this server --}}
-                                        @if($range['type'] === 'free')
-                                            @if($showFreeSeats && (!$favoritesOnly || ($range['default_server_id'] ?? null) === auth()->id()))
+                                    @foreach($this->getRowDisplayItems($row) as $item)
+                                        {{-- Free pair: individual button --}}
+                                        @if($item['type'] === 'free')
+                                            @if($showFreeSeats && (!$favoritesOnly || ($item['default_server_id'] ?? null) === auth()->id()))
                                                 <button
                                                     type="button"
-                                                    wire:click="selectRange({{ $row->id }}, {{ $range['start'] }}, {{ $range['end'] }})"
+                                                    wire:click="selectPair({{ $row->id }}, {{ $item['start'] }})"
                                                     class="rounded-lg px-3 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30 transition-colors min-h-[44px] flex items-center"
                                                     title="{{ __('floor.tap_to_open') }}"
                                                 >
-                                                    {{ $range['start'] }}–{{ $range['end'] }}
+                                                    {{ $section->section_code }}{{ $row->row_code }}{{ str_pad((string) $item['start'], 2, '0', STR_PAD_LEFT) }}
                                                 </button>
                                             @endif
-                                        {{-- Occupied ranges: hidden when Favorites on and group not favorited --}}
-                                        @elseif(!$favoritesOnly || ($range['group'] && in_array($range['group']->id, $this->favoriteGroupIds)))
+                                        {{-- Occupied range: two-line layout --}}
+                                        @elseif(!$favoritesOnly || ($item['group'] && in_array($item['group']->id, $this->favoriteGroupIds)))
                                             <button
                                                 type="button"
-                                                wire:click="openExistingGroup({{ $range['group']->id ?? 0 }})"
-                                                class="rounded-lg px-3 py-2 text-sm font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors min-h-[44px] flex items-center gap-1.5"
-                                                title="{{ $range['group']->name ?? $range['group']->display_code ?? '' }} — {{ $range['group']->status?->display_name ?? $range['group']->status?->code ?? '' }}"
+                                                wire:click="openExistingGroup({{ $item['group']->id ?? 0 }})"
+                                                class="rounded-lg px-3 py-2 text-sm font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors min-h-[44px] flex flex-col items-center justify-center"
+                                                title="{{ $item['group']->name ?? $item['group']->display_code ?? '' }} — {{ $item['group']->status?->display_name ?? $item['group']->status?->code ?? '' }}"
                                             >
-                                                <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
-                                                {{ $range['start'] }}–{{ $range['end'] }}
-                                                <span class="text-xs opacity-75">{{ \Illuminate\Support\Str::limit($range['group']->name ?? $range['group']->display_code, 20) }}</span>
+                                                @php
+                                                    $startLabel = $section->section_code . $row->row_code . str_pad((string) $item['start'], 2, '0', STR_PAD_LEFT);
+                                                    $endLabel = $section->section_code . $row->row_code . str_pad((string) $item['end'], 2, '0', STR_PAD_LEFT);
+                                                @endphp
+                                                <span class="text-xs leading-tight">{{ $item['start'] === $item['end'] ? $startLabel : $startLabel . '–' . $endLabel }}</span>
+                                                <span class="text-[10px] leading-tight opacity-75">{{ \Illuminate\Support\Str::limit($item['group']->name ?? $item['group']->display_code, 20) }}</span>
                                             </button>
                                         @endif
                                     @endforeach
@@ -203,17 +206,14 @@
                     </div>
                 @endif
 
-                {{-- Selected Range Info --}}
-                @if($selectedRowId && $zoneStartSeq && $zoneEndSeq)
+                {{-- Starting pair --}}
+                @if($zoneRowId && $zoneStartSeq)
                     @php
-                        $selectedRow = \App\Models\Row::with('section')->find($selectedRowId);
-                        $startLoc = $selectedRow?->section?->section_code . $selectedRow?->row_code . str_pad((string) $zoneStartSeq, 2, '0', STR_PAD_LEFT);
-                        $endLoc = $selectedRow?->section?->section_code . $selectedRow?->row_code . str_pad((string) $zoneEndSeq, 2, '0', STR_PAD_LEFT);
-                        $pairCount = $zoneEndSeq - $zoneStartSeq + 1;
+                        $selRow = \App\Models\Row::with('section')->find($zoneRowId);
+                        $startLabel = ($selRow?->section?->section_code ?? '') . ($selRow?->row_code ?? '') . str_pad((string) $zoneStartSeq, 2, '0', STR_PAD_LEFT);
                     @endphp
                     <div class="mb-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-3 text-sm text-primary-700 dark:text-primary-300">
-                        <div class="font-medium">{{ __('floor.selected_range') }}</div>
-                        <div>{{ $startLoc }}–{{ $endLoc }}@if($pairCount > 1) ({{ $pairCount }})@endif</div>
+                        <span class="font-medium">{{ __('floor.starting_pair') }}:</span> {{ $startLabel }}
                     </div>
                 @endif
 
@@ -235,6 +235,36 @@
                         @error('statusCode') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
+                    {{-- Zone span: two cross-calculating fields --}}
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('floor.number_of_seats') }}</label>
+                            <input id="zone-seat-count" type="number" wire:model.live="zoneSeatCount" min="1" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
+                            @error('zoneSeatCount') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('floor.end_pair') }}</label>
+                            <input id="zone-end-label" type="text" wire:model.live="zoneEndLabel" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3">
+                        </div>
+                    </div>
+
+                    {{-- Zone preview --}}
+                    @if($zoneStartSeq && $zoneEndSeq && $zoneEndSeq >= $zoneStartSeq && $zoneRowId)
+                        @php
+                            $prevRow = \App\Models\Row::with('section')->find($zoneRowId);
+                            $previewStart = ($prevRow?->section?->section_code ?? '') . ($prevRow?->row_code ?? '') . str_pad((string) $zoneStartSeq, 2, '0', STR_PAD_LEFT);
+                            $previewEnd   = ($prevRow?->section?->section_code ?? '') . ($prevRow?->row_code ?? '') . str_pad((string) $zoneEndSeq, 2, '0', STR_PAD_LEFT);
+                            $pairCount    = $zoneEndSeq - $zoneStartSeq + 1;
+                        @endphp
+                        <div class="rounded-lg bg-primary-50 dark:bg-primary-900/20 p-3 text-sm text-primary-700 dark:text-primary-300">
+                            <span class="font-medium">{{ __('floor.zone_preview') }}:</span>
+                            <span class="font-semibold">
+                                {{ $previewStart === $previewEnd ? $previewStart : $previewStart . '–' . $previewEnd }}
+                            </span>
+                            <span class="text-xs opacity-75">({{ trans_choice('floor.pairs_count', $pairCount, ['count' => $pairCount]) }})</span>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.cover_count') }}</label>
@@ -252,11 +282,6 @@
                         <textarea id="notes" wire:model="notes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-3"></textarea>
                         @error('notes') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
-
-                    {{-- Hidden zone fields for validation --}}
-                    <input type="hidden" wire:model="zoneRowId">
-                    <input type="hidden" wire:model="zoneStartSeq">
-                    <input type="hidden" wire:model="zoneEndSeq">
 
                     <div class="pt-2">
                         <button

@@ -1,0 +1,56 @@
+# Git
+.git/
+.gitattributes
+.gitignore
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies (installed fresh in image)
+vendor/
+node_modules/
+
+# Tests
+tests/
+phpunit.xml
+.dusk/
+
+# Documentation
+*.md
+docs/
+
+# CI
+.github/
+
+# Storage (runtime data, not needed in image)
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/framework/testing/
+storage/debugbar/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker compose
+docker-compose*.yml
+docker-compose*.yaml
+
+# Database
+database/dusk.sqlite
+database/*.sqlite
+*.sqlite
+
+# Build artifacts
+public/build/
+public/hot/

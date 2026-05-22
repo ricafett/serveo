@@ -30,7 +30,7 @@ beforeEach(function () {
     }
 });
 
-test('floor renders sections rows and free ranges', function () {
+test('floor renders sections rows and free pair buttons', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -44,11 +44,11 @@ test('floor renders sections rows and free ranges', function () {
             ->waitForText('Floor', 5)
             ->assertSee('Test Section')
             ->assertSee('Row T1')
-            ->assertSee('1–10');
+            ->assertSee('TESTT101');
     });
 });
 
-test('clicking free range opens billing group creation modal', function () {
+test('clicking free pair opens billing group creation modal', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -62,7 +62,7 @@ test('clicking free range opens billing group creation modal', function () {
             ->waitForText('Floor', 5);
 
         $browser->with('main', function (Browser $main) {
-            $main->press('1–10')
+            $main->press('TESTT101')
                 ->waitForText('Open Billing Group', 3);
         });
     });
@@ -82,9 +82,9 @@ test('server can create billing group and see it as occupied', function () {
             ->waitForText('Floor', 5)
             ->pause(300);
 
-        // Click free range to open modal
+        // Click free pair to open modal
         $browser->with('main', function (Browser $main) {
-            $main->press('1–10')
+            $main->press('TESTT101')
                 ->waitForText('Open Billing Group', 3)
                 ->type('#name', 'Test Group')
                 ->type('#cover-count', 4)

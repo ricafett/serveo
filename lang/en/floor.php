@@ -22,4 +22,11 @@ return array (
   'unfavorite' => 'Remove from favorites',
   'auto_favorite' => 'Auto-favorited (assigned server)',
   'cannot_unfavorite_assigned' => 'Cannot unfavorite a group you are assigned to.',
+  'number_of_seats' => 'Number of Seats',
+  'end_pair' => 'End Pair',
+  'starting_pair' => 'Starting from',
+  'zone_preview' => 'Zone',
+  'pairs_count' => ':count pair|:count pairs',
+  'invalid_end_pair' => 'Invalid end pair label.',
+  'range_too_large' => 'Only :max free seat pairs available from this position.',
 );

@@ -46,6 +46,8 @@ class FloorIndex extends Component
     public ?int $zoneRowId = null;
     public ?int $zoneStartSeq = null;
     public ?int $zoneEndSeq = null;
+    public ?int $zoneSeatCount = null;
+    public ?string $zoneEndLabel = null;
     public ?string $deliveryLabel = null;
 
     public ?string $errorMessage = null;
@@ -232,16 +234,149 @@ class FloorIndex extends Component
         return $ranges;
     }
 
-    public function selectRange(int $rowId, int $startSeq, int $endSeq): void
+    public function selectPair(int $rowId, int $pairSeq): void
     {
         $this->selectedRowId = $rowId;
-        $this->selectedStartSeq = $startSeq;
-        $this->selectedEndSeq = $endSeq;
+        $this->selectedStartSeq = $pairSeq;
+        $this->selectedEndSeq = $pairSeq;
         $this->zoneRowId = $rowId;
-        $this->zoneStartSeq = $startSeq;
-        $this->zoneEndSeq = $endSeq;
+        $this->zoneStartSeq = $pairSeq;
+        $this->zoneEndSeq = $pairSeq;
+        $this->zoneSeatCount = 1;
+        $this->zoneEndLabel = $this->locationForRowAndSeq($rowId, $pairSeq);
         $this->showCreateModal = true;
         $this->errorMessage = null;
+    }
+
+    public function locationForRowAndSeq(int $rowId, int $seq): string
+    {
+        $row = Row::with('section')->find($rowId);
+
+        return ($row?->section?->section_code ?? '') . ($row?->row_code ?? '') . str_pad((string) $seq, 2, '0', STR_PAD_LEFT);
+    }
+
+    public function getRowDisplayItems(Row $row): array
+    {
+        $map = $this->getRowOccupancyMap($row);
+        if (empty($map)) {
+            return [];
+        }
+
+        $items = [];
+        $currentZoneId = null;
+        $currentStart = null;
+        $currentZone = null;
+        $currentGroup = null;
+        $currentServer = null;
+
+        ksort($map);
+
+        foreach ($map as $seq => $data) {
+            if ($data['status'] === 'free') {
+                if ($currentZoneId !== null) {
+                    $items[] = [
+                        'type' => 'occupied',
+                        'start' => $currentStart,
+                        'end' => $seq - 1,
+                        'zone' => $currentZone,
+                        'group' => $currentGroup,
+                        'server' => $currentServer,
+                    ];
+                    $currentZoneId = null;
+                }
+                $items[] = [
+                    'type' => 'free',
+                    'start' => $seq,
+                    'end' => $seq,
+                    'pair' => $data['pair'],
+                    'default_server_id' => $data['default_server_id'] ?? null,
+                ];
+            } else {
+                $zone = $data['zone'];
+                if ($zone?->id !== $currentZoneId) {
+                    if ($currentZoneId !== null) {
+                        $items[] = [
+                            'type' => 'occupied',
+                            'start' => $currentStart,
+                            'end' => $seq - 1,
+                            'zone' => $currentZone,
+                            'group' => $currentGroup,
+                            'server' => $currentServer,
+                        ];
+                    }
+                    $currentZoneId = $zone?->id;
+                    $currentStart = $seq;
+                    $currentZone = $zone;
+                    $currentGroup = $data['group'] ?? null;
+                    $currentServer = $data['server'] ?? null;
+                }
+            }
+        }
+
+        if ($currentZoneId !== null) {
+            $lastSeq = array_key_last($map);
+            $items[] = [
+                'type' => 'occupied',
+                'start' => $currentStart,
+                'end' => $lastSeq,
+                'zone' => $currentZone,
+                'group' => $currentGroup,
+                'server' => $currentServer,
+            ];
+        }
+
+        return $items;
+    }
+
+    public function updatedZoneSeatCount(int|string|null $value): void
+    {
+        if ($value === null || $value === '' || (int) $value < 1 || ! $this->zoneRowId || ! $this->zoneStartSeq) {
+            return;
+        }
+
+        $count = (int) $value;
+        $row = Row::with('seatPairs')->find($this->zoneRowId);
+        $maxSeq = $row?->seatPairs->max('pair_sequence') ?? 0;
+
+        $endSeq = $this->zoneStartSeq + $count - 1;
+        if ($endSeq > $maxSeq) {
+            $endSeq = $maxSeq;
+            $this->errorMessage = __('floor.range_too_large', ['max' => $maxSeq - $this->zoneStartSeq + 1]);
+        } else {
+            $this->errorMessage = null;
+        }
+
+        $this->zoneEndSeq = $endSeq;
+        $this->zoneEndLabel = $this->locationForRowAndSeq($this->zoneRowId, $endSeq);
+    }
+
+    public function updatedZoneEndLabel(string|null $value): void
+    {
+        $this->errorMessage = null;
+
+        if ($value === null || $value === '' || ! $this->zoneRowId || ! $this->zoneStartSeq) {
+            return;
+        }
+
+        $row = Row::with(['section', 'seatPairs'])->find($this->zoneRowId);
+        $prefix = ($row?->section?->section_code ?? '') . ($row?->row_code ?? '');
+
+        if (! str_starts_with($value, $prefix)) {
+            $this->errorMessage = __('floor.invalid_end_pair');
+            return;
+        }
+
+        $seqString = substr($value, strlen($prefix));
+        $seq = (int) $seqString;
+
+        $maxSeq = $row?->seatPairs->max('pair_sequence') ?? 0;
+        if ($seq < $this->zoneStartSeq || $seq > $maxSeq) {
+            $this->errorMessage = __('floor.invalid_end_pair');
+            return;
+        }
+
+        $this->zoneEndSeq = $seq;
+        $this->zoneSeatCount = $seq - $this->zoneStartSeq + 1;
     }
 
     public function rowHasVisibleRanges(Row $row): bool
@@ -294,10 +429,15 @@ class FloorIndex extends Component
             'notes' => 'nullable|string|max:500',
             'zoneRowId' => 'required|integer|exists:rows,id',
             'zoneStartSeq' => 'required|integer|min:1',
-            'zoneEndSeq' => 'required|integer|min:1|gte:zoneStartSeq',
+            'zoneSeatCount' => 'required|integer|min:1',
         ]);
 
         $row = Row::findOrFail($this->zoneRowId);
+
+        if ($this->zoneEndSeq && $this->zoneEndSeq < $this->zoneStartSeq) {
+            $this->errorMessage = __('floor.invalid_end_pair');
+            return;
+        }
 
         try {
             $service = app(BillingGroupService::class);
@@ -320,7 +460,7 @@ class FloorIndex extends Component
             );
 
             $this->showCreateModal = false;
-            $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
+            $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
             $this->statusCode = BillingStatus::ACTIVE;
 
             $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
@@ -335,7 +475,7 @@ class FloorIndex extends Component
     {
         $this->showCreateModal = false;
         $this->errorMessage = null;
-        $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'deliveryLabel']);
+        $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
         $this->statusCode = BillingStatus::ACTIVE;
     }
 

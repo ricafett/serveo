@@ -50,23 +50,27 @@ it('renders floor screen with sections and rows', function () {
     $response->assertSee('Floor');
 });
 
-it('shows free seat pair ranges on floor', function () {
+it('shows free seat pair buttons individually on floor', function () {
     $response = $this->actingAs($this->server)->get('/floor');
     $response->assertOk();
-    // All 10 pairs are free, so should show one free range
-    $response->assertSee('1–10');
+    $response->assertSee('TESTT101');
+    $response->assertSee('TESTT102');
+    $response->assertSee('TESTT110');
+    $response->assertDontSee('1–10');
 });
 
-it('shows occupied ranges with group codes on floor', function () {
+it('shows occupied ranges with positioning labels on floor', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
     app(OccupancyService::class)->assignZone($group, $this->row, 3, 6, $this->server);
 
     $response = $this->actingAs($this->server)->get('/floor');
     $response->assertOk();
     $response->assertSee($group->display_code);
-    // Free ranges before and after occupied
-    $response->assertSee('1–2');
-    $response->assertSee('7–10');
+    // Occupied zones use positioning labels (e.g. TESTT103–TESTT106)
+    $response->assertSee('TESTT103–TESTT106');
+    // Free pairs are individual buttons
+    $response->assertSee('TESTT101');
+    $response->assertSee('TESTT107');
 });
 
 it('shows open billing groups quick list on floor', function () {
