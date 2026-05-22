@@ -51,7 +51,7 @@ if ($user->hasRole('ADMIN') && count($navItems) === 0) {
             @foreach($navItems as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex flex-col items-center justify-center py-2 px-3 min-h-[56px] min-w-[64px] text-xs font-medium transition-colors
+                    class="flex flex-col items-center justify-center py-2 px-3 min-h-[56px] min-w-[64px] text-sm font-medium transition-colors
                         {{ request()->routeIs($item['route']) || request()->routeIs($item['route'] . '.*')
                             ? 'text-primary-600 dark:text-primary-400'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
@@ -69,7 +69,7 @@ if ($user->hasRole('ADMIN') && count($navItems) === 0) {
             @foreach($navItems as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm font-medium transition-colors min-h-[44px]
+                    class="flex items-center gap-3 rounded-lg px-2 py-2.5 text-base font-medium transition-colors min-h-[44px]
                         {{ request()->routeIs($item['route']) || request()->routeIs($item['route'] . '.*')
                             ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
                             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}"
@@ -81,7 +81,7 @@ if ($user->hasRole('ADMIN') && count($navItems) === 0) {
         </div>
 
         {{-- Desktop-only: App version / footer --}}
-        <div class="px-3 py-2 text-[10px] text-gray-400 dark:text-gray-600 text-center hidden lg:block">
+        <div class="px-3 py-2 text-base text-gray-400 dark:text-gray-600 text-center hidden lg:block">
             Serveo
         </div>
     </nav>

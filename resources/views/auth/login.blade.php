@@ -68,13 +68,13 @@
                 @csrf
 
                 @if($errors->any())
-                    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-600 dark:text-red-400">
+                    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-base text-red-600 dark:text-red-400">
                         {{ $errors->first() }}
                     </div>
                 @endif
 
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.username') }}</label>
+                    <label for="username" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.username') }}</label>
                     <input
                         id="username"
                         name="username"
@@ -82,27 +82,27 @@
                         required
                         autofocus
                         autocomplete="username"
-                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3"
+                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3"
                         placeholder="{{ __('auth.enter_username') }}"
                     >
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.password') }}</label>
+                    <label for="password" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('auth.password') }}</label>
                     <input
                         id="password"
                         name="password"
                         type="password"
                         required
                         autocomplete="current-password"
-                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 px-3"
+                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3"
                         placeholder="{{ __('auth.enter_password') }}"
                     >
                 </div>
 
                 <button
                     type="submit"
-                    class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors"
+                    class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors"
                 >
                     {{ __('auth.sign_in') }}
                 </button>

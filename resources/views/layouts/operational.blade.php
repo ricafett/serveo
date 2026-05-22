@@ -83,7 +83,7 @@
                         <button
                             @click="open = !open"
                             type="button"
-                            class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px]"
+                            class="flex items-center gap-1.5 rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px]"
                             aria-label="{{ __('auth.user_menu') }}"
                         >
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -107,7 +107,7 @@
                             style="display: none;"
                         >
                             {{-- User info --}}
-                            <div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+                            <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
                                 <div class="font-medium text-gray-900 dark:text-gray-100 truncate">{{ auth()->user()?->name }}</div>
                                 <div class="truncate">{{ auth()->user()?->email }}</div>
                                 <div class="mt-1 capitalize">{{ auth()->user()?->roles?->first()?->name }}</div>
@@ -115,25 +115,25 @@
 
                             {{-- Theme --}}
                             <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
-                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.theme') }}</div>
+                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.theme') }}</div>
                                 <livewire:theme-toggle />
                             </div>
 
                             {{-- Language --}}
                             <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
-                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.language') }}</div>
+                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{{ __('app.language') }}</div>
                                 <livewire:language-switcher :inline="true" />
                             </div>
 
                             @if(auth()->user()?->hasRole('ADMIN'))
-                                <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center border-b border-gray-100 dark:border-gray-800">
+                                <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-3 py-2.5 text-base text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] flex items-center border-b border-gray-100 dark:border-gray-800">
                                     {{ __('auth.admin_panel') }}
                                 </a>
                             @endif
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center">
+                                <button type="submit" class="w-full text-left px-3 py-2.5 text-base text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center">
                                     {{ __('auth.log_out') }}
                                 </button>
                             </form>
