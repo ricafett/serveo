@@ -77,9 +77,32 @@ foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR
 }
 echo "\n=== DB ===\n";
 try { new PDO("pgsql:host=".getenv('DB_HOST').";port=".getenv('DB_PORT').";dbname=".getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'), [PDO::ATTR_TIMEOUT=>3]); echo "CONNECTED\n"; } catch(Exception $e) { echo "FAILED: ".$e->getMessage()."\n"; }
-echo "\n=== IMAGE ===\ncommit: 53c23a9 + debug.php\nnginx: X-Forwarded-* with if_not_empty\n";
+echo "\n=== IMAGE ===\ncommit: 4082dd1 + build-backup\nnginx: X-Forwarded-* with if_not_empty\n";
 DEBUGEOPHP
     echo "[entrypoint] debug.php written."
+fi
+
+# Restore Vite build assets from backup if the volume is stale.
+# The app-public named volume mounts over public/ and hides the image's
+# public/build/ directory. This backup is outside the volume mount.
+if [ ! -f public/build/manifest.json ] && [ -d /var/www/build-backup ]; then
+    echo "[entrypoint] Restoring public/build/ from backup (volume was stale)..."
+    rm -rf public/build 2>/dev/null || true
+    cp -a /var/www/build-backup public/build
+    echo "[entrypoint] public/build/ restored."
+fi
+
+# Restore Filament assets if the volume is stale.
+if [ ! -f public/css/filament/filament/app.css ] && [ -d /var/www/css-backup ]; then
+    echo "[entrypoint] Restoring Filament assets from backup..."
+    for dir in css js fonts; do
+        backup="/var/www/${dir}-backup"
+        if [ -d "$backup" ] && [ ! -d "public/$dir/filament" ]; then
+            mkdir -p "public/$dir"
+            cp -a "$backup/filament" "public/$dir/filament" 2>/dev/null || true
+        fi
+    done
+    echo "[entrypoint] Filament assets restored."
 fi
 
 echo "[entrypoint] Starting php-fpm..."
