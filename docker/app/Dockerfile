@@ -43,8 +43,16 @@ RUN mkdir -p storage/framework/cache \
 RUN composer install --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
 # Manually run the asset-publishing steps that --no-scripts skipped.
-# These don't need a database connection and are required for the UI to load styles.
-RUN php artisan package:discover --ansi \
+# Set dummy env vars so artisan can boot without a real database:
+# - APP_KEY: needed for encryption/decryption service providers
+# - CACHE_STORE=array: prevents DatabaseTranslationLoader from hitting the DB
+# - DB_CONNECTION=sqlite + DB_DATABASE=:memory:: in-memory fallback for any
+#   code paths that try to open a DB connection during bootstrap.
+RUN export APP_KEY=base64:dummykeyfordockerbuildonly12345= \
+    && export DB_CONNECTION=sqlite \
+    && export DB_DATABASE=:memory: \
+    && export CACHE_STORE=array \
+    && php artisan package:discover --ansi \
     && php artisan filament:upgrade --ansi
 
 # Set final permissions

@@ -54,6 +54,5 @@ database/dusk.sqlite
 database/*.sqlite
 *.sqlite
 
-# Build artifacts
-public/build/
+# Build artifacts (keep hot/ excluded — Vite dev server file, not for production)
 public/hot/
