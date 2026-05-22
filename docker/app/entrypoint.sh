@@ -53,13 +53,12 @@ echo "  .env exists: $(test -f .env && echo yes || echo no)"
 echo "  debug.php: $(test -f public/debug.php && echo yes || echo no)"
 echo "[entrypoint] ====="
 
-# Ensure debug.php is available even if the app-public volume is stale.
-# The volume mounts over public/ so we write directly at startup.
-if [ ! -f public/debug.php ]; then
-    echo "[entrypoint] Writing debug.php into mounted volume..."
-    cat > public/debug.php << 'DEBUGEOPHP'
+# Always write fresh debug.php so it matches the running image.
+echo "[entrypoint] Writing debug.php into mounted volume..."
+cat > public/debug.php << 'DEBUGEOPHP'
 <?php
 header('Content-Type: text/plain; charset=utf-8');
+echo "=== IMAGE ===\ncommit: 0ba0d85 (build-backup)\nnginx: if_not_empty fix\n\n";
 echo "=== SERVER ===\nPHP: " . PHP_VERSION . "\nContainer: " . gethostname() . "\n\n";
 $key = getenv('APP_KEY') ?: '(empty)';
 echo "=== APP_KEY ===\nvalue: " . substr($key, 0, 25) . "...\nvalid: " . (str_starts_with($key, 'base64:') ? 'YES' : 'NO') . "\n\n";
@@ -77,10 +76,14 @@ foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR
 }
 echo "\n=== DB ===\n";
 try { new PDO("pgsql:host=".getenv('DB_HOST').";port=".getenv('DB_PORT').";dbname=".getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'), [PDO::ATTR_TIMEOUT=>3]); echo "CONNECTED\n"; } catch(Exception $e) { echo "FAILED: ".$e->getMessage()."\n"; }
-echo "\n=== IMAGE ===\ncommit: 4082dd1 + build-backup\nnginx: X-Forwarded-* with if_not_empty\n";
+echo "\n=== PUBLIC ASSETS ===\n";
+echo "manifest.json: " . (file_exists('/var/www/html/public/build/manifest.json') ? 'YES' : 'MISSING') . "\n";
+echo "filament css:  " . (file_exists('/var/www/html/public/css/filament/filament/app.css') ? 'YES' : 'MISSING') . "\n";
+echo "filament js:   " . (file_exists('/var/www/html/public/js/filament/filament/app.js') ? 'YES' : 'MISSING') . "\n";
+echo "backup build:  " . (is_dir('/var/www/build-backup') ? 'YES' : 'MISSING') . "\n";
+echo "backup fonts:  " . (is_dir('/var/www/fonts-backup') ? 'YES' : 'MISSING') . "\n";
 DEBUGEOPHP
-    echo "[entrypoint] debug.php written."
-fi
+echo "[entrypoint] debug.php written."
 
 # Restore Vite build assets from backup if the volume is stale.
 # The app-public named volume mounts over public/ and hides the image's
