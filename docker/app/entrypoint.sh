@@ -41,5 +41,17 @@ php artisan migrate --force
 echo "[entrypoint] Caching config, routes and views..."
 php artisan optimize
 
+echo "[entrypoint] ===== Startup summary ====="
+echo "  APP_KEY: $(echo "$APP_KEY" | cut -c1-20)..."
+echo "  APP_URL: $APP_URL"
+echo "  APP_ENV: $APP_ENV"
+echo "  APP_DEBUG: $APP_DEBUG"
+echo "  DB_HOST: $DB_HOST:$DB_PORT ($DB_DATABASE)"
+echo "  CACHE_STORE: $CACHE_STORE"
+echo "  SESSION_DRIVER: $SESSION_DRIVER"
+echo "  .env exists: $(test -f .env && echo yes || echo no)"
+echo "  debug.php: $(test -f public/debug.php && echo yes || echo no)"
+echo "[entrypoint] ====="
+
 echo "[entrypoint] Starting php-fpm..."
 exec php-fpm
