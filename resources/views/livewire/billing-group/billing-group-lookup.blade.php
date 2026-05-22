@@ -2,13 +2,13 @@
     <div class="max-w-7xl mx-auto">
         {{-- No Session Warning --}}
         @if(! $this->hasOpenSession())
-            <div class="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-4 text-sm">
+            <div class="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 px-4 py-4 text-base">
                 <svg class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
                 <div class="text-red-700 dark:text-red-300">
                     <p class="font-semibold">{{ __('dashboard.no_session') }}</p>
-                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ __('dashboard.no_session_help') }}</p>
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ __('dashboard.no_session_help') }}</p>
                 </div>
             </div>
         @endif
@@ -17,16 +17,16 @@
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('cashier.billing_groups') }}</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('cashier.search_placeholder') }}</p>
+                <p class="mt-1 text-base text-gray-500 dark:text-gray-400">{{ __('cashier.search_placeholder') }}</p>
             </div>
             <div class="flex items-center gap-3">
                 @if($lastUpdated)
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ __('cashier.last_updated') }}: {{ $lastUpdated }}</span>
+                    <span class="text-sm text-gray-400 dark:text-gray-500">{{ __('cashier.last_updated') }}: {{ $lastUpdated }}</span>
                 @endif
                 <button
                     type="button"
                     wire:click="refreshList"
-                    class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] flex items-center gap-1.5 transition-colors"
+                    class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] flex items-center gap-1.5 transition-colors"
                 >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
@@ -47,10 +47,10 @@
                     type="text"
                     wire:model.live.debounce.300ms="search"
                     placeholder="{{ __('cashier.search_placeholder') }}"
-                    class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 pl-10 pr-3"
+                    class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 pl-10 pr-3"
                 >
             </div>
-            <label class="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer min-h-[44px]">
+            <label class="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-base text-gray-700 dark:text-gray-300 cursor-pointer min-h-[44px]">
                 <input id="show-closed" type="checkbox" wire:model.live="showClosed" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                 {{ __('cashier.show_closed') }}
             </label>
@@ -67,7 +67,7 @@
                     >
                         <div class="flex items-center justify-between mb-2">
                             <span class="font-semibold text-gray-900 dark:text-white">{{ $group->longLabel() }}</span>
-                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-sm font-medium
                                 {{ $group->status?->code === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
                                 {{ $group->status?->code === 'WAITING' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' : '' }}
                                 {{ $group->status?->code === 'CHECK_REQUESTED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
@@ -77,14 +77,14 @@
                                 {{ $group->status?->display_name ?? $group->status?->code }}
                             </span>
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <div class="text-base text-gray-500 dark:text-gray-400">
                             @foreach($group->occupiedZones as $zone)
                                 <div>{{ $zone->rangeLabel() }}</div>
                             @endforeach
                         </div>
                         <div class="mt-2 flex items-center justify-between">
-                            <span class="text-xs text-gray-400 dark:text-gray-500">{{ $group->cover_count ? $group->cover_count . ' ' . __('app.covers') : '' }}</span>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($group->balance(), 2) }}</span>
+                            <span class="text-sm text-gray-400 dark:text-gray-500">{{ $group->cover_count ? $group->cover_count . ' ' . __('app.covers') : '' }}</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ number_format($group->balance(), 2) }}</span>
                         </div>
                     </button>
                 @endforeach
