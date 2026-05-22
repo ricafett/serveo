@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MenuItemResource\Pages;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\ModifierSet;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
@@ -59,6 +60,22 @@ class MenuItemResource extends BaseResource
             Forms\Components\TextInput::make('unit_price')->numeric()->step('0.01')->required()->default(0),
             Forms\Components\TextInput::make('tax_code')->maxLength(16),
             Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Select::make('modifier_set_id')
+                ->label(__('app.modifier_set'))
+                ->options(ModifierSet::query()->where('is_active', true)->pluck('display_name', 'id'))
+                ->nullable()
+                ->placeholder(__('app.none')),
+            Forms\Components\Repeater::make('variants')
+                ->relationship('variants')
+                ->schema([
+                    Forms\Components\TextInput::make('display_name')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
+                    Forms\Components\Toggle::make('is_active')->default(true),
+                ])
+                ->orderColumn('sort_order')
+                ->defaultItems(0)
+                ->addActionLabel(__('app.add_variant'))
+                ->collapsible(),
         ]);
     }
 

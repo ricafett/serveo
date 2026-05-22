@@ -28,7 +28,7 @@ class OrderService
      * Create one OrderHeader plus items and immediately group lines by route into
      * ProductionTicket records, then queue print jobs.
      *
-     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null}>  $lines
+     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null}>  $lines
      */
     public function submit(
         BillingGroup $group,
@@ -67,6 +67,35 @@ class OrderService
                 $menuItem = MenuItem::with('category')->findOrFail($line['menu_item_id']);
                 $qty = max(1, (int) ($line['quantity'] ?? 1));
                 $unitPrice = (float) $menuItem->unit_price;
+                $variantName = $line['variant_name'] ?? null;
+                $modifierName = $line['modifier_name'] ?? null;
+
+                // Validate variant requirement
+                if ($menuItem->hasVariants() && empty($variantName)) {
+                    throw new RuntimeException("A variant must be selected for '{$menuItem->display_name}'.");
+                }
+
+                // Validate variant exists
+                if ($variantName && ! $menuItem->activeVariants()->where('display_name', $variantName)->exists()) {
+                    throw new RuntimeException("Invalid variant '{$variantName}' for '{$menuItem->display_name}'.");
+                }
+
+                // Validate modifier if present
+                if ($modifierName && $menuItem->modifierSet) {
+                    $set = $menuItem->modifierSet;
+                    $modifierNames = array_map('trim', explode(',', $modifierName));
+
+                    if ($set->isSingle() && count($modifierNames) > 1) {
+                        throw new RuntimeException("Only one modifier may be selected for '{$menuItem->display_name}'.");
+                    }
+
+                    $validNames = $set->items()->where('is_active', true)->pluck('display_name')->all();
+                    foreach ($modifierNames as $name) {
+                        if (! in_array($name, $validNames, true)) {
+                            throw new RuntimeException("Invalid modifier '{$name}' for '{$menuItem->display_name}'.");
+                        }
+                    }
+                }
 
                 $deliveryPairId = $line['delivery_seat_pair_id'] ?? null;
                 if ($deliveryPairId && $zone) {
@@ -91,6 +120,8 @@ class OrderService
                     'delivery_seat_pair_id' => $deliveryPairId,
                     'delivery_reference_label' => $deliveryLabel,
                     'sent_to_production_at' => now(),
+                    'variant_name' => $variantName,
+                    'modifier_name' => $modifierName,
                 ]);
 
                 $createdItems[] = $item;

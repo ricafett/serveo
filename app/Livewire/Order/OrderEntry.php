@@ -21,7 +21,7 @@ class OrderEntry extends Component
 
     public ?string $notes = null;
 
-    /** @var array<int, array{id: int, display_name: string, unit_price: float, category_id: int, route_type: string}> */
+    /** @var array<int, array{id: int, display_name: string, unit_price: float, category_id: int, route_type: string, has_variants: bool, variants: array, modifier_set: array|null}> */
     public array $menuItemsData = [];
 
     /** @var array<int, array{id: int, display_name: string}> */
@@ -53,7 +53,7 @@ class OrderEntry extends Component
             ])
             ->all();
 
-        $this->menuItemsData = MenuItem::with('category')
+        $this->menuItemsData = MenuItem::with(['category', 'activeVariants', 'modifierSet.items' => fn ($q) => $q->where('is_active', true)])
             ->where('is_active', true)
             ->orderBy('display_name')
             ->get()
@@ -63,6 +63,20 @@ class OrderEntry extends Component
                 'unit_price' => (float) $item->unit_price,
                 'category_id' => $item->menu_category_id,
                 'route_type' => $item->category?->route_type ?? 'NONE',
+                'has_variants' => $item->activeVariants->isNotEmpty(),
+                'variants' => $item->activeVariants->map(fn ($v) => [
+                    'id' => $v->id,
+                    'display_name' => $v->display_name,
+                ])->values()->all(),
+                'modifier_set' => $item->modifierSet ? [
+                    'id' => $item->modifierSet->id,
+                    'display_name' => $item->modifierSet->display_name,
+                    'selection_mode' => $item->modifierSet->selection_mode,
+                    'items' => $item->modifierSet->items->map(fn ($mi) => [
+                        'id' => $mi->id,
+                        'display_name' => $mi->display_name,
+                    ])->values()->all(),
+                ] : null,
             ])
             ->all();
     }
@@ -164,6 +178,8 @@ class OrderEntry extends Component
                 'menu_item_id' => $item['menu_item_id'],
                 'quantity' => $item['quantity'],
                 'delivery_seat_pair_id' => $this->selectedDeliveryPairId,
+                'variant_name' => $item['variant_name'] ?? null,
+                'modifier_name' => $item['modifier_name'] ?? null,
             ])->all();
 
             app(OrderService::class)->submit(

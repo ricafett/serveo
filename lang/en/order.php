@@ -24,4 +24,10 @@ return [
     'order_tab' => 'Order',
     'delivery' => 'Delivery',
     'no_items' => 'No items in this category.',
+    'select_variant' => 'Select variant',
+    'no_modifier' => 'None',
+    'add_to_order' => 'Add to order',
+    'has_variants' => 'Variants',
+    'has_modifiers' => 'Modifiers',
+    'has_variants_and_modifiers' => 'Variants & Modifiers',
 ];

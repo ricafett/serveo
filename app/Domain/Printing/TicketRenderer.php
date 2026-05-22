@@ -39,6 +39,12 @@ class TicketRenderer
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
             $name = $item->menuItem?->display_name ?? "Item #{$item->menu_item_id}";
+            if ($item->variant_name) {
+                $name .= ' - '.$item->variant_name;
+            }
+            if ($item->modifier_name) {
+                $name .= ' ('.$item->modifier_name.')';
+            }
             $qty = $item->quantity;
             $left = sprintf('%2dx %s', $qty, $name);
             $lines[] = mb_strimwidth($left, 0, self::WIDTH);
@@ -80,6 +86,12 @@ class TicketRenderer
 
         foreach ($items as $item) {
             $name = $item->menuItem?->display_name ?? "Item #{$item->menu_item_id}";
+            if ($item->variant_name) {
+                $name .= ' - '.$item->variant_name;
+            }
+            if ($item->modifier_name) {
+                $name .= ' ('.$item->modifier_name.')';
+            }
             $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
             $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' EUR';
             $lines[] = $this->row($left, $right);

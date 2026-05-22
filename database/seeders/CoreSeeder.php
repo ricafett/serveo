@@ -7,6 +7,9 @@ use App\Models\BillingStatus;
 use App\Models\CashierPrinterAssignment;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\MenuItemVariant;
+use App\Models\ModifierSet;
+use App\Models\ModifierSetItem;
 use App\Models\OccupiedZone;
 use App\Models\Printer;
 use App\Models\PrinterRoute;
@@ -164,6 +167,52 @@ class CoreSeeder extends Seeder
                     'is_active' => true,
                 ]
             );
+        }
+
+        // ---- Modifier sets ----
+        $tempModSet = ModifierSet::updateOrCreate(
+            ['display_name' => 'Temperatura'],
+            ['selection_mode' => 'single', 'sort_order' => 10, 'is_active' => true]
+        );
+        foreach (['Fresca', 'Natural'] as $i => $name) {
+            ModifierSetItem::updateOrCreate(
+                ['modifier_set_id' => $tempModSet->id, 'display_name' => $name],
+                ['sort_order' => $i + 1, 'is_active' => true]
+            );
+        }
+
+        $extrasModSet = ModifierSet::updateOrCreate(
+            ['display_name' => 'Extras'],
+            ['selection_mode' => 'multiple', 'sort_order' => 20, 'is_active' => true]
+        );
+        foreach (['Queijo extra', 'Bacon extra', 'Molho picante'] as $i => $name) {
+            ModifierSetItem::updateOrCreate(
+                ['modifier_set_id' => $extrasModSet->id, 'display_name' => $name],
+                ['sort_order' => $i + 1, 'is_active' => true]
+            );
+        }
+
+        // Assign modifier set to bar items
+        MenuItem::whereIn('display_name', ['Cerveja imperial', 'Vinho tinto - copo'])->update(['modifier_set_id' => $tempModSet->id]);
+
+        // ---- Variants ----
+        $aguaItem = MenuItem::where('display_name', 'Água 50cl')->first();
+        if ($aguaItem) {
+            foreach (['c/gás', 's/gás'] as $i => $name) {
+                MenuItemVariant::updateOrCreate(
+                    ['menu_item_id' => $aguaItem->id, 'display_name' => $name],
+                    ['sort_order' => $i + 1, 'is_active' => true]
+                );
+            }
+        }
+        $vinhoItem = MenuItem::where('display_name', 'Vinho tinto - copo')->first();
+        if ($vinhoItem) {
+            foreach (['Casa', 'Reserva'] as $i => $name) {
+                MenuItemVariant::updateOrCreate(
+                    ['menu_item_id' => $vinhoItem->id, 'display_name' => $name],
+                    ['sort_order' => $i + 1, 'is_active' => true]
+                );
+            }
         }
 
         // ---- Printers ----
@@ -898,6 +947,42 @@ class CoreSeeder extends Seeder
             ['en-US', 'ticket', 'paid', 'Paid'],
             ['en-US', 'ticket', 'due', 'Due'],
             ['en-US', 'ticket', 'no_fiscal', 'Internal document - no fiscal value'],
+
+            // ---------- app (modifier sets & variants) ----------
+            ['pt-PT', 'app', 'navigation_label_modifier_sets', 'Conjuntos de modificadores'],
+            ['pt-PT', 'app', 'model_label_modifier_set', 'Conjunto de modificadores'],
+            ['pt-PT', 'app', 'plural_model_label_modifier_sets', 'Conjuntos de modificadores'],
+            ['pt-PT', 'app', 'modifier_set', 'Conjunto de modificadores'],
+            ['pt-PT', 'app', 'add_modifier_item', 'Adicionar modificador'],
+            ['pt-PT', 'app', 'add_variant', 'Adicionar variante'],
+            ['pt-PT', 'app', 'modifier_selection_single', 'Única'],
+            ['pt-PT', 'app', 'modifier_selection_multiple', 'Múltipla'],
+            ['pt-PT', 'app', 'items', 'Itens'],
+
+            ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
+            ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
+            ['en-US', 'app', 'plural_model_label_modifier_sets', 'Modifier Sets'],
+            ['en-US', 'app', 'modifier_set', 'Modifier Set'],
+            ['en-US', 'app', 'add_modifier_item', 'Add Modifier'],
+            ['en-US', 'app', 'add_variant', 'Add Variant'],
+            ['en-US', 'app', 'modifier_selection_single', 'Single'],
+            ['en-US', 'app', 'modifier_selection_multiple', 'Multiple'],
+            ['en-US', 'app', 'items', 'Items'],
+
+            // ---------- order (variants & modifiers) ----------
+            ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],
+            ['pt-PT', 'order', 'no_modifier', 'Nenhum'],
+            ['pt-PT', 'order', 'add_to_order', 'Adicionar'],
+            ['pt-PT', 'order', 'has_variants', 'Variantes'],
+            ['pt-PT', 'order', 'has_modifiers', 'Modificadores'],
+            ['pt-PT', 'order', 'has_variants_and_modifiers', 'Variantes e modificadores'],
+
+            ['en-US', 'order', 'select_variant', 'Select variant'],
+            ['en-US', 'order', 'no_modifier', 'None'],
+            ['en-US', 'order', 'add_to_order', 'Add to order'],
+            ['en-US', 'order', 'has_variants', 'Variants'],
+            ['en-US', 'order', 'has_modifiers', 'Modifiers'],
+            ['en-US', 'order', 'has_variants_and_modifiers', 'Variants & Modifiers'],
         ];
         foreach ($translations as [$lang, $ns, $key, $val]) {
             TranslationKey::updateOrCreate(

@@ -64,7 +64,7 @@ class DemoTransactionSeeder extends Seeder
         $pair2 = SeatPair::where('row_id', $rowA1->id)->where('pair_sequence', 2)->first();
         app(OrderService::class)->submit($group, $server, [
             ['menu_item_id' => $bacalhau->id, 'quantity' => 2, 'delivery_seat_pair_id' => $pair2?->id],
-            ['menu_item_id' => $vinho->id, 'quantity' => 4],
+            ['menu_item_id' => $vinho->id, 'quantity' => 4, 'variant_name' => 'Casa'],
             ['menu_item_id' => $sopa->id, 'quantity' => 2],
         ], $zone1);
 
@@ -77,7 +77,7 @@ class DemoTransactionSeeder extends Seeder
         // Order 3: only bar items for zone 2
         app(OrderService::class)->submit($group, $server, [
             ['menu_item_id' => $cerveja->id, 'quantity' => 6],
-            ['menu_item_id' => $vinho->id, 'quantity' => 2],
+            ['menu_item_id' => $vinho->id, 'quantity' => 2, 'variant_name' => 'Reserva'],
         ], $zone2);
 
         // Mark some production tickets as PRINTED

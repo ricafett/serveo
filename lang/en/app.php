@@ -133,4 +133,13 @@ return [
     'opened_at' => 'Opened at',
     'closed_at' => 'Closed at',
     'range' => 'Range',
+    'navigation_label_modifier_sets' => 'Modifier Sets',
+    'model_label_modifier_set' => 'Modifier Set',
+    'plural_model_label_modifier_sets' => 'Modifier Sets',
+    'modifier_set' => 'Modifier Set',
+    'add_modifier_item' => 'Add Modifier',
+    'add_variant' => 'Add Variant',
+    'modifier_selection_single' => 'Single',
+    'modifier_selection_multiple' => 'Multiple',
+    'items' => 'Items',
 ];

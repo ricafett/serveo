@@ -12,7 +12,7 @@ class OrderItem extends Model
         'unit_price', 'line_subtotal', 'fulfillment_route',
         'delivery_seat_pair_id', 'delivery_reference_label',
         'sent_to_production_at', 'voided_at', 'voided_by_user_id',
-        'void_reason', 'parent_order_item_id',
+        'void_reason', 'parent_order_item_id', 'variant_name', 'modifier_name',
     ];
 
     protected $casts = [

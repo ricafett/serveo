@@ -89,23 +89,38 @@
                     <template x-for="menuItem in filteredItems" :key="menuItem.id">
                         <button
                             type="button"
-                            @click="addToCart(menuItem.id)"
+                            @click="handleItemTap(menuItem)"
                             class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-left hover:border-primary-300 dark:hover:border-primary-700 transition-colors min-h-[80px] flex flex-col justify-between"
                         >
-                            <div class="text-base font-medium text-gray-900 dark:text-white leading-tight" x-text="menuItem.display_name"></div>
+                            <div>
+                                <div class="text-base font-medium text-gray-900 dark:text-white leading-tight" x-text="menuItem.display_name"></div>
+                                <template x-if="menuItem.has_variants || menuItem.modifier_set">
+                                    <div class="mt-1 text-xs text-primary-500 dark:text-primary-400">
+                                        <template x-if="menuItem.has_variants && menuItem.modifier_set">
+                                            <span>{{ __('order.has_variants_and_modifiers') }}</span>
+                                        </template>
+                                        <template x-if="menuItem.has_variants && !menuItem.modifier_set">
+                                            <span>{{ __('order.has_variants') }}</span>
+                                        </template>
+                                        <template x-if="!menuItem.has_variants && menuItem.modifier_set">
+                                            <span>{{ __('order.has_modifiers') }}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
                             <div class="mt-2 flex items-center justify-between">
                                 <span class="text-base text-gray-500 dark:text-gray-400">
-                                    <template x-if="getItemQuantity(menuItem.id) > 0">
-                                        <span x-text="(menuItem.unit_price * getItemQuantity(menuItem.id)).toFixed(2)"></span>
+                                    <template x-if="getItemTotalQuantity(menuItem.id) > 0">
+                                        <span x-text="(menuItem.unit_price * getItemTotalQuantity(menuItem.id)).toFixed(2)"></span>
                                     </template>
-                                    <template x-if="getItemQuantity(menuItem.id) === 0">
+                                    <template x-if="getItemTotalQuantity(menuItem.id) === 0">
                                         <span x-text="menuItem.unit_price.toFixed(2)"></span>
                                     </template>
                                 </span>
-                                <template x-if="getItemQuantity(menuItem.id) > 0">
+                                <template x-if="getItemTotalQuantity(menuItem.id) > 0">
                                     <span
                                         class="rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 min-w-[1.75rem] h-7 flex items-center justify-center text-base font-bold px-1.5"
-                                        x-text="'×' + getItemQuantity(menuItem.id)"
+                                        x-text="'×' + getItemTotalQuantity(menuItem.id)"
                                     ></span>
                                 </template>
                             </div>
@@ -211,11 +226,20 @@
                         <template x-if="cart.length > 0">
                             <div>
                                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                                    <template x-for="(item, index) in cart" :key="item.menu_item_id">
+                                    <template x-for="(item, index) in cart" :key="item.cart_key">
                                         <div class="px-4 py-3 flex items-center justify-between">
                                             <div class="min-w-0 flex-1">
                                                 <div class="text-base font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></div>
                                                 <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                    <template x-if="item.variant_name">
+                                                        <span class="text-primary-500 dark:text-primary-400" x-text="item.variant_name"></span>
+                                                    </template>
+                                                    <template x-if="item.modifier_name">
+                                                        <span class="text-gray-400 dark:text-gray-500" x-text="' (' + item.modifier_name + ')'"></span>
+                                                    </template>
+                                                    <template x-if="item.variant_name || item.modifier_name">
+                                                        <span class="mx-1 text-gray-300 dark:text-gray-600">—</span>
+                                                    </template>
                                                     <span x-text="item.unit_price.toFixed(2)"></span>
                                                     <span x-show="item.quantity > 1" class="ml-1 text-gray-400 dark:text-gray-500">→</span>
                                                     <span x-show="item.quantity > 1" class="ml-1 font-medium text-gray-700 dark:text-gray-300" x-text="(item.unit_price * item.quantity).toFixed(2)"></span>
@@ -264,7 +288,7 @@
         <div class="sm:static sm:mt-4 sm:bg-transparent sm:border-0 sm:p-0 fixed bottom-14 left-0 right-0 px-4 py-3 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 z-30">
             <button
                 type="button"
-                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity }; }))"
+                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name }; }))"
                 :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
                 class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -273,6 +297,154 @@
                     <span class="ml-2 text-sm opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ')'"></span>
                 </template>
             </button>
+        </div>
+    </div>
+
+    {{-- Variant / Modifier Selection Modal --}}
+    <div
+        x-show="showModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        x-cloak
+    >
+        {{-- Backdrop --}}
+        <div
+            x-show="showModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/40 dark:bg-black/60"
+            @click="closeModal()"
+        ></div>
+
+        {{-- Sheet --}}
+        <div
+            x-show="showModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0"
+            x-transition:enter-end="translate-y-0 sm:opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="translate-y-0 sm:opacity-100"
+            x-transition:leave-end="translate-y-full sm:translate-y-4 sm:opacity-0"
+            class="relative w-full sm:max-w-sm mx-auto bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[80vh] overflow-y-auto"
+        >
+            <div class="p-5">
+                {{-- Header --}}
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="modalItem ? modalItem.display_name : ''"></h3>
+                    <button
+                        type="button"
+                        @click="closeModal()"
+                        class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {{-- Variant Selector --}}
+                <template x-if="modalItem && modalItem.has_variants">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.select_variant') }}</label>
+                        <div class="space-y-1">
+                            <template x-for="variant in modalItem.variants" :key="variant.id">
+                                <label class="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[44px] cursor-pointer transition-colors"
+                                    :class="modalSelectedVariant === variant.display_name
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700'
+                                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
+                                >
+                                    <input
+                                        type="radio"
+                                        :name="'variant_' + modalItem.id"
+                                        :value="variant.display_name"
+                                        x-model="modalSelectedVariant"
+                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                    >
+                                    <span class="text-base text-gray-900 dark:text-white" x-text="variant.display_name"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Modifier Selector --}}
+                <template x-if="modalItem && modalItem.modifier_set">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" x-text="modalItem.modifier_set.display_name"></label>
+                        <template x-if="modalItem.modifier_set.selection_mode === 'single'">
+                            <div class="space-y-1">
+                                <label class="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[44px] cursor-pointer transition-colors"
+                                    :class="modalSelectedModifiers.length === 0 ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
+                                >
+                                    <input
+                                        type="radio"
+                                        :name="'modifier_' + modalItem.id"
+                                        value=""
+                                        x-model="modalSelectedModifierSingle"
+                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                    >
+                                    <span class="text-base text-gray-500 dark:text-gray-400">{{ __('order.no_modifier') }}</span>
+                                </label>
+                                <template x-for="modifier in modalItem.modifier_set.items" :key="modifier.id">
+                                    <label class="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[44px] cursor-pointer transition-colors"
+                                        :class="modalSelectedModifierSingle === modifier.display_name
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
+                                    >
+                                        <input
+                                            type="radio"
+                                            :name="'modifier_' + modalItem.id"
+                                            :value="modifier.display_name"
+                                            x-model="modalSelectedModifierSingle"
+                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                        >
+                                        <span class="text-base text-gray-900 dark:text-white" x-text="modifier.display_name"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </template>
+                        <template x-if="modalItem.modifier_set.selection_mode === 'multiple'">
+                            <div class="space-y-1">
+                                <template x-for="modifier in modalItem.modifier_set.items" :key="modifier.id">
+                                    <label class="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[44px] cursor-pointer transition-colors"
+                                        :class="modalSelectedModifiers.includes(modifier.display_name)
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700'
+                                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :value="modifier.display_name"
+                                            x-model="modalSelectedModifiers"
+                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
+                                        >
+                                        <span class="text-base text-gray-900 dark:text-white" x-text="modifier.display_name"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                {{-- Actions --}}
+                <div class="flex gap-3 mt-6">
+                    <button
+                        type="button"
+                        @click="closeModal()"
+                        class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
+                    >
+                        {{ __('app.cancel') }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="confirmModal()"
+                        :disabled="modalItem && modalItem.has_variants && !modalSelectedVariant"
+                        class="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-primary-500 min-h-[44px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {{ __('order.add_to_order') }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -285,6 +457,13 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         menuItems: menuItems,
         menuCategories: menuCategories,
         activeTab: 'menu',
+
+        // Modal state
+        showModal: false,
+        modalItem: null,
+        modalSelectedVariant: '',
+        modalSelectedModifierSingle: '',
+        modalSelectedModifiers: [],
 
         get filteredItems() {
             if (!this.selectedCategoryId) return this.menuItems;
@@ -299,25 +478,88 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             return this.cart.reduce(function (sum, i) { return sum + (i.unit_price * i.quantity); }, 0);
         },
 
-        getItemQuantity(menuItemId) {
-            var item = this.cart.find(function (i) { return i.menu_item_id === menuItemId; });
-            return item ? item.quantity : 0;
+        getItemTotalQuantity(menuItemId) {
+            return this.cart.reduce(function (sum, i) {
+                if (i.menu_item_id === menuItemId) return sum + i.quantity;
+                return sum;
+            }, 0);
         },
 
-        addToCart(menuItemId) {
-            var menuItem = this.menuItems.find(function (i) { return i.id === menuItemId; });
-            if (!menuItem) return;
+        handleItemTap(menuItem) {
+            if (menuItem.has_variants || menuItem.modifier_set) {
+                this.openModal(menuItem);
+            } else {
+                this.addToCartSimple(menuItem);
+            }
+        },
 
-            var existing = this.cart.find(function (i) { return i.menu_item_id === menuItemId; });
+        openModal(menuItem) {
+            this.modalItem = menuItem;
+            this.modalSelectedVariant = '';
+            this.modalSelectedModifierSingle = '';
+            this.modalSelectedModifiers = [];
+            this.showModal = true;
+        },
+
+        closeModal() {
+            this.showModal = false;
+            this.modalItem = null;
+            this.modalSelectedVariant = '';
+            this.modalSelectedModifierSingle = '';
+            this.modalSelectedModifiers = [];
+        },
+
+        confirmModal() {
+            if (!this.modalItem) return;
+
+            var variantName = this.modalSelectedVariant || null;
+            if (this.modalItem.has_variants && !variantName) return;
+
+            var modifierName = null;
+            if (this.modalItem.modifier_set) {
+                if (this.modalItem.modifier_set.selection_mode === 'single') {
+                    modifierName = this.modalSelectedModifierSingle || null;
+                } else {
+                    modifierName = this.modalSelectedModifiers.length > 0 ? this.modalSelectedModifiers.join(', ') : null;
+                }
+            }
+
+            var cartKey = this.modalItem.id + '_' + (variantName || '');
+            var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
             } else {
                 this.cart.push({
+                    cart_key: cartKey,
+                    menu_item_id: this.modalItem.id,
+                    display_name: this.modalItem.display_name,
+                    unit_price: this.modalItem.unit_price,
+                    quantity: 1,
+                    route_type: this.modalItem.route_type,
+                    variant_name: variantName,
+                    modifier_name: modifierName,
+                });
+            }
+
+            this.closeModal();
+            // Switch to order tab on mobile
+            this.activeTab = 'order';
+        },
+
+        addToCartSimple(menuItem) {
+            var existing = this.cart.find(function (i) { return i.menu_item_id === menuItem.id && !i.variant_name; });
+            if (existing) {
+                existing.quantity++;
+            } else {
+                this.cart.push({
+                    cart_key: menuItem.id + '_',
                     menu_item_id: menuItem.id,
                     display_name: menuItem.display_name,
                     unit_price: menuItem.unit_price,
                     quantity: 1,
-                    route_type: menuItem.route_type
+                    route_type: menuItem.route_type,
+                    variant_name: null,
+                    modifier_name: null,
                 });
             }
         },
