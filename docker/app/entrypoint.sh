@@ -53,5 +53,34 @@ echo "  .env exists: $(test -f .env && echo yes || echo no)"
 echo "  debug.php: $(test -f public/debug.php && echo yes || echo no)"
 echo "[entrypoint] ====="
 
+# Ensure debug.php is available even if the app-public volume is stale.
+# The volume mounts over public/ so we write directly at startup.
+if [ ! -f public/debug.php ]; then
+    echo "[entrypoint] Writing debug.php into mounted volume..."
+    cat > public/debug.php << 'DEBUGEOPHP'
+<?php
+header('Content-Type: text/plain; charset=utf-8');
+echo "=== SERVER ===\nPHP: " . PHP_VERSION . "\nContainer: " . gethostname() . "\n\n";
+$key = getenv('APP_KEY') ?: '(empty)';
+echo "=== APP_KEY ===\nvalue: " . substr($key, 0, 25) . "...\nvalid: " . (str_starts_with($key, 'base64:') ? 'YES' : 'NO') . "\n\n";
+echo "=== HEADERS ===\n";
+foreach ($_SERVER as $k => $v) {
+    if (str_starts_with($k, 'HTTP_') || in_array($k, ['SERVER_NAME','SERVER_PORT','REMOTE_ADDR','REQUEST_SCHEME','HTTPS','SERVER_PROTOCOL']))
+        echo "  $k: $v\n";
+}
+echo "\n=== PROXY HEADERS (raw) ===\n";
+foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR','HTTP_X_FORWARDED_PORT','HTTP_CF_VISITOR','HTTP_CF_CONNECTING_IP'] as $h) {
+    $v = $_SERVER[$h] ?? null;
+    if ($v === null) echo "  $h: NOT SET\n";
+    elseif ($v === '') echo "  $h: EMPTY STRING (BAD - nginx bug)\n";
+    else echo "  $h: $v\n";
+}
+echo "\n=== DB ===\n";
+try { new PDO("pgsql:host=".getenv('DB_HOST').";port=".getenv('DB_PORT').";dbname=".getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'), [PDO::ATTR_TIMEOUT=>3]); echo "CONNECTED\n"; } catch(Exception $e) { echo "FAILED: ".$e->getMessage()."\n"; }
+echo "\n=== IMAGE ===\ncommit: 53c23a9 + debug.php\nnginx: X-Forwarded-* with if_not_empty\n";
+DEBUGEOPHP
+    echo "[entrypoint] debug.php written."
+fi
+
 echo "[entrypoint] Starting php-fpm..."
 exec php-fpm
