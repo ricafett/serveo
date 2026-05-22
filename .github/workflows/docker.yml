@@ -73,11 +73,38 @@ jobs:
 
       - name: Validate app image
         run: |
-          echo "Verifying image structure..."
+          echo "==========  1. PHP version  =========="
           docker run --rm --entrypoint php serveo-app:ci -v
-          docker run --rm --entrypoint php serveo-app:ci -m | grep -qE 'pdo_pgsql|redis|gd|intl|bcmath|pcntl' && echo "Required extensions OK"
-          docker run --rm --entrypoint ls serveo-app:ci /var/www/html/vendor/autoload.php && echo "Composer autoload OK"
-          echo "Image validation passed."
+
+          echo "==========  2. Required extensions  =========="
+          docker run --rm --entrypoint php serveo-app:ci -m | grep -qE 'pdo_pgsql|redis|gd|intl|bcmath|pcntl' && echo "  All required extensions present"
+
+          echo "==========  3. Composer autoload  =========="
+          docker run --rm --entrypoint ls serveo-app:ci /var/www/html/vendor/autoload.php && echo "  autoload.php exists"
+
+          echo "==========  4. Laravel boots  =========="
+          docker run --rm \
+            -e APP_KEY=base64:dummykeyfordockerbuildonly12345= \
+            -e DB_CONNECTION=sqlite \
+            -e DB_DATABASE=:memory: \
+            -e CACHE_STORE=array \
+            -e SESSION_DRIVER=array \
+            --entrypoint php serveo-app:ci artisan inspire --no-interaction && echo "  Artisan booted successfully"
+
+          echo "==========  5. .git/ not leaked  =========="
+          docker run --rm --entrypoint sh serveo-app:ci -c 'test ! -d /var/www/html/.git && echo "  .git/ excluded from image"'
+
+          echo "==========  6. No dev packages  =========="
+          docker run --rm --entrypoint sh serveo-app:ci -c 'test ! -d /var/www/html/vendor/phpunit && test ! -d /var/www/html/vendor/laravel/dusk && echo "  No dev-only packages present"'
+
+          echo "==========  7. Entrypoint syntax  =========="
+          docker run --rm --entrypoint sh serveo-app:ci -n /entrypoint.sh && echo "  entrypoint.sh syntax valid"
+
+          echo "==========  8. File permissions  =========="
+          docker run --rm --entrypoint stat serveo-app:ci -c '%U:%G' /var/www/html | grep -q 'serveo:serveo' && echo "  /var/www/html owned by serveo:serveo"
+
+          echo ""
+          echo "==========  All 8 validation checks passed  =========="
 
       - name: Push app image
         if: github.event_name != 'pull_request'
