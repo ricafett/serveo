@@ -17,6 +17,7 @@
         "doctrine/dbal": "^4.0",
         "fakerphp/faker": "^1.23",
         "filament/upgrade": "^5.0",
+        "larastan/larastan": "3.x-dev",
         "laravel/dusk": "*",
         "laravel/pail": "^1.1",
         "laravel/pint": "^1.13",

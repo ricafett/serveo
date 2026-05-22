@@ -6,22 +6,16 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\AuditEvent;
-use App\Models\BillingDocument;
-use App\Models\BillingGroup;
 use App\Models\BillingStatus;
 use App\Models\MenuItem;
-use App\Models\OccupiedZone;
-use App\Models\PaymentRecord;
 use App\Models\Row;
-use App\Models\User;
-use App\Models\Venue;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->admin   = makeUser('ADMIN');
+    $this->admin = makeUser('ADMIN');
 });
 
 /* ──────────────────────────────────────────────────────────────────
@@ -93,7 +87,7 @@ it('creates audit event on occupied zone open', function () {
     Auth::login($this->server);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $zone  = app(OccupancyService::class)->assignZone($group, Row::first(), 1, 3, $this->server);
+    $zone = app(OccupancyService::class)->assignZone($group, Row::first(), 1, 3, $this->server);
 
     $event = AuditEvent::where('event_type', 'OCCUPIED_ZONE_OPENED')
         ->where('occupied_zone_id', $zone->id)
@@ -108,7 +102,7 @@ it('creates audit event on occupied zone release', function () {
     Auth::login($this->server);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $zone  = app(OccupancyService::class)->assignZone($group, Row::first(), 1, 3, $this->server);
+    $zone = app(OccupancyService::class)->assignZone($group, Row::first(), 1, 3, $this->server);
     app(OccupancyService::class)->releaseZone($zone, $this->server);
 
     $event = AuditEvent::where('event_type', 'OCCUPIED_ZONE_RELEASED')
@@ -127,7 +121,7 @@ it('creates audit event on order submission', function () {
     Auth::login($this->server);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Bacalhau')->first();
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
 
     $header = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]);
@@ -145,7 +139,7 @@ it('creates audit event on production ticket queued', function () {
     Auth::login($this->server);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Bacalhau')->first();
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
 
     $header = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]);
@@ -162,7 +156,7 @@ it('creates audit event on order item void', function () {
     Auth::login($this->admin);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Bacalhau')->first();
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
     $header = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]);
 
@@ -185,7 +179,7 @@ it('creates audit event on bill generation', function () {
     Auth::login($this->cashier);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $bill  = app(BillingService::class)->generateInternalBill($group, $this->cashier);
+    $bill = app(BillingService::class)->generateInternalBill($group, $this->cashier);
 
     $event = AuditEvent::where('event_type', 'BILL_GENERATED')
         ->where('billing_document_id', $bill->id)
@@ -200,7 +194,7 @@ it('creates audit event on bill reprint', function () {
     Auth::login($this->cashier);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $bill  = app(BillingService::class)->generateInternalBill($group, $this->cashier);
+    $bill = app(BillingService::class)->generateInternalBill($group, $this->cashier);
     $reprint = app(BillingService::class)->reprintBill($bill, $this->cashier);
 
     $event = AuditEvent::where('event_type', 'BILL_REPRINTED')

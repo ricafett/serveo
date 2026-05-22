@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends ApiController
 {
@@ -40,14 +39,14 @@ class AuthController extends ApiController
 
         return $this->success([
             'user' => [
-                'id'                => $user->id,
-                'displayName'       => $user->name,
-                'roles'             => $user->roles->pluck('name')->values()->all(),
+                'id' => $user->id,
+                'displayName' => $user->name,
+                'roles' => $user->roles->pluck('name')->values()->all(),
                 'preferredLanguage' => $user->preferred_language_code,
-                'theme'             => $user->theme,
+                'theme' => $user->theme,
             ],
             'session' => [
-                'token'     => $request->session()->getId(),
+                'token' => $request->session()->getId(),
                 'expiresAt' => now()->addHours(12)->toIso8601String(),
             ],
         ]);
@@ -66,12 +65,12 @@ class AuthController extends ApiController
         $user = $request->user();
 
         return $this->success([
-            'id'                => $user->id,
-            'displayName'       => $user->name,
-            'roles'             => $user->roles->pluck('name')->values()->all(),
+            'id' => $user->id,
+            'displayName' => $user->name,
+            'roles' => $user->roles->pluck('name')->values()->all(),
             'preferredLanguage' => $user->preferred_language_code,
-            'theme'             => $user->theme,
-            'permissions'       => $user->permissions->pluck('name')->values()->all(),
+            'theme' => $user->theme,
+            'permissions' => $user->permissions->pluck('name')->values()->all(),
         ]);
     }
 }

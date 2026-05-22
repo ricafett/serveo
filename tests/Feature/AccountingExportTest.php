@@ -3,12 +3,19 @@
 use App\Domain\Accounting\AccountingExportService;
 use App\Jobs\GenerateAccountingExportJob;
 use App\Models\AccountingExport;
+use App\Models\AuditEvent;
 use App\Models\BillingGroup;
+use App\Models\BillingStatus;
+use App\Models\MenuItem;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
 use App\Models\OrderItem;
 use App\Models\PaymentRecord;
+use App\Models\Row;
+use App\Models\ServiceSession;
+use App\Models\Venue;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -16,12 +23,12 @@ beforeEach(function () {
 });
 
 it('has an accounting exports table', function () {
-    expect(\Illuminate\Support\Facades\Schema::hasTable('accounting_exports'))->toBeTrue();
+    expect(Schema::hasTable('accounting_exports'))->toBeTrue();
 });
 
 it('can create an accounting export record', function () {
     $admin = makeUser('ADMIN');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
 
     $export = AccountingExport::create([
         'venue_id' => $venue->id,
@@ -41,9 +48,9 @@ it('can create an accounting export record', function () {
 
 it('generates a csv export via service', function () {
     $admin = makeUser('ADMIN');
-    $venue = \App\Models\Venue::first();
-    $session = \App\Models\ServiceSession::first();
-    $status = \App\Models\BillingStatus::where('code', 'ACTIVE')->first();
+    $venue = Venue::first();
+    $session = ServiceSession::first();
+    $status = BillingStatus::where('code', 'ACTIVE')->first();
 
     $group = BillingGroup::create([
         'service_session_id' => $session->id,
@@ -54,7 +61,7 @@ it('generates a csv export via service', function () {
         'version_number' => 1,
     ]);
 
-    $row = \App\Models\Row::first();
+    $row = Row::first();
     OccupiedZone::create([
         'billing_group_id' => $group->id,
         'row_id' => $row->id,
@@ -73,7 +80,7 @@ it('generates a csv export via service', function () {
         'submission_status' => 'SUBMITTED',
     ]);
 
-    $menuItem = \App\Models\MenuItem::first();
+    $menuItem = MenuItem::first();
     OrderItem::create([
         'order_header_id' => $order->id,
         'menu_item_id' => $menuItem->id,
@@ -101,7 +108,7 @@ it('generates a csv export via service', function () {
         'requested_at' => now(),
     ]);
 
-    $service = new AccountingExportService();
+    $service = new AccountingExportService;
     $path = $service->generate($export);
 
     expect($path)->toBe("exports/accounting_export_{$export->id}.csv")
@@ -134,7 +141,7 @@ it('dispatches generate job from api and completes export', function () {
         ->and($export->export_status)->toBe('COMPLETED')
         ->and($export->file_name)->not->toBeNull();
 
-    $audit = \App\Models\AuditEvent::where('accounting_export_id', $export->id)
+    $audit = AuditEvent::where('accounting_export_id', $export->id)
         ->where('event_type', 'EXPORT_COMPLETED')
         ->first();
     expect($audit)->not->toBeNull();
@@ -145,7 +152,7 @@ it('allows api download for completed exports', function () {
     $session = bootScenario();
 
     $export = AccountingExport::create([
-        'venue_id' => \App\Models\Venue::first()->id,
+        'venue_id' => Venue::first()->id,
         'service_session_id' => $session->id,
         'export_type' => 'SESSION_SUMMARY',
         'file_format' => 'CSV',
@@ -170,7 +177,7 @@ it('rejects api download for incomplete exports', function () {
     $session = bootScenario();
 
     $export = AccountingExport::create([
-        'venue_id' => \App\Models\Venue::first()->id,
+        'venue_id' => Venue::first()->id,
         'service_session_id' => $session->id,
         'export_type' => 'SESSION_SUMMARY',
         'file_format' => 'CSV',
@@ -189,7 +196,7 @@ it('marks export as failed when service throws', function () {
     $session = bootScenario();
 
     $export = AccountingExport::create([
-        'venue_id' => \App\Models\Venue::first()->id,
+        'venue_id' => Venue::first()->id,
         'service_session_id' => $session->id,
         'export_type' => 'SESSION_SUMMARY',
         'file_format' => 'CSV',
@@ -199,10 +206,11 @@ it('marks export as failed when service throws', function () {
     ]);
 
     app()->bind(AccountingExportService::class, function () {
-        return new class extends AccountingExportService {
-            public function generate(\App\Models\AccountingExport $export): string
+        return new class extends AccountingExportService
+        {
+            public function generate(AccountingExport $export): string
             {
-                throw new \RuntimeException('Simulated failure');
+                throw new RuntimeException('Simulated failure');
             }
         };
     });
@@ -210,14 +218,14 @@ it('marks export as failed when service throws', function () {
     $job = new GenerateAccountingExportJob($export->id);
     try {
         $job->handle(app(AccountingExportService::class));
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         // Expected
     }
 
     $export->refresh();
     expect($export->export_status)->toBe('FAILED');
 
-    $audit = \App\Models\AuditEvent::where('accounting_export_id', $export->id)
+    $audit = AuditEvent::where('accounting_export_id', $export->id)
         ->where('event_type', 'EXPORT_FAILED')
         ->first();
     expect($audit)->not->toBeNull();

@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 });

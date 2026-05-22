@@ -11,7 +11,7 @@ abstract class BaseResource extends Resource
         return static::$navigationLabel ? __(static::$navigationLabel) : parent::getNavigationLabel();
     }
 
-    public static function getNavigationGroup(): string | \UnitEnum | null
+    public static function getNavigationGroup(): string|\UnitEnum|null
     {
         return static::$navigationGroup ? __(static::$navigationGroup) : parent::getNavigationGroup();
     }

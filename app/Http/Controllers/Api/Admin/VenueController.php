@@ -11,10 +11,10 @@ class VenueController extends ApiController
     public function show(Venue $venue): JsonResponse
     {
         return $this->success([
-            'venueId'   => $venue->id,
+            'venueId' => $venue->id,
             'venueCode' => $venue->venue_code,
-            'name'      => $venue->name,
-            'isActive'  => $venue->is_active,
+            'name' => $venue->name,
+            'isActive' => $venue->is_active,
         ]);
     }
 
@@ -23,16 +23,16 @@ class VenueController extends ApiController
         $venue->load(['sections.rows.seatPairs']);
 
         return $this->success([
-            'venueId'   => $venue->id,
-            'sections'  => $venue->sections->map(fn ($section) => [
-                'sectionId'   => $section->id,
+            'venueId' => $venue->id,
+            'sections' => $venue->sections->map(fn ($section) => [
+                'sectionId' => $section->id,
                 'sectionCode' => $section->section_code,
-                'name'        => $section->name,
-                'rows'        => $section->rows->map(fn ($row) => [
-                    'rowId'   => $row->id,
+                'name' => $section->name,
+                'rows' => $section->rows->map(fn ($row) => [
+                    'rowId' => $row->id,
                     'rowCode' => $row->row_code,
                     'seatPairs' => $row->seatPairs->map(fn ($pair) => [
-                        'seatPairId'   => $pair->id,
+                        'seatPairId' => $pair->id,
                         'pairSequence' => $pair->pair_sequence,
                     ])->values()->all(),
                 ])->values()->all(),

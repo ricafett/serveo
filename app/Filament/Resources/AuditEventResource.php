@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AuditEventResource\Pages;
 use App\Domain\Audit\Audit;
+use App\Filament\Resources\AuditEventResource\Pages;
 use App\Models\AuditEvent;
 use BackedEnum;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +15,13 @@ use UnitEnum;
 class AuditEventResource extends BaseResource
 {
     protected static ?string $model = AuditEvent::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-document-magnifying-glass';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_audit';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-magnifying-glass';
+
     protected static ?string $navigationLabel = 'app.navigation_label_audit_events';
+
     protected static ?int $navigationSort = 90;
 
     public static function form(Schema $schema): Schema
@@ -31,9 +34,20 @@ class AuditEventResource extends BaseResource
         return Auth::user()?->can('event_log.view_limited') || Auth::user()?->can('event_log.view_full') ?? false;
     }
 
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return false; }
-    public static function canDelete($record): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     public static function table(Table $table): Table
     {

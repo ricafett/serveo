@@ -7,15 +7,16 @@ use App\Domain\Printing\PrintQueueService;
 use App\Jobs\DispatchPrintJob;
 use App\Models\MenuItem;
 use App\Models\PrintJob;
+use App\Models\ProductionTicket;
 use App\Models\Row;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 });
@@ -27,7 +28,7 @@ it('persists print jobs against a printer for visibility', function () {
 
     $job = PrintJob::first();
     expect($job)->not->toBeNull()
-        ->and($job->printable_type)->toBe(\App\Models\ProductionTicket::class)
+        ->and($job->printable_type)->toBe(ProductionTicket::class)
         ->and($job->printer_id)->not->toBeNull();
 });
 

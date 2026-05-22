@@ -6,21 +6,24 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
-use App\Models\PaymentRecord;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Checkout extends Component
 {
     public int $id;
+
     public ?BillingGroup $group = null;
 
     // Payment form
     public ?float $paymentAmount = null;
+
     public ?string $paymentLabel = 'Cash';
+
     public ?string $paymentNotes = null;
 
     public ?string $errorMessage = null;
+
     public ?string $successMessage = null;
 
     public function mount(int $id): void
@@ -62,6 +65,7 @@ class Checkout extends Component
 
         if (! Auth::user()?->can('billing_document.create')) {
             $this->errorMessage = __('Unauthorized to print bills.');
+
             return;
         }
 
@@ -81,6 +85,7 @@ class Checkout extends Component
 
         if (! Auth::user()?->can('payment.record')) {
             $this->errorMessage = __('Unauthorized to record payments.');
+
             return;
         }
 
@@ -113,6 +118,7 @@ class Checkout extends Component
 
         if (! Auth::user()?->can('billing_group.reopen')) {
             $this->errorMessage = __('Unauthorized to reopen groups.');
+
             return;
         }
 
@@ -132,6 +138,7 @@ class Checkout extends Component
 
         if (! Auth::user()?->can('billing_document.reprint')) {
             $this->errorMessage = __('Unauthorized to reprint bills.');
+
             return;
         }
 

@@ -1,8 +1,5 @@
 <?php
 
-use App\Models\BillingStatus;
-use App\Models\MenuItem;
-use App\Models\Row;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -12,10 +9,10 @@ beforeEach(function () {
 
 it('authenticates a user and returns session info', function () {
     $user = User::create([
-        'username'  => 'testserver',
-        'name'      => 'Test Server',
-        'email'     => 'test@example.test',
-        'password'  => Hash::make('secret'),
+        'username' => 'testserver',
+        'name' => 'Test Server',
+        'email' => 'test@example.test',
+        'password' => Hash::make('secret'),
         'is_active' => true,
     ]);
     $user->assignRole('SERVER');

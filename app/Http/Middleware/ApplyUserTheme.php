@@ -47,7 +47,7 @@ JS;
         }
 
         // Inject script immediately after <head> to run before paint
-        $content = preg_replace('/(<head[^>]*>)/i', '$1' . $script, $content, 1);
+        $content = preg_replace('/(<head[^>]*>)/i', '$1'.$script, $content, 1);
         $response->setContent($content);
 
         return $response;

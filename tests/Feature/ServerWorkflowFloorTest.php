@@ -2,6 +2,7 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Domain\Floor\ZoneOverlapException;
 use App\Models\MenuItem;
 use App\Models\OrderHeader;
 use App\Models\OrderItem;
@@ -10,15 +11,18 @@ use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
 use App\Models\User;
+use App\Models\Venue;
+use Database\Seeders\CoreSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
-    $this->seed(\Database\Seeders\CoreSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    $this->seed(CoreSeeder::class);
 
-    $this->venue = \App\Models\Venue::first();
+    $this->venue = Venue::first();
     $this->session = ServiceSession::create([
         'venue_id' => $this->venue->id,
         'session_type' => 'DINNER',
@@ -213,5 +217,5 @@ it('prevents overlapping zones via occupancy service', function () {
     $group2 = app(BillingGroupService::class)->open($this->session, $this->server);
 
     expect(fn () => app(OccupancyService::class)->assignZone($group2, $this->row, 4, 7, $this->server))
-        ->toThrow(\App\Domain\Floor\ZoneOverlapException::class);
+        ->toThrow(ZoneOverlapException::class);
 });

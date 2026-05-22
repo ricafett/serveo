@@ -2,9 +2,7 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
-use App\Models\BillingGroup;
 use App\Models\Row;
-use App\Models\User;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -62,7 +60,7 @@ it('upserts favorite when server assigns multiple zones to same group', function
     app(OccupancyService::class)->assignZone($group, $this->row, 1, 3, $this->server);
 
     // Zone 2 — need a different row to avoid overlap
-    $row2 = \App\Models\Row::where('id', '!=', $this->row->id)->first();
+    $row2 = Row::where('id', '!=', $this->row->id)->first();
     if ($row2) {
         app(OccupancyService::class)->assignZone($group, $row2, 1, 2, $this->server);
     }

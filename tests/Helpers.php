@@ -1,14 +1,15 @@
 <?php
 
+use App\Models\BillingGroup;
 use App\Models\BillingStatus;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Printer;
 use App\Models\PrinterRoute;
 use App\Models\Row;
-use App\Models\Section;
 use App\Models\Seat;
 use App\Models\SeatPair;
+use App\Models\Section;
 use App\Models\ServiceSession;
 use App\Models\User;
 use App\Models\Venue;
@@ -143,25 +144,26 @@ function makeUser(string $role, ?string $username = null): User
 {
     $username ??= strtolower($role).'-'.bin2hex(random_bytes(3));
     $user = User::create([
-        'username'  => $username,
-        'name'      => ucfirst(strtolower($role)).' User',
-        'email'     => $username.'@example.test',
-        'password'  => Hash::make('secret'),
+        'username' => $username,
+        'name' => ucfirst(strtolower($role)).' User',
+        'email' => $username.'@example.test',
+        'password' => Hash::make('secret'),
         'is_active' => true,
         'preferred_language_code' => 'en-US',
     ]);
     $user->assignRole($role);
+
     return $user;
 }
 
-function createBillingGroup(ServiceSession $session, User $server, array $overrides = []): \App\Models\BillingGroup
+function createBillingGroup(ServiceSession $session, User $server, array $overrides = []): BillingGroup
 {
-    $status = \App\Models\BillingStatus::where('code', 'ACTIVE')->first();
+    $status = BillingStatus::where('code', 'ACTIVE')->first();
 
-    $group = \App\Models\BillingGroup::create(array_merge([
+    $group = BillingGroup::create(array_merge([
         'service_session_id' => $session->id,
         'opened_by_user_id' => $server->id,
-        'display_code' => 'BG-' . bin2hex(random_bytes(2)),
+        'display_code' => 'BG-'.bin2hex(random_bytes(2)),
         'billing_status_id' => $status?->id,
         'opened_at' => now(),
     ], $overrides));

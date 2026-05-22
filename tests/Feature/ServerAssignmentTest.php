@@ -4,9 +4,9 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
+use App\Models\OccupiedZone;
 use App\Models\Row;
 use App\Models\SeatPair;
-use App\Models\User;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -105,7 +105,7 @@ it('zone server is null when zone is created without an actor (edge case)', func
     ]);
 
     // Create zone directly without going through service
-    $zone = \App\Models\OccupiedZone::create([
+    $zone = OccupiedZone::create([
         'billing_group_id' => $group->id,
         'row_id' => $this->row->id,
         'start_seat_pair_sequence' => 8,

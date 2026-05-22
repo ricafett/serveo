@@ -26,18 +26,18 @@ class UsbAgentAdapter implements PrinterAdapter
     public function send(Printer $printer, string $payload): PrintResult
     {
         $endpoint = rtrim($printer->agent_endpoint, '/').'/print';
-        $token    = (string) config('services.print_agent.token', env('SERVEO_PRINT_AGENT_TOKEN'));
+        $token = (string) config('services.print_agent.token');
 
         try {
             $response = Http::timeout(5)
                 ->withHeaders(array_filter([
                     'X-Agent-Token' => $token ?: null,
-                    'Accept'        => 'application/json',
+                    'Accept' => 'application/json',
                 ]))
                 ->asJson()
                 ->post($endpoint, [
                     'printer_id' => $printer->agent_printer_id,
-                    'payload'    => base64_encode($payload),
+                    'payload' => base64_encode($payload),
                 ]);
         } catch (Throwable $e) {
             return PrintResult::fail("USB agent {$endpoint} unreachable: {$e->getMessage()}");

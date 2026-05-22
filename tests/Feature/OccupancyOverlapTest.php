@@ -7,13 +7,13 @@ use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
-    $this->row     = Row::firstOrFail();
+    $this->server = makeUser('SERVER');
+    $this->row = Row::firstOrFail();
 });
 
 it('opens an occupied zone within an empty row', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $zone  = app(OccupancyService::class)->assignZone($group, $this->row, 1, 3, $this->server);
+    $zone = app(OccupancyService::class)->assignZone($group, $this->row, 1, 3, $this->server);
 
     expect($zone->is_open)->toBeTrue()
         ->and($zone->billing_group_id)->toBe($group->id)
@@ -33,10 +33,10 @@ it('rejects overlapping zone in the same row', function () {
 
 it('allows reusing range after release', function () {
     $g1 = app(BillingGroupService::class)->open($this->session, $this->server);
-    $z  = app(OccupancyService::class)->assignZone($g1, $this->row, 4, 6, $this->server);
+    $z = app(OccupancyService::class)->assignZone($g1, $this->row, 4, 6, $this->server);
     app(OccupancyService::class)->releaseZone($z, $this->server);
 
-    $g2  = app(BillingGroupService::class)->open($this->session, $this->server);
+    $g2 = app(BillingGroupService::class)->open($this->session, $this->server);
     $new = app(OccupancyService::class)->assignZone($g2, $this->row, 4, 6, $this->server);
 
     expect($new->is_open)->toBeTrue();

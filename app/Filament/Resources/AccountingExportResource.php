@@ -2,30 +2,31 @@
 
 namespace App\Filament\Resources;
 
-use App\Domain\Audit\Audit;
 use App\Filament\Resources\AccountingExportResource\Pages;
-use App\Jobs\GenerateAccountingExportJob;
 use App\Models\AccountingExport;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms;
-use Filament\Notifications\Notification;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use UnitEnum;
 
 class AccountingExportResource extends BaseResource
 {
     protected static ?string $model = AccountingExport::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_audit';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-document-arrow-down';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_audit';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-arrow-down';
+
     protected static ?string $navigationLabel = 'app.navigation_label_accounting_exports';
-    protected static ?string $modelLabel      = 'app.model_label_accounting_export';
+
+    protected static ?string $modelLabel = 'app.model_label_accounting_export';
+
     protected static ?string $pluralModelLabel = 'app.plural_model_label_accounting_exports';
+
     protected static ?int $navigationSort = 95;
 
     public static function canViewAny(): bool
@@ -87,7 +88,7 @@ class AccountingExportResource extends BaseResource
                 Tables\Columns\TextColumn::make('export_status')->badge()->colors([
                     'warning' => 'REQUESTED',
                     'success' => 'COMPLETED',
-                    'danger'  => 'FAILED',
+                    'danger' => 'FAILED',
                 ])->label(__('app.status')),
                 Tables\Columns\TextColumn::make('requestedBy.name')->label(__('app.requested_by')),
                 Tables\Columns\TextColumn::make('completed_at')->dateTime()->label(__('app.completed')),
@@ -106,7 +107,7 @@ class AccountingExportResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListAccountingExports::route('/'),
+            'index' => Pages\ListAccountingExports::route('/'),
             'create' => Pages\CreateAccountingExport::route('/create'),
         ];
     }

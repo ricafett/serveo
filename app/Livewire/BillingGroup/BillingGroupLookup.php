@@ -38,8 +38,8 @@ class BillingGroupLookup extends Component
             $search = strtolower($this->search);
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(display_code) LIKE ?', ["%{$search}%"])
-                  ->orWhereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                  ->orWhereHas('occupiedZones.row.section', fn ($sq) => $sq->whereRaw('LOWER(section_code) LIKE ?', ["%{$search}%"]));
+                    ->orWhereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                    ->orWhereHas('occupiedZones.row.section', fn ($sq) => $sq->whereRaw('LOWER(section_code) LIKE ?', ["%{$search}%"]));
             });
         }
 

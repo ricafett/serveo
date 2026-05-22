@@ -1,7 +1,13 @@
 <?php
 
-use App\Http\Controllers\Operational\HomeController;
 use App\Http\Controllers\Web\AuthController;
+use App\Livewire\BillingGroup\BillingGroupDetail;
+use App\Livewire\BillingGroup\BillingGroupLookup;
+use App\Livewire\Cashier\Checkout;
+use App\Livewire\Cashier\ReprintPanel;
+use App\Livewire\Floor\FloorIndex;
+use App\Livewire\Home\Dashboard;
+use App\Livewire\Order\OrderEntry;
 use App\Models\AccountingExport;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -26,25 +32,25 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // Operational UI — requires authentication
 Route::middleware('auth')->group(function () {
     // Role-based dashboard homepage
-    Route::get('/home', \App\Livewire\Home\Dashboard::class)->name('home');
+    Route::get('/home', Dashboard::class)->name('home');
 
     // Server routes
     Route::middleware('role:SERVER,ADMIN')->group(function () {
-        Route::get('/floor', \App\Livewire\Floor\FloorIndex::class)->name('floor');
-        Route::get('/orders/new/{billingGroupId}', \App\Livewire\Order\OrderEntry::class)->name('orders.new');
+        Route::get('/floor', FloorIndex::class)->name('floor');
+        Route::get('/orders/new/{billingGroupId}', OrderEntry::class)->name('orders.new');
     });
 
     // Shared billing-group detail (server + cashier + admin)
     Route::middleware('role:SERVER,CASHIER,ADMIN')->group(function () {
-        Route::get('/billing-groups/{id}', \App\Livewire\BillingGroup\BillingGroupDetail::class)->name('billing-groups.detail');
+        Route::get('/billing-groups/{id}', BillingGroupDetail::class)->name('billing-groups.detail');
     });
 
     // Cashier routes
     Route::middleware('role:CASHIER,ADMIN')->group(function () {
-        Route::get('/lookup', \App\Livewire\BillingGroup\BillingGroupLookup::class)->name('lookup');
-        Route::get('/checkout/{id}', \App\Livewire\Cashier\Checkout::class)->name('checkout');
-        Route::get('/reprint', \App\Livewire\Cashier\ReprintPanel::class)->name('reprint');
-        Route::get('/reprint/{billingGroupId}', \App\Livewire\Cashier\ReprintPanel::class)->name('reprint.group');
+        Route::get('/lookup', BillingGroupLookup::class)->name('lookup');
+        Route::get('/checkout/{id}', Checkout::class)->name('checkout');
+        Route::get('/reprint', ReprintPanel::class)->name('reprint');
+        Route::get('/reprint/{billingGroupId}', ReprintPanel::class)->name('reprint.group');
     });
 });
 

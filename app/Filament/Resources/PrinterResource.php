@@ -2,26 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\PrinterResource\Pages;
 use App\Models\Printer;
+use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class PrinterResource extends BaseResource
 {
     protected static ?string $model = Printer::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-printer';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-printer';
+
     protected static ?string $navigationLabel = 'app.navigation_label_printers';
+
     protected static ?int $navigationSort = 40;
 
     public static function canViewAny(): bool
@@ -50,14 +52,14 @@ class PrinterResource extends BaseResource
             Forms\Components\TextInput::make('name')->required(),
             Forms\Components\Select::make('printer_type')->options([
                 'KITCHEN' => __('app.printer_type_kitchen'),
-                'BAR'     => __('app.printer_type_bar'),
-                'BILL'    => __('app.printer_type_bill'),
+                'BAR' => __('app.printer_type_bar'),
+                'BILL' => __('app.printer_type_bill'),
                 'GENERIC' => __('app.printer_type_generic'),
             ])->required(),
             Forms\Components\Select::make('connection_type')->options([
-                'LAN'       => __('app.connection_type_lan'),
+                'LAN' => __('app.connection_type_lan'),
                 'USB_AGENT' => __('app.connection_type_usb_agent'),
-                'NULL'      => __('app.connection_type_null'),
+                'NULL' => __('app.connection_type_null'),
             ])->required()->live(),
             Forms\Components\TextInput::make('address')->label(__('app.address_ip_hostname'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'LAN'),
@@ -81,9 +83,9 @@ class PrinterResource extends BaseResource
                 Tables\Columns\TextColumn::make('address'),
                 Tables\Columns\TextColumn::make('health_status')->badge()->colors([
                     'success' => 'OK',
-                    'danger'  => 'UNREACHABLE',
+                    'danger' => 'UNREACHABLE',
                     'warning' => 'WARNING',
-                    'gray'    => 'UNKNOWN',
+                    'gray' => 'UNKNOWN',
                 ])->label(__('app.health')),
                 Tables\Columns\TextColumn::make('last_seen_at')->dateTime()->label(__('app.last_seen')),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
@@ -97,9 +99,9 @@ class PrinterResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPrinters::route('/'),
+            'index' => Pages\ListPrinters::route('/'),
             'create' => Pages\CreatePrinter::route('/create'),
-            'edit'   => Pages\EditPrinter::route('/{record}/edit'),
+            'edit' => Pages\EditPrinter::route('/{record}/edit'),
         ];
     }
 }

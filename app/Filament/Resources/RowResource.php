@@ -2,28 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\RowResource\Pages;
 use App\Models\Row;
 use App\Models\Section;
 use App\Models\User;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
+use UnitEnum;
 
 class RowResource extends BaseResource
 {
     protected static ?string $model = Row::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-bars-3';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bars-3';
+
     protected static ?string $navigationLabel = 'app.navigation_label_rows';
+
     protected static ?int $navigationSort = 21;
 
     public static function canViewAny(): bool
@@ -82,7 +84,8 @@ class RowResource extends BaseResource
                                 ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
                                 ->required(),
                         ])
-                        ->action(function (array $data, \Illuminate\Database\Eloquent\Collection $records): void {
+                        ->action(function (array $data, Collection $records): void {
+                            /** @var Collection<int, Row> $records */
                             $records->each(function (Row $row) use ($data): void {
                                 $row->seatPairs()->update(['default_server_id' => $data['server_id']]);
                             });
@@ -95,9 +98,9 @@ class RowResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListRows::route('/'),
+            'index' => Pages\ListRows::route('/'),
             'create' => Pages\CreateRow::route('/create'),
-            'edit'   => Pages\EditRow::route('/{record}/edit'),
+            'edit' => Pages\EditRow::route('/{record}/edit'),
         ];
     }
 }

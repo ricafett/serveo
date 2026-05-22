@@ -45,43 +45,45 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         $job->update([
-            'status'   => PrintJob::STATUS_IN_PROGRESS,
+            'status' => PrintJob::STATUS_IN_PROGRESS,
             'attempts' => $job->attempts + 1,
         ]);
 
-        $printer  = $job->printer;
+        $printer = $job->printer;
         $printable = $job->printable;
 
         if (! $printer || ! $printable) {
             $job->update([
-                'status'     => PrintJob::STATUS_FAILED,
+                'status' => PrintJob::STATUS_FAILED,
                 'last_error' => 'Missing printer or printable target',
             ]);
+
             return;
         }
 
         try {
             $payload = match (true) {
                 $printable instanceof ProductionTicket => $renderer->renderProductionTicket($printable),
-                $printable instanceof BillingDocument  => $renderer->renderBill($printable),
+                $printable instanceof BillingDocument => $renderer->renderBill($printable),
                 default => throw new \LogicException('Unsupported printable: '.$printable::class),
             };
         } catch (Throwable $e) {
             $job->update([
-                'status'     => PrintJob::STATUS_FAILED,
+                'status' => PrintJob::STATUS_FAILED,
                 'last_error' => 'Render failure: '.$e->getMessage(),
             ]);
+
             return;
         }
 
         $adapter = $registry->for($printer);
-        $result  = $adapter->send($printer, $payload);
+        $result = $adapter->send($printer, $payload);
 
         if ($result->success) {
             $job->update([
-                'status'       => PrintJob::STATUS_PRINTED,
+                'status' => PrintJob::STATUS_PRINTED,
                 'completed_at' => now(),
-                'last_error'   => null,
+                'last_error' => null,
             ]);
             $printer->update(['health_status' => 'OK', 'last_seen_at' => now(), 'last_error' => null]);
 
@@ -92,10 +94,10 @@ class DispatchPrintJob implements ShouldQueue
                     "Ticket #{$printable->id} impresso com sucesso",
                     ['printer_id' => $printer->id, 'job_id' => $job->id],
                     [
-                        'billing_group_id'     => $printable->billing_group_id,
-                        'service_session_id'   => $printable->service_session_id,
+                        'billing_group_id' => $printable->billing_group_id,
+                        'service_session_id' => $printable->service_session_id,
                         'production_ticket_id' => $printable->id,
-                        'actor_user_id'        => $job->requested_by_user_id,
+                        'actor_user_id' => $job->requested_by_user_id,
                     ],
                 );
             } elseif ($printable instanceof BillingDocument) {
@@ -105,17 +107,18 @@ class DispatchPrintJob implements ShouldQueue
                     "Conta #{$printable->id} impressa com sucesso",
                     ['printer_id' => $printer->id, 'job_id' => $job->id],
                     [
-                        'billing_group_id'    => $printable->billing_group_id,
+                        'billing_group_id' => $printable->billing_group_id,
                         'billing_document_id' => $printable->id,
-                        'actor_user_id'       => $job->requested_by_user_id,
+                        'actor_user_id' => $job->requested_by_user_id,
                     ],
                 );
             }
+
             return;
         }
 
         $job->update([
-            'status'     => PrintJob::STATUS_FAILED,
+            'status' => PrintJob::STATUS_FAILED,
             'last_error' => $result->message,
         ]);
         $printer->update(['health_status' => 'UNREACHABLE', 'last_error' => $result->message]);
@@ -127,10 +130,10 @@ class DispatchPrintJob implements ShouldQueue
                 "Ticket #{$printable->id} falhou ao imprimir: {$result->message}",
                 ['printer_id' => $printer->id, 'job_id' => $job->id, 'error' => $result->message],
                 [
-                    'billing_group_id'     => $printable->billing_group_id,
-                    'service_session_id'   => $printable->service_session_id,
+                    'billing_group_id' => $printable->billing_group_id,
+                    'service_session_id' => $printable->service_session_id,
                     'production_ticket_id' => $printable->id,
-                    'actor_user_id'        => $job->requested_by_user_id,
+                    'actor_user_id' => $job->requested_by_user_id,
                 ],
             );
         }

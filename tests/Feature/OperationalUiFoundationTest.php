@@ -1,14 +1,16 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\CoreSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
-    $this->seed(\Database\Seeders\CoreSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    $this->seed(CoreSeeder::class);
 });
 
 // ------------------------------------------------------------------

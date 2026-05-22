@@ -2,11 +2,16 @@
 
 namespace App\Filament\Resources\BillingGroupResource\Pages;
 
+use App\Domain\Audit\Audit;
 use App\Filament\Resources\BillingGroupResource;
+use App\Models\BillingGroup;
+use App\Models\OccupiedZone;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Infolists\Components;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ViewBillingGroup extends ViewRecord
@@ -17,7 +22,7 @@ class ViewBillingGroup extends ViewRecord
     {
         return $schema
             ->schema([
-                \Filament\Schemas\Components\Section::make(__('app.details'))
+                Section::make(__('app.details'))
                     ->schema([
                         Components\TextEntry::make('name')
                             ->label(__('billing.name')),
@@ -41,17 +46,17 @@ class ViewBillingGroup extends ViewRecord
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make(__('app.zones'))
+                Section::make(__('app.zones'))
                     ->schema([
                         Components\RepeatableEntry::make('occupiedZones')
                             ->label('')
                             ->schema([
                                 Components\TextEntry::make('location')
                                     ->label(__('app.location'))
-                                    ->state(fn (\App\Models\OccupiedZone $record): string => $record->location()),
+                                    ->state(fn (OccupiedZone $record): string => $record->location()),
                                 Components\TextEntry::make('range_label')
                                     ->label(__('app.range'))
-                                    ->state(fn (\App\Models\OccupiedZone $record): string => $record->rangeLabel()),
+                                    ->state(fn (OccupiedZone $record): string => $record->rangeLabel()),
                                 Components\TextEntry::make('server.name')
                                     ->label(__('app.server')),
                                 Components\IconEntry::make('is_open')
@@ -72,18 +77,18 @@ class ViewBillingGroup extends ViewRecord
                 ->schema([
                     Forms\Components\Select::make('server_id')
                         ->label(__('app.server'))
-                        ->options(\App\Models\User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
+                        ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
                         ->required(),
                 ])
                 ->action(function (array $data): void {
-                    /** @var \App\Models\BillingGroup $record */
+                    /** @var BillingGroup $record */
                     $record = $this->getRecord();
 
                     $zoneIds = $record->occupiedZones()->pluck('id');
-                    \App\Models\OccupiedZone::whereIn('id', $zoneIds)
+                    OccupiedZone::whereIn('id', $zoneIds)
                         ->update(['server_id' => $data['server_id']]);
 
-                    \App\Domain\Audit\Audit::record(
+                    Audit::record(
                         'server_assigned',
                         "Server ID {$data['server_id']} assigned to all zones of billing group {$record->display_code}",
                         ['server_id' => $data['server_id'], 'billing_group_id' => $record->id],

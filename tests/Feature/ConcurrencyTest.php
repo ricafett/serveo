@@ -3,13 +3,15 @@
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
+use App\Domain\Orders\OrderService;
 use App\Models\BillingStatus;
+use App\Models\MenuItem;
 use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
-    $this->row     = Row::first();
+    $this->server = makeUser('SERVER');
+    $this->row = Row::first();
 });
 
 it('prevents overlapping zone assignments via database locking', function () {
@@ -26,11 +28,11 @@ it('allows simultaneous orders on same billing group', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
     $zone = app(OccupancyService::class)->assignZone($group, $this->row, 1, 2, $this->server);
 
-    $kitchenItem = \App\Models\MenuItem::where('display_name', 'Bacalhau')->first();
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
 
-    $header1 = app(\App\Domain\Orders\OrderService::class)->submit($group, $this->server,
+    $header1 = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $zone);
-    $header2 = app(\App\Domain\Orders\OrderService::class)->submit($group, $this->server,
+    $header2 = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $zone);
 
     expect($header1->id)->not->toBe($header2->id)

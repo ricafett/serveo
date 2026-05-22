@@ -11,8 +11,7 @@
  *   php scripts/check-translations.php --no-strict  # Skip CoreSeeder parity check
  *   php scripts/check-translations.php --locale=en  # Check a single locale only
  */
-
-$baseDir = realpath(__DIR__ . '/..');
+$baseDir = realpath(__DIR__.'/..');
 $exitCode = 0;
 
 // ---------------------------------------------------------------------------
@@ -35,13 +34,13 @@ foreach ($argv as $arg) {
 function loadTranslations(string $baseDir, string $locale): array
 {
     $translations = [];
-    $langDir = $baseDir . '/lang/' . $locale;
+    $langDir = $baseDir.'/lang/'.$locale;
 
-    if (!is_dir($langDir)) {
+    if (! is_dir($langDir)) {
         return $translations;
     }
 
-    foreach (glob($langDir . '/*.php') as $file) {
+    foreach (glob($langDir.'/*.php') as $file) {
         $domain = basename($file, '.php');
         $translations[$domain] = include $file;
     }
@@ -52,19 +51,20 @@ function loadTranslations(string $baseDir, string $locale): array
 function discoverLocales(string $baseDir): array
 {
     $locales = [];
-    $langDir = $baseDir . '/lang';
-    if (!is_dir($langDir)) {
+    $langDir = $baseDir.'/lang';
+    if (! is_dir($langDir)) {
         return $locales;
     }
-    foreach (glob($langDir . '/*', GLOB_ONLYDIR) as $dir) {
+    foreach (glob($langDir.'/*', GLOB_ONLYDIR) as $dir) {
         $locales[] = basename($dir);
     }
+
     return $locales;
 }
 
 function loadSeederTranslations(string $baseDir): array
 {
-    $seederPath = $baseDir . '/database/seeders/CoreSeeder.php';
+    $seederPath = $baseDir.'/database/seeders/CoreSeeder.php';
     $content = file_get_contents($seederPath);
     $translations = [];
 
@@ -105,6 +105,7 @@ function stripPhpComments(string $code): string
             $result .= $token;
         }
     }
+
     return $result;
 }
 
@@ -121,7 +122,7 @@ function scanDirectory(string $dir, array &$found): void
 
         $rawContent = file_get_contents($file->getPathname());
         $content = stripPhpComments($rawContent);
-        $relPath = str_replace(realpath(__DIR__ . '/..'), '', realpath($file->getPathname()));
+        $relPath = str_replace(realpath(__DIR__.'/..'), '', realpath($file->getPathname()));
 
         // __(), trans(), Lang::get() with namespaced keys: domain.key
         $pattern = '/(?:__|trans|Lang::get)\([\'"]([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)[\'"]\)/';
@@ -156,14 +157,14 @@ $locales = $localeArg ? [$localeArg] : discoverLocales($baseDir);
 $seederTranslations = loadSeederTranslations($baseDir);
 
 $found = [];
-scanDirectory($baseDir . '/app', $found);
-scanDirectory($baseDir . '/resources/views', $found);
+scanDirectory($baseDir.'/app', $found);
+scanDirectory($baseDir.'/resources/views', $found);
 
 // Deduplicate
 $byDomainKey = [];
 foreach ($found as $item) {
-    $dk = $item['domain'] . '.' . $item['key'];
-    if (!isset($byDomainKey[$dk])) {
+    $dk = $item['domain'].'.'.$item['key'];
+    if (! isset($byDomainKey[$dk])) {
         $byDomainKey[$dk] = $item;
     }
 }
@@ -183,18 +184,19 @@ foreach ($locales as $locale) {
 
         if ($domain === '_bare') {
             $bareStrings[] = $item;
+
             continue;
         }
 
         // Check file translations
-        if (!isset($fileTranslations[$domain][$key])) {
+        if (! isset($fileTranslations[$domain][$key])) {
             $missingInFiles[] = $item;
         }
 
         // Check seeder translations (strict mode)
         if ($strict) {
             $seederLocale = mapLocaleToSeeder($locale);
-            if (!isset($seederTranslations[$seederLocale][$domain][$key])) {
+            if (! isset($seederTranslations[$seederLocale][$domain][$key])) {
                 $missingInSeeder[] = $item;
             }
         }
@@ -202,7 +204,7 @@ foreach ($locales as $locale) {
 
     $localeHasIssues = false;
 
-    if (!empty($missingInFiles)) {
+    if (! empty($missingInFiles)) {
         echo "Missing from lang/{$locale}/*.php:\n";
         foreach ($missingInFiles as $item) {
             echo "  {$item['domain']}.{$item['key']}  (used in {$item['file']})\n";
@@ -212,7 +214,7 @@ foreach ($locales as $locale) {
         $exitCode = 1;
     }
 
-    if ($strict && !empty($missingInSeeder)) {
+    if ($strict && ! empty($missingInSeeder)) {
         echo "Missing from CoreSeeder:\n";
         foreach ($missingInSeeder as $item) {
             echo "  {$item['domain']}.{$item['key']}  (used in {$item['file']})\n";
@@ -222,7 +224,7 @@ foreach ($locales as $locale) {
         $exitCode = 1;
     }
 
-    if (!empty($bareStrings)) {
+    if (! empty($bareStrings)) {
         echo "Bare English strings (no translation namespace):\n";
         foreach ($bareStrings as $item) {
             echo "  '{$item['key']}'  (in {$item['file']})\n";
@@ -232,7 +234,7 @@ foreach ($locales as $locale) {
         $exitCode = 1;
     }
 
-    if (!$localeHasIssues) {
+    if (! $localeHasIssues) {
         echo "All translation keys present for locale '{$locale}'.\n\n";
     }
 }

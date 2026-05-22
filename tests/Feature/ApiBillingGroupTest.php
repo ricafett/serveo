@@ -1,19 +1,18 @@
 <?php
 
+use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
-use App\Models\BillingGroup;
-use App\Models\BillingStatus;
+use App\Domain\Orders\OrderService;
 use App\Models\MenuItem;
 use App\Models\Row;
-use App\Models\User;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 });
@@ -22,13 +21,13 @@ it('creates a billing group via api', function () {
     $response = $this->actingAs($this->server)->postJson('/api/v1/billing-groups', [
         'statusCode' => 'ACTIVE',
         'coverCount' => 4,
-        'notes'      => 'API test group',
-        'zones'      => [
+        'notes' => 'API test group',
+        'zones' => [
             [
-                'rowId'                   => Row::first()->id,
-                'startSeatPairSequence'   => 3,
-                'endSeatPairSequence'     => 4,
-                'deliveryMode'            => 'CENTER',
+                'rowId' => Row::first()->id,
+                'startSeatPairSequence' => 3,
+                'endSeatPairSequence' => 4,
+                'deliveryMode' => 'CENTER',
             ],
         ],
     ]);
@@ -51,7 +50,7 @@ it('returns a billing group with zones and totals', function () {
 it('updates billing group notes only', function () {
     $response = $this->actingAs($this->server)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
         'versionNumber' => 1,
-        'notes'         => 'Updated via API',
+        'notes' => 'Updated via API',
     ]);
 
     $response->assertStatus(200)
@@ -62,7 +61,7 @@ it('updates billing group notes only', function () {
 it('allows cashier to close a billing group via status update', function () {
     $response = $this->actingAs($this->cashier)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
         'versionNumber' => 1,
-        'statusCode'    => 'CLOSED',
+        'statusCode' => 'CLOSED',
     ]);
 
     $response->assertStatus(200)
@@ -74,7 +73,7 @@ it('allows cashier to close a billing group via status update', function () {
 it('rejects server closing a billing group via status update', function () {
     $response = $this->actingAs($this->server)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
         'versionNumber' => 1,
-        'statusCode'    => 'CLOSED',
+        'statusCode' => 'CLOSED',
     ]);
 
     $response->assertStatus(403)
@@ -86,7 +85,7 @@ it('rejects update with stale version number', function () {
 
     $response = $this->actingAs($this->server)->patchJson("/api/v1/billing-groups/{$this->group->id}", [
         'versionNumber' => 1,
-        'notes'         => 'Should fail',
+        'notes' => 'Should fail',
     ]);
 
     $response->assertStatus(409)
@@ -108,9 +107,9 @@ it('adds zones to an existing billing group', function () {
     $response = $this->actingAs($this->server)->postJson("/api/v1/billing-groups/{$this->group->id}/zones", [
         'zones' => [
             [
-                'rowId'                 => Row::first()->id,
+                'rowId' => Row::first()->id,
                 'startSeatPairSequence' => 5,
-                'endSeatPairSequence'   => 6,
+                'endSeatPairSequence' => 6,
             ],
         ],
     ]);
@@ -123,9 +122,9 @@ it('rejects overlapping zones', function () {
     $response = $this->actingAs($this->server)->postJson("/api/v1/billing-groups/{$this->group->id}/zones", [
         'zones' => [
             [
-                'rowId'                 => Row::first()->id,
+                'rowId' => Row::first()->id,
                 'startSeatPairSequence' => 1,
-                'endSeatPairSequence'   => 2,
+                'endSeatPairSequence' => 2,
             ],
         ],
     ]);
@@ -136,7 +135,7 @@ it('rejects overlapping zones', function () {
 
 it('returns orders for a billing group', function () {
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    app(\App\Domain\Orders\OrderService::class)->submit(
+    app(OrderService::class)->submit(
         $this->group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
         $this->zone
@@ -158,7 +157,7 @@ it('returns bill summary for a billing group', function () {
 });
 
 it('reopens a closed billing group', function () {
-    app(\App\Domain\Billing\BillingService::class)->recordPayment(
+    app(BillingService::class)->recordPayment(
         $this->group, $this->cashier, 1000.00, 'Numerário'
     );
 
@@ -166,7 +165,7 @@ it('reopens a closed billing group', function () {
     expect($this->group->is_closed)->toBeTrue();
 
     $response = $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/reopen", [
-        'reason'        => 'Guest returned',
+        'reason' => 'Guest returned',
         'versionNumber' => $this->group->version_number,
     ]);
 
@@ -176,14 +175,14 @@ it('reopens a closed billing group', function () {
 });
 
 it('rejects reopen with stale version', function () {
-    app(\App\Domain\Billing\BillingService::class)->recordPayment(
+    app(BillingService::class)->recordPayment(
         $this->group, $this->cashier, 1000.00, 'Numerário'
     );
 
     $this->group->refresh();
 
     $response = $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/reopen", [
-        'reason'        => 'Guest returned',
+        'reason' => 'Guest returned',
         'versionNumber' => $this->group->version_number - 1,
     ]);
 

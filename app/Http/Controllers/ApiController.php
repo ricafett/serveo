@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Floor\ZoneOverlapException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 abstract class ApiController extends Controller
 {
@@ -11,8 +14,8 @@ abstract class ApiController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data'    => $data,
-            'meta'    => $meta,
+            'data' => $data,
+            'meta' => $meta,
         ], $status);
     }
 
@@ -20,8 +23,8 @@ abstract class ApiController extends Controller
     {
         $payload = [
             'success' => false,
-            'error'   => [
-                'code'    => $code,
+            'error' => [
+                'code' => $code,
                 'message' => $message,
             ],
         ];
@@ -36,19 +39,19 @@ abstract class ApiController extends Controller
     protected function envelopeFromException(\Throwable $e): JsonResponse
     {
         $code = match (true) {
-            $e instanceof \Illuminate\Auth\AuthenticationException => 'UNAUTHENTICATED',
-            $e instanceof \Illuminate\Auth\Access\AuthorizationException => 'FORBIDDEN',
-            $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => 'NOT_FOUND',
-            $e instanceof \App\Domain\Floor\ZoneOverlapException => 'ZONE_OVERLAP',
+            $e instanceof AuthenticationException => 'UNAUTHENTICATED',
+            $e instanceof AuthorizationException => 'FORBIDDEN',
+            $e instanceof ModelNotFoundException => 'NOT_FOUND',
+            $e instanceof ZoneOverlapException => 'ZONE_OVERLAP',
             default => 'VALIDATION_ERROR',
         };
 
         $status = match ($code) {
             'UNAUTHENTICATED' => 401,
-            'NOT_FOUND'       => 404,
-            'FORBIDDEN'       => 403,
-            'CONFLICT'        => 409,
-            default           => 400,
+            'NOT_FOUND' => 404,
+            'FORBIDDEN' => 403,
+            'ZONE_OVERLAP' => 409,
+            default => 400,
         };
 
         return $this->error($code, $e->getMessage(), status: $status);

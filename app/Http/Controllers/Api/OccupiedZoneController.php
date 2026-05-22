@@ -18,27 +18,27 @@ class OccupiedZoneController extends ApiController
         $occupiedZone->load(['billingGroup', 'row', 'deliverySeatPair']);
 
         return $this->success([
-            'occupiedZoneId'         => $occupiedZone->id,
-            'billingGroupId'         => $occupiedZone->billing_group_id,
-            'rowId'                  => $occupiedZone->row_id,
-            'rowCode'                => $occupiedZone->row?->row_code,
-            'startSeatPairSequence'  => $occupiedZone->start_seat_pair_sequence,
-            'endSeatPairSequence'    => $occupiedZone->end_seat_pair_sequence,
+            'occupiedZoneId' => $occupiedZone->id,
+            'billingGroupId' => $occupiedZone->billing_group_id,
+            'rowId' => $occupiedZone->row_id,
+            'rowCode' => $occupiedZone->row?->row_code,
+            'startSeatPairSequence' => $occupiedZone->start_seat_pair_sequence,
+            'endSeatPairSequence' => $occupiedZone->end_seat_pair_sequence,
             'defaultDeliveryReference' => $occupiedZone->defaultDeliveryLabel(),
-            'deliverySeatPairId'     => $occupiedZone->delivery_seat_pair_id,
-            'isOpen'                 => $occupiedZone->is_open,
-            'openedAt'               => $occupiedZone->opened_at?->toIso8601String(),
-            'releasedAt'             => $occupiedZone->released_at?->toIso8601String(),
+            'deliverySeatPairId' => $occupiedZone->delivery_seat_pair_id,
+            'isOpen' => $occupiedZone->is_open,
+            'openedAt' => $occupiedZone->opened_at?->toIso8601String(),
+            'releasedAt' => $occupiedZone->released_at?->toIso8601String(),
         ]);
     }
 
     public function update(Request $request, OccupiedZone $occupiedZone): JsonResponse
     {
         $validated = $request->validate([
-            'deliveryMode'       => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
+            'deliveryMode' => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
             'deliverySeatPairId' => ['nullable', 'exists:seat_pairs,id'],
-            'releasedAt'         => ['nullable', 'date'],
-            'isOpen'             => ['nullable', 'boolean'],
+            'releasedAt' => ['nullable', 'date'],
+            'isOpen' => ['nullable', 'boolean'],
         ]);
 
         $update = [];
@@ -64,10 +64,11 @@ class OccupiedZoneController extends ApiController
         if (array_key_exists('releasedAt', $validated) || array_key_exists('isOpen', $validated)) {
             if (($validated['isOpen'] ?? true) === false || $validated['releasedAt']) {
                 $this->occupancyService->releaseZone($occupiedZone, $request->user());
+
                 return $this->success([
                     'occupiedZoneId' => $occupiedZone->refresh()->id,
-                    'isOpen'         => $occupiedZone->is_open,
-                    'releasedAt'     => $occupiedZone->released_at?->toIso8601String(),
+                    'isOpen' => $occupiedZone->is_open,
+                    'releasedAt' => $occupiedZone->released_at?->toIso8601String(),
                 ]);
             }
         }
@@ -77,10 +78,10 @@ class OccupiedZoneController extends ApiController
         }
 
         return $this->success([
-            'occupiedZoneId'         => $occupiedZone->refresh()->id,
+            'occupiedZoneId' => $occupiedZone->refresh()->id,
             'defaultDeliveryReference' => $occupiedZone->defaultDeliveryLabel(),
-            'deliverySeatPairId'     => $occupiedZone->delivery_seat_pair_id,
-            'isOpen'                 => $occupiedZone->is_open,
+            'deliverySeatPairId' => $occupiedZone->delivery_seat_pair_id,
+            'isOpen' => $occupiedZone->is_open,
         ]);
     }
 }

@@ -7,14 +7,15 @@ use App\Domain\Orders\OrderService;
 use App\Models\BillingDocument;
 use App\Models\BillingStatus;
 use App\Models\MenuItem;
+use App\Models\PrintJob;
 use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 
@@ -29,7 +30,7 @@ it('generates an internal bill and queues it on the cashier printer', function (
     expect($bill->document_type)->toBe(BillingDocument::TYPE_INTERNAL_BILL)
         ->and((float) $bill->total_amount)->toBe(36.00);
 
-    expect(\App\Models\PrintJob::where('printer_id', $bill->printer_id)->count())->toBeGreaterThanOrEqual(1);
+    expect(PrintJob::where('printer_id', $bill->printer_id)->count())->toBeGreaterThanOrEqual(1);
 });
 
 it('partial payment keeps group ACTIVE when PARTIALLY_PAID status does not exist', function () {

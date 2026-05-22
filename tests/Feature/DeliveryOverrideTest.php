@@ -5,13 +5,15 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\MenuItem;
 use App\Models\Row;
+use App\Models\Seat;
 use App\Models\SeatPair;
+use App\Models\Section;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->server = makeUser('SERVER');
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 4, $this->server
     );
 });
@@ -54,14 +56,14 @@ it('rejects override in different row', function () {
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
 
     // Create a second row with a seat pair
-    $section = \App\Models\Section::first();
-    $secondRow = \App\Models\Row::firstOrCreate(
+    $section = Section::first();
+    $secondRow = Row::firstOrCreate(
         ['section_id' => $section->id, 'row_code' => '2'],
         ['sort_order' => 2, 'is_active' => true],
     );
-    $seatA = \App\Models\Seat::firstOrCreate(['row_id' => $secondRow->id, 'seat_number' => 1], ['sort_order' => 1, 'is_active' => true]);
-    $seatB = \App\Models\Seat::firstOrCreate(['row_id' => $secondRow->id, 'seat_number' => 2], ['sort_order' => 2, 'is_active' => true]);
-    $otherPair = \App\Models\SeatPair::firstOrCreate(
+    $seatA = Seat::firstOrCreate(['row_id' => $secondRow->id, 'seat_number' => 1], ['sort_order' => 1, 'is_active' => true]);
+    $seatB = Seat::firstOrCreate(['row_id' => $secondRow->id, 'seat_number' => 2], ['sort_order' => 2, 'is_active' => true]);
+    $otherPair = SeatPair::firstOrCreate(
         ['row_id' => $secondRow->id, 'pair_sequence' => 1],
         ['seat_a_id' => $seatA->id, 'seat_b_id' => $seatB->id, 'is_active' => true],
     );

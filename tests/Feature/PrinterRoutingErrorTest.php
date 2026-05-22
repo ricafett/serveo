@@ -2,15 +2,14 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Orders\OrderService;
-use App\Models\BillingStatus;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\PrinterRoute;
-use App\Models\Row;
+use App\Models\ProductionTicket;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
 });
 
@@ -25,7 +24,7 @@ it('throws when no production ticket route is configured for a route', function 
         ->delete();
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Bacalhau')->first();
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
 
     expect(fn () => app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]
@@ -39,7 +38,7 @@ it('does not throw when no void slip route is configured for a route', function 
         ->delete();
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Bacalhau')->first();
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
 
     $header = app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]);
@@ -58,7 +57,7 @@ it('throws when no bar production route is configured for a bar item', function 
         ->delete();
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $item  = MenuItem::where('display_name', 'Vinho copo')->first();
+    $item = MenuItem::where('display_name', 'Vinho copo')->first();
 
     expect(fn () => app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]
@@ -87,5 +86,5 @@ it('skips ticket creation when route type is NONE', function () {
         [['menu_item_id' => $noneItem->id, 'quantity' => 1]]);
 
     expect($header->items)->toHaveCount(1)
-        ->and(\App\Models\ProductionTicket::where('billing_group_id', $group->id)->count())->toBe(0);
+        ->and(ProductionTicket::where('billing_group_id', $group->id)->count())->toBe(0);
 });

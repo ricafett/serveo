@@ -7,14 +7,16 @@ use App\Domain\Orders\OrderService;
 use App\Models\MenuItem;
 use App\Models\Row;
 use Illuminate\Auth\Access\AuthorizationException;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->admin   = makeUser('ADMIN');
-    $this->server  = makeUser('SERVER');
+    $this->admin = makeUser('ADMIN');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 
@@ -63,8 +65,8 @@ it('prevents cashier from opening a billing group', function () {
 
 it('prevents server from releasing a zone', function () {
     $serverWithoutRelease = makeUser('SERVER');
-    \Spatie\Permission\Models\Role::findByName('SERVER')->revokePermissionTo('floor.release_zone');
-    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    Role::findByName('SERVER')->revokePermissionTo('floor.release_zone');
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     expect(fn () => app(OccupancyService::class)->releaseZone($this->zone, $serverWithoutRelease))
         ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission floor.release_zone');

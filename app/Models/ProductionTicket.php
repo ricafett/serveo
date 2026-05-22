@@ -19,9 +19,9 @@ class ProductionTicket extends Model
 
     protected $casts = [
         'requested_at' => 'datetime',
-        'printed_at'   => 'datetime',
+        'printed_at' => 'datetime',
         'is_void_slip' => 'boolean',
-        'is_reprint'   => 'boolean',
+        'is_reprint' => 'boolean',
     ];
 
     public function billingGroup(): BelongsTo

@@ -2,17 +2,15 @@
 
 namespace App\Filament\Pages;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Domain\Orders\OrderService;
 use App\Models\BillingGroup;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\OccupiedZone;
-use App\Models\SeatPair;
+use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Panel;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -20,9 +18,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class OrderEntry extends Page
 {
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
+
     protected static bool $shouldRegisterNavigation = false;
+
     protected string $view = 'filament.pages.order-entry';
+
     protected static ?string $title = null;
 
     public static function getNavigationLabel(): string
@@ -32,22 +33,25 @@ class OrderEntry extends Page
 
     public function getTitle(): string
     {
-        return __('order.new_order') . ' · ' . $this->group?->display_code;
+        return __('order.new_order').' · '.$this->group?->display_code;
     }
 
-    public static function getSlug(?\Filament\Panel $panel = null): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return 'orders/new/{record}';
     }
 
     public ?int $record = null;
+
     public ?BillingGroup $group = null;
 
     /** @var array<int, array{menu_item_id:int, quantity:int}> */
     public array $cart = [];
 
     public ?int $occupiedZoneId = null;
+
     public ?int $deliveryPairId = null;
+
     public ?string $notes = null;
 
     public function mount(int $record): void
@@ -65,6 +69,7 @@ class OrderEntry extends Page
         foreach ($this->cart as $i => $line) {
             if ($line['menu_item_id'] === $menuItemId) {
                 $this->cart[$i]['quantity']++;
+
                 return;
             }
         }
@@ -79,7 +84,9 @@ class OrderEntry extends Page
 
     public function changeQty(int $index, int $delta): void
     {
-        if (! isset($this->cart[$index])) return;
+        if (! isset($this->cart[$index])) {
+            return;
+        }
         $this->cart[$index]['quantity'] = max(1, $this->cart[$index]['quantity'] + $delta);
     }
 
@@ -87,10 +94,12 @@ class OrderEntry extends Page
     {
         if (! Auth::user()?->can('order.create')) {
             Notification::make()->title(__('order.unauthorized'))->danger()->send();
+
             return;
         }
         if (empty($this->cart)) {
             Notification::make()->title(__('order.cart_empty_warning'))->warning()->send();
+
             return;
         }
 
@@ -98,8 +107,8 @@ class OrderEntry extends Page
 
         $lines = array_map(function ($l) {
             return [
-                'menu_item_id'          => (int) $l['menu_item_id'],
-                'quantity'              => (int) $l['quantity'],
+                'menu_item_id' => (int) $l['menu_item_id'],
+                'quantity' => (int) $l['quantity'],
                 'delivery_seat_pair_id' => $this->deliveryPairId,
             ];
         }, $this->cart);
@@ -124,14 +133,16 @@ class OrderEntry extends Page
         $total = 0.0;
         foreach ($this->cart as $i => $line) {
             $item = MenuItem::find($line['menu_item_id']);
-            if (! $item) continue;
+            if (! $item) {
+                continue;
+            }
             $sub = round((float) $item->unit_price * $line['quantity'], 2);
             $total += $sub;
             $cartDetailed[] = [
-                'index'    => $i,
-                'name'     => $item->display_name,
-                'qty'      => $line['quantity'],
-                'price'    => (float) $item->unit_price,
+                'index' => $i,
+                'name' => $item->display_name,
+                'qty' => $line['quantity'],
+                'price' => (float) $item->unit_price,
                 'subtotal' => $sub,
             ];
         }

@@ -2,27 +2,29 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\ServiceSessionResource\Pages;
 use App\Models\ServiceSession;
 use App\Models\Venue;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class ServiceSessionResource extends BaseResource
 {
     protected static ?string $model = ServiceSession::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-calendar-days';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_operation';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
     protected static ?string $navigationLabel = 'app.navigation_label_service_sessions';
+
     protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
@@ -52,9 +54,9 @@ class ServiceSessionResource extends BaseResource
                 ->options(Venue::query()->pluck('name', 'id'))
                 ->required(),
             Forms\Components\Select::make('session_type')->options([
-                'LUNCH'  => __('app.session_type_lunch'),
+                'LUNCH' => __('app.session_type_lunch'),
                 'DINNER' => __('app.session_type_dinner'),
-                'EVENT'  => __('app.session_type_event'),
+                'EVENT' => __('app.session_type_event'),
             ])->required(),
             Forms\Components\TextInput::make('session_label')->required()
                 ->helperText(__('app.helper_text_session_label')),
@@ -80,8 +82,8 @@ class ServiceSessionResource extends BaseResource
                 ),
             Forms\Components\Select::make('status')->options([
                 'PLANNED' => __('app.status_planned'),
-                'OPEN'    => __('app.status_open'),
-                'CLOSED'  => __('app.status_closed'),
+                'OPEN' => __('app.status_open'),
+                'CLOSED' => __('app.status_closed'),
             ])->required()->default('OPEN'),
             Forms\Components\Textarea::make('notes')->rows(2),
         ]);
@@ -95,9 +97,9 @@ class ServiceSessionResource extends BaseResource
                 Tables\Columns\TextColumn::make('session_label'),
                 Tables\Columns\TextColumn::make('session_type')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge()->colors([
-                    'gray'    => 'PLANNED',
+                    'gray' => 'PLANNED',
                     'success' => 'OPEN',
-                    'danger'  => 'CLOSED',
+                    'danger' => 'CLOSED',
                 ]),
                 Tables\Columns\TextColumn::make('starts_at')->dateTime(),
                 Tables\Columns\TextColumn::make('billing_groups_count')->counts('billingGroups')->label(__('billing.group_title')),
@@ -110,9 +112,9 @@ class ServiceSessionResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListServiceSessions::route('/'),
+            'index' => Pages\ListServiceSessions::route('/'),
             'create' => Pages\CreateServiceSession::route('/create'),
-            'edit'   => Pages\EditServiceSession::route('/{record}/edit'),
+            'edit' => Pages\EditServiceSession::route('/{record}/edit'),
         ];
     }
 }

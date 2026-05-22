@@ -14,8 +14,10 @@ class PrinterRoute extends Model
     protected $casts = ['is_active' => 'boolean'];
 
     public const DOC_PRODUCTION_TICKET = 'PRODUCTION_TICKET';
-    public const DOC_BILL              = 'BILL';
-    public const DOC_VOID_SLIP         = 'VOID_SLIP';
+
+    public const DOC_BILL = 'BILL';
+
+    public const DOC_VOID_SLIP = 'VOID_SLIP';
 
     public function printer(): BelongsTo
     {

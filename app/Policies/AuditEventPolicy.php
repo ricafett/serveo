@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\AuditEvent;
 use App\Models\User;
 
 class AuditEventPolicy

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\BillingGroupResource\Pages;
 
 use App\Filament\Resources\BillingGroupResource;
-use App\Models\BillingStatus;
+use App\Models\BillingGroup;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateBillingGroup extends CreateRecord
@@ -12,8 +12,8 @@ class CreateBillingGroup extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $next = (int) \App\Models\BillingGroup::where('service_session_id', $data['service_session_id'])->count() + 1;
-        $data['display_code'] = 'G-' . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+        $next = (int) BillingGroup::where('service_session_id', $data['service_session_id'])->count() + 1;
+        $data['display_code'] = 'G-'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
 
         $data['opened_by_user_id'] = auth()->id();
         $data['opened_at'] = now();

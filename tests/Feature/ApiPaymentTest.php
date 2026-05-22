@@ -1,23 +1,23 @@
 <?php
 
-use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Domain\Orders\OrderService;
 use App\Models\BillingStatus;
 use App\Models\MenuItem;
 use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    app(\App\Domain\Orders\OrderService::class)->submit(
+    app(OrderService::class)->submit(
         $this->group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]],
         $this->zone
@@ -27,9 +27,9 @@ beforeEach(function () {
 it('records a partial payment via api', function () {
     $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,
-        'amount'         => '10.00',
-        'paymentLabel'   => 'Cash',
-        'notes'          => 'Partial payment',
+        'amount' => '10.00',
+        'paymentLabel' => 'Cash',
+        'notes' => 'Partial payment',
     ]);
 
     $response->assertStatus(201)
@@ -44,8 +44,8 @@ it('records a partial payment via api', function () {
 it('records a full payment and closes the group', function () {
     $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,
-        'amount'         => '36.00',
-        'paymentLabel'   => 'Cash',
+        'amount' => '36.00',
+        'paymentLabel' => 'Cash',
     ]);
 
     $response->assertStatus(201)
@@ -60,8 +60,8 @@ it('rejects payment on closed group', function () {
 
     $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,
-        'amount'         => '10.00',
-        'paymentLabel'   => 'Cash',
+        'amount' => '10.00',
+        'paymentLabel' => 'Cash',
     ]);
 
     $response->assertStatus(409)
@@ -71,8 +71,8 @@ it('rejects payment on closed group', function () {
 it('rejects zero or negative payment amount', function () {
     $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,
-        'amount'         => '0',
-        'paymentLabel'   => 'Cash',
+        'amount' => '0',
+        'paymentLabel' => 'Cash',
     ]);
 
     $response->assertStatus(422);
@@ -82,7 +82,7 @@ it('enforces role permissions on payment endpoints', function () {
     // Server cannot record payments
     $this->actingAs($this->server)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,
-        'amount'         => '10.00',
-        'paymentLabel'   => 'Cash',
+        'amount' => '10.00',
+        'paymentLabel' => 'Cash',
     ])->assertStatus(403);
 });

@@ -2,27 +2,35 @@
 
 namespace App\Filament\Resources;
 
+use App\Domain\Audit\Audit;
 use App\Filament\Resources\BillingGroupResource\Pages;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
+use App\Models\OccupiedZone;
 use App\Models\ServiceSession;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class BillingGroupResource extends BaseResource
 {
     protected static ?string $model = BillingGroup::class;
-    protected static string | \UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | \BackedEnum | null $navigationIcon  = 'heroicon-o-users';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'app.navigation_label_billing_groups';
+
     protected static ?string $modelLabel = 'app.model_label_billing_group';
+
     protected static ?string $pluralModelLabel = 'app.plural_model_label_billing_groups';
+
     protected static ?int $navigationSort = 25;
 
     public static function canViewAny(): bool
@@ -141,17 +149,17 @@ class BillingGroupResource extends BaseResource
                                 ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
                                 ->required(),
                         ])
-                        ->action(function (array $data, \Illuminate\Database\Eloquent\Collection $records): void {
+                        ->action(function (array $data, Collection $records): void {
                             $serverId = $data['server_id'];
-                            $zoneIds = \App\Models\OccupiedZone::whereIn('billing_group_id', $records->pluck('id'))
+                            $zoneIds = OccupiedZone::whereIn('billing_group_id', $records->pluck('id'))
                                 ->pluck('id');
 
-                            \App\Models\OccupiedZone::whereIn('id', $zoneIds)
+                            OccupiedZone::whereIn('id', $zoneIds)
                                 ->update(['server_id' => $serverId]);
 
                             // Record audit events
                             foreach ($records as $group) {
-                                \App\Domain\Audit\Audit::record(
+                                Audit::record(
                                     'server_assigned',
                                     "Server ID {$serverId} assigned to all zones of billing group {$group->display_code}",
                                     ['server_id' => $serverId, 'billing_group_id' => $group->id],
@@ -167,10 +175,10 @@ class BillingGroupResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBillingGroups::route('/'),
+            'index' => Pages\ListBillingGroups::route('/'),
             'create' => Pages\CreateBillingGroup::route('/create'),
-            'edit'   => Pages\EditBillingGroup::route('/{record}/edit'),
-            'view'   => Pages\ViewBillingGroup::route('/{record}/view'),
+            'edit' => Pages\EditBillingGroup::route('/{record}/edit'),
+            'view' => Pages\ViewBillingGroup::route('/{record}/view'),
         ];
     }
 }

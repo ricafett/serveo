@@ -1,13 +1,15 @@
 <?php
 
 use App\Domain\Floor\BillingGroupService;
+use App\Domain\Floor\OccupancyService;
 use App\Models\BillingStatus;
+use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
 });
 
 it('throws VERSION_CONFLICT on stale version during setStatus', function () {
@@ -75,11 +77,11 @@ it('increments version_number on successful reopen', function () {
 });
 
 it('allows concurrent zone assignment on same billing group', function () {
-    $zone1 = app(\App\Domain\Floor\OccupancyService::class)->assignZone(
-        $this->group, \App\Models\Row::first(), 3, 4, $this->server
+    $zone1 = app(OccupancyService::class)->assignZone(
+        $this->group, Row::first(), 3, 4, $this->server
     );
-    $zone2 = app(\App\Domain\Floor\OccupancyService::class)->assignZone(
-        $this->group, \App\Models\Row::first(), 5, 6, $this->server
+    $zone2 = app(OccupancyService::class)->assignZone(
+        $this->group, Row::first(), 5, 6, $this->server
     );
 
     expect($zone1->is_open)->toBeTrue()

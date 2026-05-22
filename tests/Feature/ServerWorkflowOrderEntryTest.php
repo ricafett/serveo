@@ -2,6 +2,7 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Livewire\Order\OrderEntry;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\OrderHeader;
@@ -12,7 +13,11 @@ use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
 use App\Models\User;
+use App\Models\Venue;
+use Database\Seeders\CoreSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -25,10 +30,10 @@ function cartItem(int $menuItemId, int $quantity = 1): array
 }
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
-    $this->seed(\Database\Seeders\CoreSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    $this->seed(CoreSeeder::class);
 
-    $this->venue = \App\Models\Venue::first();
+    $this->venue = Venue::first();
     $this->session = ServiceSession::create([
         'venue_id' => $this->venue->id,
         'session_type' => 'DINNER',
@@ -94,7 +99,7 @@ it('shows closed warning for closed billing group', function () {
 it('sets default category on mount', function () {
     $this->actingAs($this->server);
 
-    $component = \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id]);
+    $component = Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id]);
 
     expect($component->get('defaultCategoryId'))->not->toBeNull();
     expect($component->get('menuItemsData'))->not->toBeEmpty();
@@ -108,7 +113,7 @@ it('sets default category on mount', function () {
 it('submits order with items and creates order records', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [
             cartItem($this->kitchenItem->id, 1),
             cartItem($this->barItem->id, 1),
@@ -127,7 +132,7 @@ it('submits order with zone and validates delivery pair', function () {
     $zone = $this->group->occupiedZones->first();
     $pair = SeatPair::where('row_id', $this->row->id)->where('pair_sequence', 2)->first();
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('setZone', $zone->id)
         ->call('setDeliveryPair', $pair->id)
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
@@ -145,7 +150,7 @@ it('rejects invalid delivery pair outside zone', function () {
     $zone = $this->group->occupiedZones->first();
     $outsidePair = SeatPair::where('row_id', $this->row->id)->where('pair_sequence', 9)->first();
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('setZone', $zone->id)
         ->call('setDeliveryPair', $outsidePair->id)
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
@@ -159,7 +164,7 @@ it('rejects order on closed billing group', function () {
     $cashier->assignRole('CASHIER');
     app(BillingGroupService::class)->close($this->group, $cashier);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
         ->assertSet('errorMessage', 'Cannot add orders to a closed group.');
 });
@@ -167,7 +172,7 @@ it('rejects order on closed billing group', function () {
 it('rejects empty cart submission', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [])
         ->assertSet('errorMessage', 'Cart is empty.');
 });
@@ -175,7 +180,7 @@ it('rejects empty cart submission', function () {
 it('respects quantity from cart items', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [
             cartItem($this->kitchenItem->id, 3),
             cartItem($this->barItem->id, 2),
@@ -195,7 +200,7 @@ it('respects quantity from cart items', function () {
 it('creates production tickets for kitchen and bar routes', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [
             cartItem($this->kitchenItem->id, 1),
             cartItem($this->barItem->id, 1),
@@ -212,7 +217,7 @@ it('creates production tickets for kitchen and bar routes', function () {
 it('creates print jobs for production tickets', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
         ->assertSet('successMessage', 'Order submitted successfully.');
 
@@ -229,7 +234,7 @@ it('creates print jobs for production tickets', function () {
 it('dispatches order-submitted event on success', function () {
     $this->actingAs($this->server);
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
         ->assertDispatched('order-submitted');
 });
@@ -240,7 +245,7 @@ it('clears notes and delivery pair on successful submit', function () {
     $zone = $this->group->occupiedZones->first();
     $pair = SeatPair::where('row_id', $this->row->id)->where('pair_sequence', 3)->first();
 
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->set('notes', 'Extra napkins')
         ->call('setZone', $zone->id)
         ->call('setDeliveryPair', $pair->id)
@@ -262,7 +267,7 @@ it('does not clear cart on submit error', function () {
 
     // submitOrder returns error; Alpine cart is NOT cleared because
     // the 'order-submitted' event is only dispatched on success.
-    \Livewire\Livewire::test(\App\Livewire\Order\OrderEntry::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
         ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
         ->assertSet('errorMessage', 'Cannot add orders to a closed group.')
         ->assertNotDispatched('order-submitted');

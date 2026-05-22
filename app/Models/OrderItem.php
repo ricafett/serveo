@@ -16,10 +16,10 @@ class OrderItem extends Model
     ];
 
     protected $casts = [
-        'unit_price'            => 'decimal:2',
-        'line_subtotal'         => 'decimal:2',
+        'unit_price' => 'decimal:2',
+        'line_subtotal' => 'decimal:2',
         'sent_to_production_at' => 'datetime',
-        'voided_at'             => 'datetime',
+        'voided_at' => 'datetime',
     ];
 
     public function header(): BelongsTo

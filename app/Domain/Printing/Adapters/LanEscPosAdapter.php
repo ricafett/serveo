@@ -25,7 +25,7 @@ class LanEscPosAdapter implements PrinterAdapter
         $host = $printer->address;
         $port = $printer->port ?: 9100;
 
-        $errno  = 0;
+        $errno = 0;
         $errstr = '';
 
         // 4-second connect timeout so the worker doesn't stall service.
@@ -37,9 +37,9 @@ class LanEscPosAdapter implements PrinterAdapter
         stream_set_timeout($socket, 5);
 
         // ESC @  -> initialise printer
-        $init  = "\x1B\x40";
+        $init = "\x1B\x40";
         // GS V 1 -> partial cut (most ESC/POS cutters)
-        $cut   = "\n\n\n\x1D\x56\x01";
+        $cut = "\n\n\n\x1D\x56\x01";
 
         $bytes = @fwrite($socket, $init.$payload.$cut);
         @fclose($socket);

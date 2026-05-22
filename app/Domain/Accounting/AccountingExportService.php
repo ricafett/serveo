@@ -56,7 +56,7 @@ class AccountingExportService
             })->implode('; ');
 
             $paymentsStr = $group->paymentRecords->where('is_voided', false)->map(function ($payment) {
-                return number_format($payment->amount, 2) . ' ' . $payment->payment_label . ' ' . $payment->recorded_at->timezone(config('app.timezone'))->format('Y-m-d H:i:s');
+                return number_format($payment->amount, 2).' '.$payment->payment_label.' '.$payment->recorded_at->timezone(config('app.timezone'))->format('Y-m-d H:i:s');
             })->implode('; ');
 
             fputcsv($handle, [

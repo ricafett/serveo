@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Billing\BillingService;
 use App\Http\Controllers\ApiController;
 use App\Models\BillingGroup;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,9 +17,9 @@ class PaymentController extends ApiController
     {
         $validated = $request->validate([
             'billingGroupId' => ['required', 'exists:billing_groups,id'],
-            'amount'         => ['required', 'numeric', 'min:0.01'],
-            'paymentLabel'   => ['required', 'string', 'max:100'],
-            'notes'          => ['nullable', 'string', 'max:500'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'paymentLabel' => ['required', 'string', 'max:100'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $group = BillingGroup::findOrFail($validated['billingGroupId']);
@@ -35,7 +36,7 @@ class PaymentController extends ApiController
                 $validated['paymentLabel'],
                 $validated['notes'] ?? null,
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
@@ -43,10 +44,10 @@ class PaymentController extends ApiController
 
         return $this->success([
             'paymentRecordId' => $payment->id,
-            'billingGroupId'  => $payment->billing_group_id,
-            'amount'          => (string) $payment->amount,
-            'paymentLabel'    => $payment->payment_label,
-            'recordedAt'      => $payment->recorded_at?->toIso8601String(),
+            'billingGroupId' => $payment->billing_group_id,
+            'amount' => (string) $payment->amount,
+            'paymentLabel' => $payment->payment_label,
+            'recordedAt' => $payment->recorded_at?->toIso8601String(),
         ], status: 201);
     }
 }

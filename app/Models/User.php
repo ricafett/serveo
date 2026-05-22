@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -16,11 +18,13 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, HasRoles, Notifiable;
 
-    public const THEME_LIGHT  = 'light';
-    public const THEME_DARK   = 'dark';
+    public const THEME_LIGHT = 'light';
+
+    public const THEME_DARK = 'dark';
+
     public const THEME_SYSTEM = 'system';
 
     protected $fillable = [
@@ -43,9 +47,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'last_login_at'     => 'datetime',
-            'password'          => 'hashed',
-            'is_active'         => 'boolean',
+            'last_login_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -64,7 +68,7 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /** Billing groups favorited by this server. */
-    public function favoriteBillingGroups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function favoriteBillingGroups(): BelongsToMany
     {
         return $this->belongsToMany(BillingGroup::class, 'billing_group_favorites')
             ->withPivot('is_manual')

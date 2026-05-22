@@ -1,5 +1,6 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
 
 test('admin can see rows table with checkboxes and bulk assign server action', function () {
@@ -27,7 +28,7 @@ test('admin can see rows table with checkboxes and bulk assign server action', f
 
         // Row checkboxes exist for bulk selection
         $checkboxes = $browser->driver->findElements(
-            \Facebook\WebDriver\WebDriverBy::cssSelector('input[type="checkbox"]')
+            WebDriverBy::cssSelector('input[type="checkbox"]')
         );
         expect(count($checkboxes))->toBeGreaterThan(0);
 
@@ -63,7 +64,7 @@ test('admin can open assign server modal from bulk actions', function () {
 
         // Select the first row checkbox
         $checkboxes = $browser->driver->findElements(
-            \Facebook\WebDriver\WebDriverBy::cssSelector('input[type="checkbox"]')
+            WebDriverBy::cssSelector('input[type="checkbox"]')
         );
         expect(count($checkboxes))->toBeGreaterThan(0);
         $checkboxes[0]->click();

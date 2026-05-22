@@ -2,12 +2,13 @@
 
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
-use App\Models\BillingGroup;
+use App\Domain\Orders\OrderService;
 use App\Models\BillingStatus;
+use App\Models\MenuItem;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
 });
 
@@ -62,8 +63,8 @@ it('auto-sets partially paid even when partially paid status is inactive', funct
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
 
     // Add an order so the group has a positive balance.
-    $item = \App\Models\MenuItem::where('display_name', 'Bacalhau')->first();
-    app(\App\Domain\Orders\OrderService::class)->submit($group, $this->server,
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit($group, $this->server,
         [['menu_item_id' => $item->id, 'quantity' => 1]]);
 
     $payment = app(BillingService::class)->recordPayment($group, $this->cashier, 1.00, 'Cash');

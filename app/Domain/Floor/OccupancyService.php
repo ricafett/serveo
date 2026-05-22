@@ -14,6 +14,7 @@ use RuntimeException;
 class OccupancyService
 {
     use ChecksPermissions;
+
     /**
      * Open a new occupied zone for a billing group, enforcing the no-overlap rule
      * inside the same row. The whole operation runs in a transaction so two
@@ -41,7 +42,7 @@ class OccupancyService
             $conflict = OccupiedZone::where('row_id', $row->id)
                 ->where('is_open', true)
                 ->where('start_seat_pair_sequence', '<=', $endSeq)
-                ->where('end_seat_pair_sequence',   '>=', $startSeq)
+                ->where('end_seat_pair_sequence', '>=', $startSeq)
                 ->lockForUpdate()
                 ->first();
 
@@ -52,16 +53,16 @@ class OccupancyService
             }
 
             $zone = OccupiedZone::create([
-                'billing_group_id'         => $group->id,
-                'row_id'                   => $row->id,
+                'billing_group_id' => $group->id,
+                'row_id' => $row->id,
                 'start_seat_pair_sequence' => $startSeq,
-                'end_seat_pair_sequence'   => $endSeq,
-                'default_delivery_mode'    => 'CENTER',
-                'delivery_center_label'    => $deliveryCenterLabel,
-                'opened_at'                => now(),
-                'is_open'                  => true,
-                'created_by_user_id'       => $actor->id,
-                'server_id'                => $actor->id,
+                'end_seat_pair_sequence' => $endSeq,
+                'default_delivery_mode' => 'CENTER',
+                'delivery_center_label' => $deliveryCenterLabel,
+                'opened_at' => now(),
+                'is_open' => true,
+                'created_by_user_id' => $actor->id,
+                'server_id' => $actor->id,
             ]);
 
             Audit::record(
@@ -96,7 +97,7 @@ class OccupancyService
                 return;
             }
             $zone->update([
-                'is_open'     => false,
+                'is_open' => false,
                 'released_at' => now(),
             ]);
             Audit::record(

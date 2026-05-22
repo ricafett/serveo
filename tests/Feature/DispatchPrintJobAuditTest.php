@@ -2,22 +2,22 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Printing\Contracts\PrinterAdapter;
-use App\Domain\Printing\PrintResult;
 use App\Domain\Printing\PrinterAdapterRegistry;
+use App\Domain\Printing\PrintResult;
 use App\Domain\Printing\TicketRenderer;
 use App\Jobs\DispatchPrintJob;
 use App\Models\AuditEvent;
 use App\Models\BillingDocument;
-use App\Models\PrintJob;
 use App\Models\Printer;
+use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
+    $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
 });
 
 it('emits PRODUCTION_TICKET_PRINTED on successful production ticket print', function () {
@@ -25,29 +25,35 @@ it('emits PRODUCTION_TICKET_PRINTED on successful production ticket print', func
 
     $printer = Printer::first();
     $ticket = ProductionTicket::create([
-        'service_session_id'     => $this->session->id,
-        'billing_group_id'       => $this->group->id,
-        'printer_id'             => $printer->id,
-        'ticket_type'            => 'KITCHEN',
-        'ticket_status'          => 'PENDING',
-        'requested_at'           => now(),
-        'created_by_user_id'     => $this->server->id,
+        'service_session_id' => $this->session->id,
+        'billing_group_id' => $this->group->id,
+        'printer_id' => $printer->id,
+        'ticket_type' => 'KITCHEN',
+        'ticket_status' => 'PENDING',
+        'requested_at' => now(),
+        'created_by_user_id' => $this->server->id,
     ]);
 
     $job = PrintJob::create([
-        'job_kind'             => PrintJob::KIND_PRODUCTION_TICKET,
-        'printable_type'       => ProductionTicket::class,
-        'printable_id'         => $ticket->id,
-        'printer_id'           => $printer->id,
-        'status'               => PrintJob::STATUS_PENDING,
-        'attempts'             => 0,
-        'max_attempts'         => 3,
+        'job_kind' => PrintJob::KIND_PRODUCTION_TICKET,
+        'printable_type' => ProductionTicket::class,
+        'printable_id' => $ticket->id,
+        'printer_id' => $printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 3,
         'requested_by_user_id' => $this->server->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter {
-        public function supports(Printer $printer): bool { return true; }
-        public function send(Printer $printer, string $payload): PrintResult {
+    $adapter = new class implements PrinterAdapter
+    {
+        public function supports(Printer $printer): bool
+        {
+            return true;
+        }
+
+        public function send(Printer $printer, string $payload): PrintResult
+        {
             return new PrintResult(true, 'OK');
         }
     };
@@ -78,31 +84,37 @@ it('emits BILL_PRINTED on successful bill print', function () {
     $printer = Printer::first();
 
     $bill = BillingDocument::create([
-        'billing_group_id'   => $this->group->id,
-        'printer_id'         => $printer->id,
-        'document_type'      => BillingDocument::TYPE_INTERNAL_BILL,
-        'document_status'    => 'GENERATED',
-        'document_number'    => 'B-20260515-0001',
-        'subtotal_amount'    => 100.00,
-        'total_amount'       => 100.00,
-        'requested_at'       => now(),
+        'billing_group_id' => $this->group->id,
+        'printer_id' => $printer->id,
+        'document_type' => BillingDocument::TYPE_INTERNAL_BILL,
+        'document_status' => 'GENERATED',
+        'document_number' => 'B-20260515-0001',
+        'subtotal_amount' => 100.00,
+        'total_amount' => 100.00,
+        'requested_at' => now(),
         'created_by_user_id' => $this->cashier->id,
     ]);
 
     $job = PrintJob::create([
-        'job_kind'             => PrintJob::KIND_BILL,
-        'printable_type'       => BillingDocument::class,
-        'printable_id'         => $bill->id,
-        'printer_id'           => $printer->id,
-        'status'               => PrintJob::STATUS_PENDING,
-        'attempts'             => 0,
-        'max_attempts'         => 3,
+        'job_kind' => PrintJob::KIND_BILL,
+        'printable_type' => BillingDocument::class,
+        'printable_id' => $bill->id,
+        'printer_id' => $printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 3,
         'requested_by_user_id' => $this->cashier->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter {
-        public function supports(Printer $printer): bool { return true; }
-        public function send(Printer $printer, string $payload): PrintResult {
+    $adapter = new class implements PrinterAdapter
+    {
+        public function supports(Printer $printer): bool
+        {
+            return true;
+        }
+
+        public function send(Printer $printer, string $payload): PrintResult
+        {
             return new PrintResult(true, 'OK');
         }
     };
@@ -132,29 +144,35 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
 
     $printer = Printer::first();
     $ticket = ProductionTicket::create([
-        'service_session_id'     => $this->session->id,
-        'billing_group_id'       => $this->group->id,
-        'printer_id'             => $printer->id,
-        'ticket_type'            => 'KITCHEN',
-        'ticket_status'          => 'PENDING',
-        'requested_at'           => now(),
-        'created_by_user_id'     => $this->server->id,
+        'service_session_id' => $this->session->id,
+        'billing_group_id' => $this->group->id,
+        'printer_id' => $printer->id,
+        'ticket_type' => 'KITCHEN',
+        'ticket_status' => 'PENDING',
+        'requested_at' => now(),
+        'created_by_user_id' => $this->server->id,
     ]);
 
     $job = PrintJob::create([
-        'job_kind'             => PrintJob::KIND_PRODUCTION_TICKET,
-        'printable_type'       => ProductionTicket::class,
-        'printable_id'         => $ticket->id,
-        'printer_id'           => $printer->id,
-        'status'               => PrintJob::STATUS_PENDING,
-        'attempts'             => 0,
-        'max_attempts'         => 3,
+        'job_kind' => PrintJob::KIND_PRODUCTION_TICKET,
+        'printable_type' => ProductionTicket::class,
+        'printable_id' => $ticket->id,
+        'printer_id' => $printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 3,
         'requested_by_user_id' => $this->server->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter {
-        public function supports(Printer $printer): bool { return true; }
-        public function send(Printer $printer, string $payload): PrintResult {
+    $adapter = new class implements PrinterAdapter
+    {
+        public function supports(Printer $printer): bool
+        {
+            return true;
+        }
+
+        public function send(Printer $printer, string $payload): PrintResult
+        {
             return new PrintResult(false, 'Printer unreachable');
         }
     };

@@ -5,20 +5,19 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\AuditEvent;
 use App\Models\MenuItem;
-use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->server = makeUser('SERVER');
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    $barItem     = MenuItem::where('display_name', 'Vinho copo')->first();
+    $barItem = MenuItem::where('display_name', 'Vinho copo')->first();
 
     $this->header = app(OrderService::class)->submit($this->group, $this->server, [
         ['menu_item_id' => $kitchenItem->id, 'quantity' => 2],

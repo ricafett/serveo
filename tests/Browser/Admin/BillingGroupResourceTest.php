@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\OccupiedZone;
+use App\Domain\Floor\OccupancyService;
 use App\Models\Row;
+use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
 
 test('admin can see billing groups table with checkboxes and set server action', function () {
@@ -12,7 +13,7 @@ test('admin can see billing groups table with checkboxes and set server action',
     // Create a billing group with a zone so the table has data
     $row = Row::first();
     $group = createBillingGroup($session, $server);
-    app(\App\Domain\Floor\OccupancyService::class)->assignZone($group, $row, 1, 3, $server);
+    app(OccupancyService::class)->assignZone($group, $row, 1, 3, $server);
 
     $this->browse(function (Browser $browser) use ($admin) {
         $browser->driver->manage()->deleteAllCookies();
@@ -37,7 +38,7 @@ test('admin can see billing groups table with checkboxes and set server action',
 
         // Row checkboxes exist for bulk selection
         $checkboxes = $browser->driver->findElements(
-            \Facebook\WebDriver\WebDriverBy::cssSelector('input[type="checkbox"]')
+            WebDriverBy::cssSelector('input[type="checkbox"]')
         );
         expect(count($checkboxes))->toBeGreaterThan(0);
 
@@ -55,7 +56,7 @@ test('admin can open set server modal from billing groups bulk actions', functio
     // Create a billing group with a zone so the table has data
     $row = Row::first();
     $group = createBillingGroup($session, $server);
-    app(\App\Domain\Floor\OccupancyService::class)->assignZone($group, $row, 1, 3, $server);
+    app(OccupancyService::class)->assignZone($group, $row, 1, 3, $server);
 
     $this->browse(function (Browser $browser) use ($admin) {
         $browser->driver->manage()->deleteAllCookies();
@@ -73,7 +74,7 @@ test('admin can open set server modal from billing groups bulk actions', functio
 
         // Select first row checkbox
         $checkboxes = $browser->driver->findElements(
-            \Facebook\WebDriver\WebDriverBy::cssSelector('input[type="checkbox"]')
+            WebDriverBy::cssSelector('input[type="checkbox"]')
         );
         expect(count($checkboxes))->toBeGreaterThan(0);
         $checkboxes[0]->click();

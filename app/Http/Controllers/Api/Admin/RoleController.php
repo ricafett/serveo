@@ -15,8 +15,8 @@ class RoleController extends ApiController
         $roles = Role::all();
 
         return $this->success($roles->map(fn ($r) => [
-            'roleId'   => $r->id,
-            'name'     => $r->name,
+            'roleId' => $r->id,
+            'name' => $r->name,
         ])->all());
     }
 
@@ -31,7 +31,7 @@ class RoleController extends ApiController
 
         return $this->success([
             'userId' => $user->id,
-            'roles'  => $user->roles->pluck('name')->values()->all(),
+            'roles' => $user->roles->pluck('name')->values()->all(),
         ]);
     }
 
@@ -46,7 +46,7 @@ class RoleController extends ApiController
 
         return $this->success([
             'userId' => $user->id,
-            'roles'  => $user->roles->pluck('name')->values()->all(),
+            'roles' => $user->roles->pluck('name')->values()->all(),
         ]);
     }
 }

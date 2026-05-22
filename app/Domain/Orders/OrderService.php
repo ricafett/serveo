@@ -53,12 +53,12 @@ class OrderService
 
         return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes) {
             $header = OrderHeader::create([
-                'billing_group_id'    => $group->id,
-                'occupied_zone_id'    => $zone?->id,
-                'ordered_by_user_id'  => $actor->id,
-                'ordered_at'          => now(),
-                'submission_status'   => 'SUBMITTED',
-                'notes'               => $notes,
+                'billing_group_id' => $group->id,
+                'occupied_zone_id' => $zone?->id,
+                'ordered_by_user_id' => $actor->id,
+                'ordered_at' => now(),
+                'submission_status' => 'SUBMITTED',
+                'notes' => $notes,
             ]);
 
             $createdItems = [];
@@ -82,15 +82,15 @@ class OrderService
                 }
 
                 $item = OrderItem::create([
-                    'order_header_id'           => $header->id,
-                    'menu_item_id'              => $menuItem->id,
-                    'quantity'                  => $qty,
-                    'unit_price'                => $unitPrice,
-                    'line_subtotal'             => round($unitPrice * $qty, 2),
-                    'fulfillment_route'         => $menuItem->category?->route_type ?? 'NONE',
-                    'delivery_seat_pair_id'     => $deliveryPairId,
-                    'delivery_reference_label'  => $deliveryLabel,
-                    'sent_to_production_at'     => now(),
+                    'order_header_id' => $header->id,
+                    'menu_item_id' => $menuItem->id,
+                    'quantity' => $qty,
+                    'unit_price' => $unitPrice,
+                    'line_subtotal' => round($unitPrice * $qty, 2),
+                    'fulfillment_route' => $menuItem->category?->route_type ?? 'NONE',
+                    'delivery_seat_pair_id' => $deliveryPairId,
+                    'delivery_reference_label' => $deliveryLabel,
+                    'sent_to_production_at' => now(),
                 ]);
 
                 $createdItems[] = $item;
@@ -108,17 +108,17 @@ class OrderService
                 }
 
                 $ticket = ProductionTicket::create([
-                    'service_session_id'     => $group->service_session_id,
-                    'billing_group_id'       => $group->id,
-                    'occupied_zone_id'       => $zone?->id,
-                    'printer_id'             => $printer->id,
-                    'ticket_type'            => $route,
-                    'ticket_status'          => 'PENDING',
+                    'service_session_id' => $group->service_session_id,
+                    'billing_group_id' => $group->id,
+                    'occupied_zone_id' => $zone?->id,
+                    'printer_id' => $printer->id,
+                    'ticket_type' => $route,
+                    'ticket_status' => 'PENDING',
                     'delivery_reference_label' => $zone?->defaultDeliveryLabel(),
-                    'requested_at'           => now(),
-                    'is_void_slip'           => false,
-                    'is_reprint'             => false,
-                    'created_by_user_id'     => $actor->id,
+                    'requested_at' => now(),
+                    'is_void_slip' => false,
+                    'is_reprint' => false,
+                    'created_by_user_id' => $actor->id,
                 ]);
                 $ticket->items()->sync(collect($items)->pluck('id'));
 
@@ -129,26 +129,26 @@ class OrderService
                     "Ticket {$route} #{$ticket->id} criado para grupo {$group->display_code}",
                     ['route' => $route, 'lines' => count($items)],
                     [
-                        'billing_group_id'      => $group->id,
-                        'service_session_id'    => $group->service_session_id,
-                        'occupied_zone_id'      => $zone?->id,
-                        'production_ticket_id'  => $ticket->id,
-                        'order_header_id'       => $header->id,
-                        'actor_user_id'         => $actor->id,
+                        'billing_group_id' => $group->id,
+                        'service_session_id' => $group->service_session_id,
+                        'occupied_zone_id' => $zone?->id,
+                        'production_ticket_id' => $ticket->id,
+                        'order_header_id' => $header->id,
+                        'actor_user_id' => $actor->id,
                     ],
                 );
             }
 
             Audit::record(
                 'ORDER_SUBMITTED',
-                "Pedido #{$header->id} submetido para grupo {$group->display_code} ({" . count($createdItems) . " linhas)",
+                "Pedido #{$header->id} submetido para grupo {$group->display_code} ({".count($createdItems).' linhas)',
                 ['line_count' => count($createdItems)],
                 [
-                    'billing_group_id'   => $group->id,
+                    'billing_group_id' => $group->id,
                     'service_session_id' => $group->service_session_id,
-                    'occupied_zone_id'   => $zone?->id,
-                    'order_header_id'    => $header->id,
-                    'actor_user_id'      => $actor->id,
+                    'occupied_zone_id' => $zone?->id,
+                    'order_header_id' => $header->id,
+                    'actor_user_id' => $actor->id,
                 ],
             );
 
@@ -170,9 +170,9 @@ class OrderService
 
         DB::transaction(function () use ($item, $actor, $reason) {
             $item->update([
-                'voided_at'         => now(),
+                'voided_at' => now(),
                 'voided_by_user_id' => $actor->id,
-                'void_reason'       => $reason,
+                'void_reason' => $reason,
             ]);
 
             $header = $item->header;
@@ -193,17 +193,17 @@ class OrderService
                 );
                 if ($printer) {
                     $voidTicket = ProductionTicket::create([
-                        'service_session_id'        => $header->billingGroup->service_session_id,
-                        'billing_group_id'          => $header->billing_group_id,
-                        'occupied_zone_id'          => $header->occupied_zone_id,
-                        'printer_id'                => $printer->id,
-                        'ticket_type'               => 'VOID',
-                        'ticket_status'             => 'PENDING',
-                        'requested_at'              => now(),
-                        'is_void_slip'              => true,
-                        'is_reprint'                => false,
-                        'created_by_user_id'        => $actor->id,
-                        'delivery_reference_label'  => $item->delivery_reference_label,
+                        'service_session_id' => $header->billingGroup->service_session_id,
+                        'billing_group_id' => $header->billing_group_id,
+                        'occupied_zone_id' => $header->occupied_zone_id,
+                        'printer_id' => $printer->id,
+                        'ticket_type' => 'VOID',
+                        'ticket_status' => 'PENDING',
+                        'requested_at' => now(),
+                        'is_void_slip' => true,
+                        'is_reprint' => false,
+                        'created_by_user_id' => $actor->id,
+                        'delivery_reference_label' => $item->delivery_reference_label,
                     ]);
                     $voidTicket->items()->sync([$item->id]);
                     $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
@@ -216,10 +216,10 @@ class OrderService
                 ['reason' => $reason],
                 [
                     'billing_group_id' => $header->billing_group_id,
-                    'order_header_id'  => $header->id,
-                    'order_item_id'    => $item->id,
+                    'order_header_id' => $header->id,
+                    'order_item_id' => $item->id,
                     'service_session_id' => $header->billingGroup?->service_session_id,
-                    'actor_user_id'    => $actor->id,
+                    'actor_user_id' => $actor->id,
                 ],
             );
         });

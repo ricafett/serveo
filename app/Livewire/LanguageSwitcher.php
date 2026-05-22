@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class LanguageSwitcher extends Component
@@ -40,7 +41,7 @@ class LanguageSwitcher extends Component
         // (used in tests and local dev) does not support tag-based eviction.
         // In production with Redis/Memcached, this should be replaced with
         // tagged cache invalidation on the 'translations' tag.
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
 
         // Use a JavaScript reload to avoid request()->fullUrl() returning
         // the Livewire update endpoint during component updates.

@@ -29,12 +29,15 @@
 .PARAMETER DuskOnly
     Run only Dusk tests, skip Pest.
 
+.PARAMETER NoLint
+    Skip Pint (code style) and PHPStan (static analysis) checks.
+
 .PARAMETER Help
     Show usage information.
 
 .EXAMPLE
     .\run-tests.ps1
-    # Runs both Pest and Dusk test suites
+    # Runs Pint, PHPStan, translation check, Pest, and Dusk
 
 .EXAMPLE
     .\run-tests.ps1 -PestFilter "MultilingualTest"
@@ -45,8 +48,8 @@
     # Runs only Dusk tests matching the filter
 
 .EXAMPLE
-    .\run-tests.ps1 -PestFilter "LanguageSwitcherTest" -DuskFilter "ThemeAndLanguageTest"
-    # Runs both Pest and Dusk with filters
+    .\run-tests.ps1 -NoLint
+    # Skip Pint and PHPStan, run everything else
 #>
 
 [CmdletBinding()]
@@ -56,6 +59,7 @@ param(
     [switch]$PestOnly,
     [switch]$DuskOnly,
     [switch]$NoTranslationCheck,
+    [switch]$NoLint,
     [switch]$Help
 )
 
@@ -77,10 +81,12 @@ Options:
   -PestOnly                Run only Pest tests
   -DuskOnly                Run only Dusk tests
   -NoTranslationCheck      Skip the translation completeness check
+  -NoLint                  Skip Pint (code style) and PHPStan (static analysis)
   -Help                    Show this help message
 
 Examples:
   .\run-tests.ps1                                      # Run everything
+  .\run-tests.ps1 -NoLint                              # Skip linting/static analysis
   .\run-tests.ps1 -PestFilter "LanguageSwitcherTest"   # Filtered Pest only
   .\run-tests.ps1 -DuskFilter "ThemeAndLanguageTest"   # Filtered Dusk only
   .\run-tests.ps1 -PestOnly                            # Skip Dusk
@@ -92,6 +98,30 @@ Examples:
 function Test-CommandExists {
     param([string]$Command)
     return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+function Invoke-Pint {
+    Write-Host "`n========================================" -ForegroundColor Blue
+    Write-Host "Running Pint (code style check)..." -ForegroundColor Blue
+    Write-Host "========================================" -ForegroundColor Blue
+
+    $output = & ./vendor/bin/pint --test 2>&1
+    $output | ForEach-Object { Write-Host $_ }
+    [int]$exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) { $exitCode = 0 }
+    return $exitCode
+}
+
+function Invoke-Phpstan {
+    Write-Host "`n========================================" -ForegroundColor Blue
+    Write-Host "Running PHPStan (static analysis)..." -ForegroundColor Blue
+    Write-Host "========================================" -ForegroundColor Blue
+
+    $output = & ./vendor/bin/phpstan analyse --memory-limit=512M 2>&1
+    $output | ForEach-Object { Write-Host $_ }
+    [int]$exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) { $exitCode = 0 }
+    return $exitCode
 }
 
 function Invoke-TranslationCheck {
@@ -252,12 +282,22 @@ if (-not (Test-Path "vendor\autoload.php") -or -not (Test-Path ".env")) {
 }
 
 # ---------------------------------------------------------------------------
-# Env management: swap to test env before any tests, restore after
+# Env management: swap to test env, restore after
 # ---------------------------------------------------------------------------
 
 $envBackup = ".env.backup.tests"
 $envDusk   = ".env.dusk.local"
 $envMain   = ".env"
+
+# Lint tools don't need the test env — run them first with the current .env
+$runLint   = -not $NoLint
+$pintExit = 0
+$phpstanExit = 0
+
+if ($runLint) {
+    $pintExit = Invoke-Pint
+    $phpstanExit = Invoke-Phpstan
+}
 
 if (-not (Test-Path $envDusk)) {
     Write-Error ".env.dusk.local not found. Tests cannot run."
@@ -311,25 +351,37 @@ Write-Host "`n========================================" -ForegroundColor Blue
 Write-Host "Test Run Summary" -ForegroundColor Blue
 Write-Host "========================================" -ForegroundColor Blue
 
+if ($runLint) {
+    $pintStatus = if ($pintExit -eq 0) { "PASS" } else { "FAIL" }
+    $pintColor  = if ($pintExit -eq 0) { "Green" } else { "Red" }
+    Write-Host "Pint (style) : $pintStatus (exit code $pintExit)" -ForegroundColor $pintColor
+
+    $phpstanStatus = if ($phpstanExit -eq 0) { "PASS" } else { "FAIL" }
+    $phpstanColor  = if ($phpstanExit -eq 0) { "Green" } else { "Red" }
+    Write-Host "PHPStan       : $phpstanStatus (exit code $phpstanExit)" -ForegroundColor $phpstanColor
+}
+
 if ($runTranslation) {
     $translationStatus = if ($translationExit -eq 0) { "PASS" } else { "FAIL" }
     $translationColor  = if ($translationExit -eq 0) { "Green" } else { "Red" }
-    Write-Host "Translations : $translationStatus (exit code $translationExit)" -ForegroundColor $translationColor
+    Write-Host "Translations  : $translationStatus (exit code $translationExit)" -ForegroundColor $translationColor
 }
 
 if ($runPest) {
     $pestStatus = if ($pestExit -eq 0) { "PASS" } else { "FAIL" }
     $pestColor  = if ($pestExit -eq 0) { "Green" } else { "Red" }
-    Write-Host "Pest tests   : $pestStatus (exit code $pestExit)" -ForegroundColor $pestColor
+    Write-Host "Pest tests    : $pestStatus (exit code $pestExit)" -ForegroundColor $pestColor
 }
 
 if ($runDusk) {
     $duskStatus = if ($duskExit -eq 0) { "PASS" } else { "FAIL" }
     $duskColor  = if ($duskExit -eq 0) { "Green" } else { "Red" }
-    Write-Host "Dusk tests   : $duskStatus (exit code $duskExit)" -ForegroundColor $duskColor
+    Write-Host "Dusk tests    : $duskStatus (exit code $duskExit)" -ForegroundColor $duskColor
 }
 
 [int]$overallExit = 0
+if ($runLint -and $pintExit -ne 0) { $overallExit = 1 }
+if ($runLint -and $phpstanExit -ne 0) { $overallExit = 1 }
 if ($runTranslation -and $translationExit -ne 0) { $overallExit = 1 }
 if ($runPest -and $pestExit -ne 0) { $overallExit = 1 }
 if ($runDusk -and $duskExit -ne 0) { $overallExit = 1 }

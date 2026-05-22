@@ -18,8 +18,8 @@ class AuditEvent extends Model
     ];
 
     protected $casts = [
-        'event_time'   => 'datetime',
-        'created_at'   => 'datetime',
+        'event_time' => 'datetime',
+        'created_at' => 'datetime',
         'payload_json' => 'array',
     ];
 

@@ -6,6 +6,7 @@ use App\Domain\Audit\Audit;
 use App\Http\Controllers\ApiController;
 use App\Jobs\GenerateAccountingExportJob;
 use App\Models\AccountingExport;
+use App\Models\Venue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,33 +19,33 @@ class AccountingExportController extends ApiController
 
         return $this->success($exports->map(fn ($e) => [
             'accountingExportId' => $e->id,
-            'exportType'         => $e->export_type,
-            'fileFormat'         => $e->file_format,
-            'exportStatus'       => $e->export_status,
-            'requestedAt'        => $e->requested_at?->toIso8601String(),
+            'exportType' => $e->export_type,
+            'fileFormat' => $e->file_format,
+            'exportStatus' => $e->export_status,
+            'requestedAt' => $e->requested_at?->toIso8601String(),
         ])->all());
     }
 
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'serviceSessionId'   => ['nullable', 'exists:service_sessions,id'],
-            'exportType'         => ['required', 'string', 'in:SESSION_SUMMARY,FULL_LEDGER'],
-            'fileFormat'         => ['required', 'string', 'in:CSV'],
-            'exportRangeStart'   => ['nullable', 'date'],
-            'exportRangeEnd'     => ['nullable', 'date', 'after_or_equal:exportRangeStart'],
+            'serviceSessionId' => ['nullable', 'exists:service_sessions,id'],
+            'exportType' => ['required', 'string', 'in:SESSION_SUMMARY,FULL_LEDGER'],
+            'fileFormat' => ['required', 'string', 'in:CSV'],
+            'exportRangeStart' => ['nullable', 'date'],
+            'exportRangeEnd' => ['nullable', 'date', 'after_or_equal:exportRangeStart'],
         ]);
 
         $export = AccountingExport::create([
-            'venue_id'             => \App\Models\Venue::first()?->id,
-            'service_session_id'   => $validated['serviceSessionId'] ?? null,
-            'export_type'          => $validated['exportType'],
-            'export_range_start'   => $validated['exportRangeStart'] ?? null,
-            'export_range_end'     => $validated['exportRangeEnd'] ?? null,
-            'file_format'          => $validated['fileFormat'],
-            'export_status'        => 'REQUESTED',
+            'venue_id' => Venue::first()?->id,
+            'service_session_id' => $validated['serviceSessionId'] ?? null,
+            'export_type' => $validated['exportType'],
+            'export_range_start' => $validated['exportRangeStart'] ?? null,
+            'export_range_end' => $validated['exportRangeEnd'] ?? null,
+            'file_format' => $validated['fileFormat'],
+            'export_status' => 'REQUESTED',
             'requested_by_user_id' => $request->user()->id,
-            'requested_at'         => now(),
+            'requested_at' => now(),
         ]);
 
         GenerateAccountingExportJob::dispatch($export->id);
@@ -58,7 +59,7 @@ class AccountingExportController extends ApiController
 
         return $this->success([
             'accountingExportId' => $export->id,
-            'exportStatus'       => $export->export_status,
+            'exportStatus' => $export->export_status,
         ], status: 201);
     }
 
@@ -66,12 +67,12 @@ class AccountingExportController extends ApiController
     {
         return $this->success([
             'accountingExportId' => $accountingExport->id,
-            'exportType'         => $accountingExport->export_type,
-            'fileFormat'         => $accountingExport->file_format,
-            'exportStatus'       => $accountingExport->export_status,
-            'fileName'           => $accountingExport->file_name,
-            'requestedAt'        => $accountingExport->requested_at?->toIso8601String(),
-            'completedAt'        => $accountingExport->completed_at?->toIso8601String(),
+            'exportType' => $accountingExport->export_type,
+            'fileFormat' => $accountingExport->file_format,
+            'exportStatus' => $accountingExport->export_status,
+            'fileName' => $accountingExport->file_name,
+            'requestedAt' => $accountingExport->requested_at?->toIso8601String(),
+            'completedAt' => $accountingExport->completed_at?->toIso8601String(),
         ]);
     }
 

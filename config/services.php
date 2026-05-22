@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'print_agent' => [
+        'token' => env('SERVEO_PRINT_AGENT_TOKEN'),
+    ],
+
 ];

@@ -1,0 +1,2347 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$payment_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$recorded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:rangeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Accounting/AccountingExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$serviceSession\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$service_session_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:billingDocuments\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isOpen\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Method App\\Domain\\Billing\\BillingService\:\:resolveCashierPrinter\(\) should return App\\Models\\Printer\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Domain/Billing/BillingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Floor/BillingGroupService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isOpen\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Domain/Floor/BillingGroupService.php
+
+		-
+			message: '#^Method App\\Domain\\Floor\\BillingGroupService\:\:ensureTransitionAllowed\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Domain/Floor/BillingGroupService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$serviceSession\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Floor/OccupancyService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$service_session_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Floor/OccupancyService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isOpen\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Floor/OccupancyService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Floor/OccupancyService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billingGroup\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_group_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$occupied_zone_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$route_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$venue_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isOpen\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:items\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Method App\\Domain\\Orders\\OrderService\:\:resolvePrinterForRoute\(\) should return App\\Models\\Printer\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Offset ''quantity'' on array\{menu_item_id\: int, quantity\: int, delivery_seat_pair_id\?\: int\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>route_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Orders/OrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$orderHeaders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:paymentsTotal\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:rangeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Parameter \#1 \$carbon of method App\\Domain\\Printing\\TicketRenderer\:\:localTime\(\) expects Illuminate\\Support\\Carbon\|null, Carbon\\Carbon\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>display_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>display_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>orderHeaders" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Printing/TicketRenderer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$section_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/BillingGroupDetail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/OrderEntry.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:rangeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Pages/OrderEntry.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Filament/Resources/AuditEventResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/BillingGroupResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/BillingGroupResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$service_session_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/BillingGroupResource.php
+
+		-
+			message: '#^Cannot access property \$id on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ServiceSessionResource/Pages/EditServiceSession.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/MenuItemController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MenuItem\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/Admin/MenuItemController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/PrinterRouteController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PrinterRoute\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/Admin/PrinterRouteController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/VenueController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/VenueController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rows\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/VenueController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$section_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/VenueController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/Admin/VenueController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billing_group_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_reference_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_seat_pair_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$document_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$document_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fulfillment_route\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_open\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_reprint\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_void_slip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_subtotal\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$menuItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$menu_item_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$occupied_zone_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$payment_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printed_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$printer_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$recorded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ticket_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ticket_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$void_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$voided_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:defaultDeliveryLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 6
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Http\\Controllers\\Api\\BillingGroupController\:\:toOrderDto\(\) expects App\\Models\\OrderHeader, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/BillingGroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/EventLogController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/EventLogController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\AuditEvent\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/EventLogController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/FloorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/FloorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$seatPairs\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/FloorController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/FloorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OccupiedZoneController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_reference_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_seat_pair_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fulfillment_route\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_closed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_subtotal\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$menuItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$menu_item_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$void_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$voided_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:productionTickets\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/OrderController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProductionTicketController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$menuItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProductionTicketController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProductionTicketController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProductionTicketController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/ProductionTicketController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SessionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SessionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$venue_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SessionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Jobs/DispatchPrintJob.php
+
+		-
+			message: '#^Parameter \#1 \$printer of method App\\Domain\\Printing\\Contracts\\PrinterAdapter\:\:send\(\) expects App\\Models\\Printer, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Jobs/DispatchPrintJob.php
+
+		-
+			message: '#^Parameter \#1 \$printer of method App\\Domain\\Printing\\PrinterAdapterRegistry\:\:for\(\) expects App\\Models\\Printer, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Jobs/DispatchPrintJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot\:\:\$is_manual\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/BillingGroup/BillingGroupDetail.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Cashier/ReprintPanel.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Floor\\FloorIndex\:\:\$favoriteGroupIds\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Floor\\FloorIndex\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$billingGroup\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$default_server_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pair_sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$section_code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_seat_pair_sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>row_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>section_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Floor/FloorIndex.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Order\\OrderEntry\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Order\\OrderEntry\:\:\$selectedZone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Order\\OrderEntry\:\:\$zones\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$route_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MenuItem\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>occupiedZones" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>route_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Order/OrderEntry.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>theme" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/ThemeToggle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/BillingGroup.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:location\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/BillingGroup.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pair_sequence\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/OccupiedZone.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$row_code\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Models/OccupiedZone.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$section\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Models/OccupiedZone.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>row_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Models/OccupiedZone.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>section_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Models/OccupiedZone.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Browser/Admin/BillingGroupCreateTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Browser/Admin/BillingGroupCreateTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Browser/Admin/BillingGroupResourceTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Browser/Admin/BillingGroupResourceTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Browser/Admin/FilamentAccessTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Browser/Admin/FilamentAccessTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Browser/Admin/RowResourceTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Browser/Admin/RowResourceTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Auth/LoginTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Auth/LoginTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Auth/RoleAccessTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Auth/RoleAccessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Laravel\\Dusk\\Browser\:\:type\(\) expects string, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Browser/Cashier/CheckoutWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Cashier/LookupWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 14
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:assertFalse\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:assertTrue\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 17
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/CrossCutting/ThemeAndLanguageTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 8
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Home/DashboardTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Navigation/NavVisibilityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Browser/Navigation/NavVisibilityTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Browser/Navigation/NavVisibilityTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Navigation/NavVisibilityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 11
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Laravel\\Dusk\\Browser\:\:type\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Browser/Server/FloorWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$scenario\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 6
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:browse\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:scenario\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Browser/Server/OrderEntryTest.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: tests/DuskTestCase.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Feature/AccountingExportTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiAuthTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/ApiAuthTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:getJson\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/ApiAuthTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:postJson\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/ApiAuthTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 26
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 11
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 15
+			path: tests/Feature/ApiBillingGroupTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Feature/ApiOrderTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 11
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Feature/ApiPaymentTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 25
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 32
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 16
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Domain\\Orders\\OrderService\:\:voidItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/AuditEventCompletenessTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$original\.$#'
+			identifier: property.notFound
+			count: 10
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillReprintNeutralityTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 6
+			path: tests/Feature/BillingFlowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 15
+			path: tests/Feature/BillingFlowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillingFlowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillingFlowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/BillingFlowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$section\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 11
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$venue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:assertDatabaseHas\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/BillingGroupAdminTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot\:\:\$is_manual\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/BillingGroupFavoritesTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/BillingGroupFavoritesTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 31
+			path: tests/Feature/BillingGroupFavoritesTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/BillingGroupFavoritesTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/BillingStatusConfigurationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/BillingStatusConfigurationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/BillingStatusConfigurationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/BillingStatusConfigurationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 18
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 26
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$section\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$venue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 15
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/CashierWorkflowTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/ConcurrencyTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 10
+			path: tests/Feature/ConcurrencyTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/ConcurrencyTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_reference_label\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_seat_pair_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/DeliveryOverrideTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 9
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Parameter \#1 \$registry of method App\\Jobs\\DispatchPrintJob\:\:handle\(\) expects App\\Domain\\Printing\\PrinterAdapterRegistry, Mockery\\MockInterface given\.$#'
+			identifier: argument.type
+			count: 3
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Parameter \#2 \$renderer of method App\\Jobs\\DispatchPrintJob\:\:handle\(\) expects App\\Domain\\Printing\\TicketRenderer, Mockery\\MockInterface given\.$#'
+			identifier: argument.type
+			count: 3
+			path: tests/Feature/DispatchPrintJobAuditTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/LanguageSwitcherTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/LanguageSwitcherTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 12
+			path: tests/Feature/Livewire/Home/DashboardTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/Livewire/Home/DashboardTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/OccupancyOverlapTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 14
+			path: tests/Feature/OccupancyOverlapTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 7
+			path: tests/Feature/OccupancyOverlapTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 18
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:assertAuthenticatedAs\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:assertGuest\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:get\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:post\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/OperationalUiFoundationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 6
+			path: tests/Feature/OrderSubmissionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/OrderSubmissionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/OrderSubmissionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/OrderSubmissionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/PrintJobRetryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/PrintJobRetryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/PrintJobRetryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/PrintJobRetryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/PrintJobRetryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Feature/PrintQueueFailureTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/PrintQueueFailureTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/PrintQueueFailureTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/PrintQueueFailureTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/PrintQueueFailureTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$voided_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/PrinterRoutingErrorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/PrinterRoutingErrorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 10
+			path: tests/Feature/PrinterRoutingErrorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/PrinterRoutingErrorTest.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Domain\\Orders\\OrderService\:\:voidItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/PrinterRoutingErrorTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$voided_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 11
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Domain\\Orders\\OrderService\:\:voidItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/RoleAuthorizationTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/SeedDataTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:artisan\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/SeedDataTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 12
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 22
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server2\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 6
+			path: tests/Feature/ServerAssignmentTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 6
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$section\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 30
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 12
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$venue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 12
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/ServerWorkflowFloorTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_seat_pair_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$barCategoryId\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$barItem\.$#'
+			identifier: property.notFound
+			count: 5
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 28
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$kitchenCategoryId\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$kitchenItem\.$#'
+			identifier: property.notFound
+			count: 12
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$row\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$section\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 16
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$venue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 15
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/ServerWorkflowOrderEntryTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:seed\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Feature/SessionEnforcementTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 8
+			path: tests/Feature/StatusTransitionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 17
+			path: tests/Feature/StatusTransitionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/StatusTransitionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/StatusTransitionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/StatusTransitionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/ThemeSupportTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:actingAs\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: tests/Feature/ThemeSupportTest.php
+
+		-
+			message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall\:\:postJson\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Feature/ThemeSupportTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$cashier\.$#'
+			identifier: property.notFound
+			count: 9
+			path: tests/Feature/VersionConflictTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 26
+			path: tests/Feature/VersionConflictTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Feature/VersionConflictTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/VersionConflictTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$group\.$#'
+			identifier: property.notFound
+			count: 4
+			path: tests/Feature/VoidCorrectionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$header\.$#'
+			identifier: property.notFound
+			count: 10
+			path: tests/Feature/VoidCorrectionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$server\.$#'
+			identifier: property.notFound
+			count: 9
+			path: tests/Feature/VoidCorrectionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$session\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/VoidCorrectionTest.php
+
+		-
+			message: '#^Access to an undefined property Pest\\PendingCalls\\TestCall\:\:\$zone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Feature/VoidCorrectionTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Unit/ExampleTest.php

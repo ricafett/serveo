@@ -2,14 +2,15 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Domain\Orders\OrderService;
 use App\Models\MenuItem;
 use App\Models\Row;
 
 beforeEach(function () {
     $this->session = bootScenario();
-    $this->server  = makeUser('SERVER');
-    $this->group   = app(BillingGroupService::class)->open($this->session, $this->server);
-    $this->zone    = app(OccupancyService::class)->assignZone(
+    $this->server = makeUser('SERVER');
+    $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
+    $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
     );
 });
@@ -20,11 +21,11 @@ it('creates an order via api', function () {
     $response = $this->actingAs($this->server)->postJson('/api/v1/orders', [
         'billingGroupId' => $this->group->id,
         'occupiedZoneId' => $this->zone->id,
-        'notes'          => 'API order',
-        'items'          => [
+        'notes' => 'API order',
+        'items' => [
             [
                 'menuItemId' => $kitchenItem->id,
-                'quantity'   => 3,
+                'quantity' => 3,
             ],
         ],
     ]);
@@ -37,7 +38,7 @@ it('creates an order via api', function () {
 
 it('returns an order by id', function () {
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    $header = app(\App\Domain\Orders\OrderService::class)->submit(
+    $header = app(OrderService::class)->submit(
         $this->group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]],
         $this->zone
@@ -56,7 +57,7 @@ it('rejects order on closed billing group', function () {
 
     $response = $this->actingAs($this->server)->postJson('/api/v1/orders', [
         'billingGroupId' => $this->group->id,
-        'items'          => [
+        'items' => [
             ['menuItemId' => $kitchenItem->id, 'quantity' => 1],
         ],
     ]);
@@ -67,7 +68,7 @@ it('rejects order on closed billing group', function () {
 
 it('voids order items via api', function () {
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
-    $header = app(\App\Domain\Orders\OrderService::class)->submit(
+    $header = app(OrderService::class)->submit(
         $this->group, $this->server,
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]],
         $this->zone
@@ -79,7 +80,7 @@ it('voids order items via api', function () {
         'items' => [
             [
                 'orderItemId' => $item->id,
-                'reason'      => 'Wrong item ordered',
+                'reason' => 'Wrong item ordered',
             ],
         ],
     ]);
@@ -96,7 +97,7 @@ it('enforces role permissions on order endpoints', function () {
     // Cashier cannot create orders
     $this->actingAs($cashier)->postJson('/api/v1/orders', [
         'billingGroupId' => $this->group->id,
-        'items'          => [
+        'items' => [
             ['menuItemId' => $kitchenItem->id, 'quantity' => 1],
         ],
     ])->assertStatus(403);

@@ -2,27 +2,29 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
-use App\Filament\Resources\PrintJobResource\Pages;
 use App\Domain\Audit\Audit;
 use App\Domain\Printing\PrintQueueService;
+use App\Filament\Resources\PrintJobResource\Pages;
 use App\Models\PrintJob;
-use Filament\Schemas\Schema;
-use Filament\Notifications\Notification;
-use Filament\Resources\Resource;
-use Filament\Tables;
+use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Schema;
+use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class PrintJobResource extends BaseResource
 {
     protected static ?string $model = PrintJob::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_operation';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-queue-list';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_operation';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-queue-list';
+
     protected static ?string $navigationLabel = 'app.navigation_label_print_jobs';
+
     protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
@@ -48,10 +50,10 @@ class PrintJobResource extends BaseResource
                 Tables\Columns\TextColumn::make('job_kind')->badge(),
                 Tables\Columns\TextColumn::make('printer.name')->label(__('app.printer')),
                 Tables\Columns\TextColumn::make('status')->badge()->colors([
-                    'gray'    => 'PENDING',
+                    'gray' => 'PENDING',
                     'warning' => 'IN_PROGRESS',
                     'success' => 'PRINTED',
-                    'danger'  => 'FAILED',
+                    'danger' => 'FAILED',
                     'secondary' => 'CANCELED',
                 ]),
                 Tables\Columns\TextColumn::make('attempts')->label(__('app.attempts')),
@@ -62,15 +64,15 @@ class PrintJobResource extends BaseResource
             ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options([
-                    'PENDING'     => __('app.status_pending'),
+                    'PENDING' => __('app.status_pending'),
                     'IN_PROGRESS' => __('app.status_in_progress'),
-                    'PRINTED'     => __('app.status_printed'),
-                    'FAILED'      => __('app.status_failed'),
-                    'CANCELED'    => __('app.status_canceled'),
+                    'PRINTED' => __('app.status_printed'),
+                    'FAILED' => __('app.status_failed'),
+                    'CANCELED' => __('app.status_canceled'),
                 ]),
                 Tables\Filters\SelectFilter::make('job_kind')->options([
                     'PRODUCTION_TICKET' => __('app.job_kind_production_ticket'),
-                    'BILL'              => __('app.job_kind_bill'),
+                    'BILL' => __('app.job_kind_bill'),
                 ]),
             ])
             ->actions([

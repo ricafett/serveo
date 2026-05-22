@@ -2,7 +2,10 @@
 
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
+use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
+use App\Livewire\Cashier\Checkout;
+use App\Livewire\Cashier\ReprintPanel;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\CashierPrinterAssignment;
@@ -15,18 +18,22 @@ use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
 use App\Models\User;
+use App\Models\Venue;
+use Database\Seeders\CoreSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
-    $this->seed(\Database\Seeders\CoreSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    $this->seed(CoreSeeder::class);
 
     // Close CoreSeeder session so tests only see their own session
     ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
 
-    $this->venue = \App\Models\Venue::first();
+    $this->venue = Venue::first();
     $this->session = ServiceSession::create([
         'venue_id' => $this->venue->id,
         'session_type' => 'DINNER',
@@ -64,7 +71,7 @@ beforeEach(function () {
     CashierPrinterAssignment::create(['user_id' => $this->cashier->id, 'printer_id' => $billPrinter->id, 'is_active' => true]);
 
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
-    app(\App\Domain\Floor\OccupancyService::class)->assignZone($this->group, $this->row, 1, 5, $this->server);
+    app(OccupancyService::class)->assignZone($this->group, $this->row, 1, 5, $this->server);
 
     // Add an order so there are charges
     $menuItem = MenuItem::first();
@@ -103,7 +110,7 @@ it('shows closed groups when show closed is enabled', function () {
 });
 
 it('searches billing groups by display code', function () {
-    $response = $this->actingAs($this->cashier)->get('/lookup?search=' . urlencode($this->group->display_code));
+    $response = $this->actingAs($this->cashier)->get('/lookup?search='.urlencode($this->group->display_code));
     $response->assertOk();
     $response->assertSee($this->group->display_code);
 });
@@ -124,7 +131,7 @@ it('renders checkout screen with charges and balance', function () {
 it('prints bill from checkout', function () {
     $this->actingAs($this->cashier);
 
-    \Livewire\Livewire::test(\App\Livewire\Cashier\Checkout::class, ['id' => $this->group->id])
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
         ->call('printBill')
         ->assertSet('successMessage', 'Bill sent to printer.');
 
@@ -136,7 +143,7 @@ it('prints bill from checkout', function () {
 it('records partial payment from checkout', function () {
     $this->actingAs($this->cashier);
 
-    \Livewire\Livewire::test(\App\Livewire\Cashier\Checkout::class, ['id' => $this->group->id])
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
         ->set('paymentAmount', 5.00)
         ->set('paymentLabel', 'Cash')
         ->call('recordPayment')
@@ -152,7 +159,7 @@ it('reopens closed group from checkout', function () {
 
     $this->actingAs($this->cashier);
 
-    \Livewire\Livewire::test(\App\Livewire\Cashier\Checkout::class, ['id' => $this->group->id])
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
         ->call('reopenGroup')
         ->assertSet('successMessage', 'Group reopened.');
 
@@ -166,7 +173,7 @@ it('reprints bill from checkout', function () {
     // First print a bill
     $bill = app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
 
-    \Livewire\Livewire::test(\App\Livewire\Cashier\Checkout::class, ['id' => $this->group->id])
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
         ->call('reprintBill', $bill->id)
         ->assertSet('successMessage', 'Bill reprint sent to printer.');
 
@@ -196,7 +203,7 @@ it('reprints ticket from reprint panel', function () {
     $ticket = ProductionTicket::where('billing_group_id', $this->group->id)->first();
     expect($ticket)->not->toBeNull();
 
-    \Livewire\Livewire::test(\App\Livewire\Cashier\ReprintPanel::class, ['billingGroupId' => $this->group->id])
+    Livewire::test(ReprintPanel::class, ['billingGroupId' => $this->group->id])
         ->call('reprintTicket', $ticket->id)
         ->assertSet('successMessage', 'Ticket reprint sent to printer.');
 

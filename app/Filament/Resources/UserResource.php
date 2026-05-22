@@ -2,28 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
+use UnitEnum;
 
 class UserResource extends BaseResource
 {
     protected static ?string $model = User::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-users';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'app.navigation_label_users';
-    protected static ?string $modelLabel      = 'app.model_label_user';
+
+    protected static ?string $modelLabel = 'app.model_label_user';
+
     protected static ?string $pluralModelLabel = 'app.plural_model_label_users';
+
     protected static ?int $navigationSort = 10;
 
     public static function canViewAny(): bool
@@ -57,8 +61,8 @@ class UserResource extends BaseResource
                 ->default('pt-PT')->required(),
             Forms\Components\Select::make('theme')
                 ->options([
-                    User::THEME_LIGHT  => __('app.theme_light'),
-                    User::THEME_DARK   => __('app.theme_dark'),
+                    User::THEME_LIGHT => __('app.theme_light'),
+                    User::THEME_DARK => __('app.theme_dark'),
                     User::THEME_SYSTEM => __('app.theme_system'),
                 ])
                 ->default(User::THEME_SYSTEM)
@@ -100,9 +104,9 @@ class UserResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
+            'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

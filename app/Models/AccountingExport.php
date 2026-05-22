@@ -16,9 +16,9 @@ class AccountingExport extends Model
 
     protected $casts = [
         'export_range_start' => 'datetime',
-        'export_range_end'   => 'datetime',
-        'requested_at'       => 'datetime',
-        'completed_at'       => 'datetime',
+        'export_range_end' => 'datetime',
+        'requested_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function serviceSession(): BelongsTo

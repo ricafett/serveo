@@ -17,34 +17,34 @@ class MenuCategoryController extends ApiController
 
         return $this->success($categories->map(fn ($c) => [
             'menuCategoryId' => $c->id,
-            'code'           => $c->code,
-            'displayName'    => $c->display_name,
-            'routeType'      => $c->route_type,
-            'sortOrder'      => $c->sort_order,
+            'code' => $c->code,
+            'displayName' => $c->display_name,
+            'routeType' => $c->route_type,
+            'sortOrder' => $c->sort_order,
         ])->all());
     }
 
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'code'        => ['required', 'string', 'max:50', 'unique:menu_categories,code'],
+            'code' => ['required', 'string', 'max:50', 'unique:menu_categories,code'],
             'displayName' => ['required', 'string', 'max:100'],
-            'routeType'   => ['required', 'string', 'in:KITCHEN,BAR,NONE'],
-            'sortOrder'   => ['nullable', 'integer'],
+            'routeType' => ['required', 'string', 'in:KITCHEN,BAR,NONE'],
+            'sortOrder' => ['nullable', 'integer'],
         ]);
 
         $category = MenuCategory::create([
-            'code'         => $validated['code'],
+            'code' => $validated['code'],
             'display_name' => $validated['displayName'],
-            'route_type'   => $validated['routeType'],
-            'sort_order'   => $validated['sortOrder'] ?? 0,
-            'is_active'    => true,
+            'route_type' => $validated['routeType'],
+            'sort_order' => $validated['sortOrder'] ?? 0,
+            'is_active' => true,
         ]);
 
         return $this->success([
             'menuCategoryId' => $category->id,
-            'code'           => $category->code,
-            'displayName'    => $category->display_name,
+            'code' => $category->code,
+            'displayName' => $category->display_name,
         ], status: 201);
     }
 }

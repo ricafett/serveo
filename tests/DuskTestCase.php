@@ -2,10 +2,12 @@
 
 namespace Tests;
 
+use App\Models\ServiceSession;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
@@ -64,7 +66,7 @@ abstract class DuskTestCase extends BaseTestCase
         DB::statement('PRAGMA foreign_keys = ON');
 
         // Clear translation cache so locale changes are picked up
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
 
         // Force default locale to en-US for predictable test assertions
         app()->setLocale('en-US');
@@ -107,7 +109,7 @@ abstract class DuskTestCase extends BaseTestCase
     /**
      * Seed the baseline scenario and return the active service session.
      */
-    protected function scenario(): \App\Models\ServiceSession
+    protected function scenario(): ServiceSession
     {
         return bootScenario();
     }

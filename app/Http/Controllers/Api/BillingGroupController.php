@@ -7,8 +7,10 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Http\Controllers\ApiController;
 use App\Models\BillingGroup;
-use App\Models\BillingStatus;
+use App\Models\OrderHeader;
 use App\Models\Row;
+use App\Models\ServiceSession;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,18 +26,18 @@ class BillingGroupController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'       => ['nullable', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'statusCode' => ['required', 'string', 'exists:billing_statuses,code'],
             'coverCount' => ['nullable', 'integer', 'min:1'],
-            'notes'      => ['nullable', 'string', 'max:500'],
-            'zones'      => ['nullable', 'array'],
-            'zones.*.rowId'                   => ['required', 'exists:rows,id'],
-            'zones.*.startSeatPairSequence'   => ['required', 'integer', 'min:1'],
-            'zones.*.endSeatPairSequence'     => ['required', 'integer', 'min:1'],
-            'zones.*.deliveryMode'            => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'zones' => ['nullable', 'array'],
+            'zones.*.rowId' => ['required', 'exists:rows,id'],
+            'zones.*.startSeatPairSequence' => ['required', 'integer', 'min:1'],
+            'zones.*.endSeatPairSequence' => ['required', 'integer', 'min:1'],
+            'zones.*.deliveryMode' => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
         ]);
 
-        $session = \App\Models\ServiceSession::where('status', 'OPEN')
+        $session = ServiceSession::where('status', 'OPEN')
             ->orderBy('starts_at', 'desc')
             ->first();
 
@@ -74,9 +76,9 @@ class BillingGroupController extends ApiController
             });
         } catch (ZoneOverlapException $e) {
             return $this->error('ZONE_OVERLAP', $e->getMessage(), status: 409);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
 
@@ -94,9 +96,9 @@ class BillingGroupController extends ApiController
     {
         $validated = $request->validate([
             'versionNumber' => ['nullable', 'integer'],
-            'statusCode'    => ['nullable', 'string', 'exists:billing_statuses,code'],
-            'coverCount'    => ['nullable', 'integer', 'min:1'],
-            'notes'         => ['nullable', 'string', 'max:500'],
+            'statusCode' => ['nullable', 'string', 'exists:billing_statuses,code'],
+            'coverCount' => ['nullable', 'integer', 'min:1'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         if (isset($validated['versionNumber']) && $billingGroup->version_number !== $validated['versionNumber']) {
@@ -139,12 +141,13 @@ class BillingGroupController extends ApiController
                     $billingGroup->increment('version_number');
                 }
             });
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
                 ? 'VERSION_CONFLICT'
                 : 'INVALID_STATUS_TRANSITION';
+
             return $this->error($code, $e->getMessage(), status: 409);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         }
 
@@ -155,10 +158,10 @@ class BillingGroupController extends ApiController
     {
         $validated = $request->validate([
             'zones' => ['required', 'array', 'min:1'],
-            'zones.*.rowId'                   => ['required', 'exists:rows,id'],
-            'zones.*.startSeatPairSequence'   => ['required', 'integer', 'min:1'],
-            'zones.*.endSeatPairSequence'     => ['required', 'integer', 'min:1'],
-            'zones.*.deliveryMode'            => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
+            'zones.*.rowId' => ['required', 'exists:rows,id'],
+            'zones.*.startSeatPairSequence' => ['required', 'integer', 'min:1'],
+            'zones.*.endSeatPairSequence' => ['required', 'integer', 'min:1'],
+            'zones.*.deliveryMode' => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
         ]);
 
         if ($billingGroup->is_closed) {
@@ -181,9 +184,9 @@ class BillingGroupController extends ApiController
             });
         } catch (ZoneOverlapException $e) {
             return $this->error('ZONE_OVERLAP', $e->getMessage(), status: 409);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
 
@@ -209,14 +212,14 @@ class BillingGroupController extends ApiController
 
         return $this->success($tickets->map(fn ($t) => [
             'productionTicketId' => $t->id,
-            'ticketType'         => $t->ticket_type,
-            'ticketStatus'       => $t->ticket_status,
-            'billingGroupId'     => $t->billing_group_id,
-            'occupiedZoneId'     => $t->occupied_zone_id,
-            'printerId'          => $t->printer_id,
-            'printedAt'          => $t->printed_at?->toIso8601String(),
-            'isVoidSlip'         => $t->is_void_slip,
-            'isReprint'          => $t->is_reprint,
+            'ticketType' => $t->ticket_type,
+            'ticketStatus' => $t->ticket_status,
+            'billingGroupId' => $t->billing_group_id,
+            'occupiedZoneId' => $t->occupied_zone_id,
+            'printerId' => $t->printer_id,
+            'printedAt' => $t->printed_at?->toIso8601String(),
+            'isVoidSlip' => $t->is_void_slip,
+            'isReprint' => $t->is_reprint,
         ])->all());
     }
 
@@ -228,11 +231,11 @@ class BillingGroupController extends ApiController
             ->flatMap->items
             ->whereNull('voided_at')
             ->map(fn ($item) => [
-                'orderItemId'   => $item->id,
-                'menuItemName'  => $item->menuItem?->display_name,
-                'quantity'      => $item->quantity,
-                'unitPrice'     => (string) $item->unit_price,
-                'lineSubtotal'  => (string) $item->line_subtotal,
+                'orderItemId' => $item->id,
+                'menuItemName' => $item->menuItem?->display_name,
+                'quantity' => $item->quantity,
+                'unitPrice' => (string) $item->unit_price,
+                'lineSubtotal' => (string) $item->line_subtotal,
             ])->values()->all();
 
         $charges = $billingGroup->chargesTotal();
@@ -240,23 +243,23 @@ class BillingGroupController extends ApiController
 
         return $this->success([
             'billingGroupId' => $billingGroup->id,
-            'displayCode'    => $billingGroup->display_code,
-            'displayLabel'   => $billingGroup->longLabel(),
-            'statusCode'     => $billingGroup->status?->code,
-            'zones'          => $billingGroup->occupiedZones->map(fn ($z) => [
+            'displayCode' => $billingGroup->display_code,
+            'displayLabel' => $billingGroup->longLabel(),
+            'statusCode' => $billingGroup->status?->code,
+            'zones' => $billingGroup->occupiedZones->map(fn ($z) => [
                 'occupiedZoneId' => $z->id,
-                'rowCode'        => $z->row?->row_code,
+                'rowCode' => $z->row?->row_code,
                 'startSeatPairSequence' => $z->start_seat_pair_sequence,
-                'endSeatPairSequence'   => $z->end_seat_pair_sequence,
+                'endSeatPairSequence' => $z->end_seat_pair_sequence,
             ])->all(),
-            'lineItems'      => $lines,
-            'subtotal'       => (string) $charges,
-            'total'          => (string) $charges,
+            'lineItems' => $lines,
+            'subtotal' => (string) $charges,
+            'total' => (string) $charges,
             'paymentsToDate' => $billingGroup->paymentRecords->where('is_voided', false)->map(fn ($p) => [
                 'paymentRecordId' => $p->id,
-                'amount'          => (string) $p->amount,
-                'paymentLabel'    => $p->payment_label,
-                'recordedAt'      => $p->recorded_at?->toIso8601String(),
+                'amount' => (string) $p->amount,
+                'paymentLabel' => $p->payment_label,
+                'recordedAt' => $p->recorded_at?->toIso8601String(),
             ])->values()->all(),
             'remainingBalance' => (string) max(0, round($charges - $payments, 2)),
         ]);
@@ -265,7 +268,7 @@ class BillingGroupController extends ApiController
     public function reopen(Request $request, BillingGroup $billingGroup): JsonResponse
     {
         $validated = $request->validate([
-            'reason'        => ['nullable', 'string', 'max:500'],
+            'reason' => ['nullable', 'string', 'max:500'],
             'versionNumber' => ['nullable', 'integer'],
         ]);
 
@@ -279,12 +282,13 @@ class BillingGroupController extends ApiController
                 $request->user(),
                 $validated['versionNumber'] ?? null,
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $code = str_contains($e->getMessage(), 'VERSION_CONFLICT')
                 ? 'VERSION_CONFLICT'
                 : 'INVALID_STATUS_TRANSITION';
+
             return $this->error($code, $e->getMessage(), status: 409);
         }
 
@@ -295,73 +299,73 @@ class BillingGroupController extends ApiController
     {
         $dto = [
             'billingGroupId' => $group->id,
-            'displayCode'    => $group->display_code,
-            'name'           => $group->name,
-            'displayLabel'   => $group->longLabel(),
-            'statusCode'     => $group->status?->code,
-            'statusLabel'    => $group->status?->display_name,
-            'coverCount'     => $group->cover_count,
-            'notes'          => $group->notes,
-            'isClosed'       => $group->is_closed,
-            'versionNumber'  => $group->version_number,
-            'openedAt'       => $group->opened_at?->toIso8601String(),
-            'closedAt'       => $group->closed_at?->toIso8601String(),
-            'zones'          => $group->occupiedZones->map(fn ($z) => [
-                'occupiedZoneId'         => $z->id,
-                'rowId'                  => $z->row_id,
-                'rowCode'                => $z->row?->row_code,
-                'startSeatPairSequence'  => $z->start_seat_pair_sequence,
-                'endSeatPairSequence'    => $z->end_seat_pair_sequence,
+            'displayCode' => $group->display_code,
+            'name' => $group->name,
+            'displayLabel' => $group->longLabel(),
+            'statusCode' => $group->status?->code,
+            'statusLabel' => $group->status?->display_name,
+            'coverCount' => $group->cover_count,
+            'notes' => $group->notes,
+            'isClosed' => $group->is_closed,
+            'versionNumber' => $group->version_number,
+            'openedAt' => $group->opened_at?->toIso8601String(),
+            'closedAt' => $group->closed_at?->toIso8601String(),
+            'zones' => $group->occupiedZones->map(fn ($z) => [
+                'occupiedZoneId' => $z->id,
+                'rowId' => $z->row_id,
+                'rowCode' => $z->row?->row_code,
+                'startSeatPairSequence' => $z->start_seat_pair_sequence,
+                'endSeatPairSequence' => $z->end_seat_pair_sequence,
                 'defaultDeliveryReference' => $z->defaultDeliveryLabel(),
-                'deliverySeatPairId'     => $z->delivery_seat_pair_id,
-                'isOpen'                 => $z->is_open,
+                'deliverySeatPairId' => $z->delivery_seat_pair_id,
+                'isOpen' => $z->is_open,
             ])->values()->all(),
         ];
 
         if ($detailed) {
             $dto['runningTotals'] = [
-                'charges'  => (string) $group->chargesTotal(),
+                'charges' => (string) $group->chargesTotal(),
                 'payments' => (string) $group->paymentsTotal(),
-                'balance'  => (string) $group->balance(),
+                'balance' => (string) $group->balance(),
             ];
             $dto['recentDocuments'] = $group->billingDocuments->sortByDesc('requested_at')->take(5)->map(fn ($d) => [
                 'billingDocumentId' => $d->id,
-                'documentType'      => $d->document_type,
-                'documentStatus'    => $d->document_status,
-                'totalAmount'       => (string) $d->total_amount,
-                'printedAt'         => $d->printed_at?->toIso8601String(),
-                'isReprint'         => $d->is_reprint,
+                'documentType' => $d->document_type,
+                'documentStatus' => $d->document_status,
+                'totalAmount' => (string) $d->total_amount,
+                'printedAt' => $d->printed_at?->toIso8601String(),
+                'isReprint' => $d->is_reprint,
             ])->values()->all();
         }
 
         return $dto;
     }
 
-    private function toOrderDto(\App\Models\OrderHeader $order): array
+    private function toOrderDto(OrderHeader $order): array
     {
         return [
-            'orderHeaderId'     => $order->id,
-            'billingGroupId'    => $order->billing_group_id,
-            'occupiedZoneId'    => $order->occupied_zone_id,
-            'orderedBy'         => [
-                'userId'      => $order->ordered_by_user_id,
+            'orderHeaderId' => $order->id,
+            'billingGroupId' => $order->billing_group_id,
+            'occupiedZoneId' => $order->occupied_zone_id,
+            'orderedBy' => [
+                'userId' => $order->ordered_by_user_id,
                 'displayName' => $order->orderedBy?->name,
             ],
-            'orderedAt'         => $order->ordered_at?->toIso8601String(),
-            'submissionStatus'  => $order->submission_status,
-            'notes'             => $order->notes,
-            'items'             => $order->items->map(fn ($item) => [
-                'orderItemId'          => $item->id,
-                'menuItemId'           => $item->menu_item_id,
-                'menuItemName'         => $item->menuItem?->display_name,
-                'quantity'             => $item->quantity,
-                'unitPrice'            => (string) $item->unit_price,
-                'lineSubtotal'         => (string) $item->line_subtotal,
-                'fulfillmentRoute'     => $item->fulfillment_route,
-                'deliverySeatPairId'   => $item->delivery_seat_pair_id,
+            'orderedAt' => $order->ordered_at?->toIso8601String(),
+            'submissionStatus' => $order->submission_status,
+            'notes' => $order->notes,
+            'items' => $order->items->map(fn ($item) => [
+                'orderItemId' => $item->id,
+                'menuItemId' => $item->menu_item_id,
+                'menuItemName' => $item->menuItem?->display_name,
+                'quantity' => $item->quantity,
+                'unitPrice' => (string) $item->unit_price,
+                'lineSubtotal' => (string) $item->line_subtotal,
+                'fulfillmentRoute' => $item->fulfillment_route,
+                'deliverySeatPairId' => $item->delivery_seat_pair_id,
                 'deliveryReferenceLabel' => $item->delivery_reference_label,
-                'voidedAt'             => $item->voided_at?->toIso8601String(),
-                'voidReason'           => $item->void_reason,
+                'voidedAt' => $item->voided_at?->toIso8601String(),
+                'voidReason' => $item->void_reason,
             ])->values()->all(),
         ];
     }

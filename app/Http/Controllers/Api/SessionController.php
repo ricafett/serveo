@@ -26,19 +26,19 @@ class SessionController extends ApiController
             ->get(['id', 'code', 'display_name']);
 
         return $this->success([
-            'sessionId'     => $session->id,
-            'sessionType'   => $session->session_type,
-            'sessionLabel'  => $session->session_label,
-            'startsAt'      => $session->starts_at?->toIso8601String(),
-            'venue'         => [
-                'venueId'   => $session->venue?->id,
+            'sessionId' => $session->id,
+            'sessionType' => $session->session_type,
+            'sessionLabel' => $session->session_label,
+            'startsAt' => $session->starts_at?->toIso8601String(),
+            'venue' => [
+                'venueId' => $session->venue?->id,
                 'venueCode' => $session->venue?->venue_code,
-                'name'      => $session->venue?->name,
+                'name' => $session->venue?->name,
             ],
             'activeBillingStatuses' => $statuses->map(fn ($s) => [
-                'statusId'   => $s->id,
-                'code'       => $s->code,
-                'displayName'=> $s->display_name,
+                'statusId' => $s->id,
+                'code' => $s->code,
+                'displayName' => $s->display_name,
             ]),
             'effectiveLanguageOptions' => ['pt-PT', 'en-US'],
         ]);

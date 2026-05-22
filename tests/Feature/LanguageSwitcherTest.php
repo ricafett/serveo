@@ -1,8 +1,6 @@
 <?php
 
 use App\Livewire\LanguageSwitcher;
-use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 beforeEach(function () {

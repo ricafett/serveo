@@ -8,6 +8,7 @@ use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
 use App\Models\OrderItem;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,13 +20,13 @@ class OrderController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'billingGroupId'   => ['required', 'exists:billing_groups,id'],
-            'occupiedZoneId'   => ['nullable', 'exists:occupied_zones,id'],
-            'notes'            => ['nullable', 'string', 'max:500'],
-            'items'            => ['required', 'array', 'min:1'],
-            'items.*.menuItemId'          => ['required', 'exists:menu_items,id'],
-            'items.*.quantity'            => ['required', 'integer', 'min:1'],
-            'items.*.deliverySeatPairId'  => ['nullable', 'exists:seat_pairs,id'],
+            'billingGroupId' => ['required', 'exists:billing_groups,id'],
+            'occupiedZoneId' => ['nullable', 'exists:occupied_zones,id'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.menuItemId' => ['required', 'exists:menu_items,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.deliverySeatPairId' => ['nullable', 'exists:seat_pairs,id'],
         ]);
 
         $group = BillingGroup::findOrFail($validated['billingGroupId']);
@@ -43,8 +44,8 @@ class OrderController extends ApiController
         }
 
         $lines = collect($validated['items'])->map(fn ($item) => [
-            'menu_item_id'          => $item['menuItemId'],
-            'quantity'              => $item['quantity'],
+            'menu_item_id' => $item['menuItemId'],
+            'quantity' => $item['quantity'],
             'delivery_seat_pair_id' => $item['deliverySeatPairId'] ?? null,
         ])->all();
 
@@ -56,7 +57,7 @@ class OrderController extends ApiController
                 $zone,
                 $validated['notes'] ?? null,
             );
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
@@ -77,7 +78,7 @@ class OrderController extends ApiController
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
             'items.*.orderItemId' => ['required', 'exists:order_items,id'],
-            'items.*.reason'      => ['required', 'string', 'max:500'],
+            'items.*.reason' => ['required', 'string', 'max:500'],
         ]);
 
         if ($orderHeader->billingGroup->is_closed) {
@@ -108,20 +109,20 @@ class OrderController extends ApiController
                     ->where('created_at', '>=', now()->subSeconds(5))
                     ->get();
             });
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         }
 
         return $this->success([
             'affectedItems' => collect($affected)->map(fn ($item) => [
                 'orderItemId' => $item->id,
-                'voidedAt'    => $item->voided_at?->toIso8601String(),
-                'voidReason'  => $item->void_reason,
+                'voidedAt' => $item->voided_at?->toIso8601String(),
+                'voidReason' => $item->void_reason,
             ])->all(),
             'voidTickets' => $tickets->map(fn ($t) => [
                 'productionTicketId' => $t->id,
-                'ticketType'         => $t->ticket_type,
-                'isVoidSlip'         => $t->is_void_slip,
+                'ticketType' => $t->ticket_type,
+                'isVoidSlip' => $t->is_void_slip,
             ])->all(),
         ]);
     }
@@ -129,28 +130,28 @@ class OrderController extends ApiController
     private function toOrderDto(OrderHeader $order): array
     {
         return [
-            'orderHeaderId'     => $order->id,
-            'billingGroupId'    => $order->billing_group_id,
-            'occupiedZoneId'    => $order->occupied_zone_id,
-            'orderedBy'         => [
-                'userId'      => $order->ordered_by_user_id,
+            'orderHeaderId' => $order->id,
+            'billingGroupId' => $order->billing_group_id,
+            'occupiedZoneId' => $order->occupied_zone_id,
+            'orderedBy' => [
+                'userId' => $order->ordered_by_user_id,
                 'displayName' => $order->orderedBy?->name,
             ],
-            'orderedAt'         => $order->ordered_at?->toIso8601String(),
-            'submissionStatus'  => $order->submission_status,
-            'notes'             => $order->notes,
-            'items'             => $order->items->map(fn ($item) => [
-                'orderItemId'            => $item->id,
-                'menuItemId'             => $item->menu_item_id,
-                'menuItemName'           => $item->menuItem?->display_name,
-                'quantity'               => $item->quantity,
-                'unitPrice'              => (string) $item->unit_price,
-                'lineSubtotal'           => (string) $item->line_subtotal,
-                'fulfillmentRoute'       => $item->fulfillment_route,
-                'deliverySeatPairId'     => $item->delivery_seat_pair_id,
+            'orderedAt' => $order->ordered_at?->toIso8601String(),
+            'submissionStatus' => $order->submission_status,
+            'notes' => $order->notes,
+            'items' => $order->items->map(fn ($item) => [
+                'orderItemId' => $item->id,
+                'menuItemId' => $item->menu_item_id,
+                'menuItemName' => $item->menuItem?->display_name,
+                'quantity' => $item->quantity,
+                'unitPrice' => (string) $item->unit_price,
+                'lineSubtotal' => (string) $item->line_subtotal,
+                'fulfillmentRoute' => $item->fulfillment_route,
+                'deliverySeatPairId' => $item->delivery_seat_pair_id,
                 'deliveryReferenceLabel' => $item->delivery_reference_label,
-                'voidedAt'               => $item->voided_at?->toIso8601String(),
-                'voidReason'             => $item->void_reason,
+                'voidedAt' => $item->voided_at?->toIso8601String(),
+                'voidReason' => $item->void_reason,
             ])->values()->all(),
         ];
     }

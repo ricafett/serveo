@@ -14,17 +14,21 @@ class Printer extends Model
     ];
 
     protected $casts = [
-        'is_active'    => 'boolean',
+        'is_active' => 'boolean',
         'last_seen_at' => 'datetime',
     ];
 
     public const TYPE_KITCHEN = 'KITCHEN';
-    public const TYPE_BAR     = 'BAR';
-    public const TYPE_BILL    = 'BILL';
 
-    public const CONN_LAN       = 'LAN';
+    public const TYPE_BAR = 'BAR';
+
+    public const TYPE_BILL = 'BILL';
+
+    public const CONN_LAN = 'LAN';
+
     public const CONN_USB_AGENT = 'USB_AGENT';
-    public const CONN_NULL      = 'NULL';
+
+    public const CONN_NULL = 'NULL';
 
     public function printJobs(): HasMany
     {

@@ -17,14 +17,15 @@ class BillingDocument extends Model
 
     protected $casts = [
         'subtotal_amount' => 'decimal:2',
-        'total_amount'    => 'decimal:2',
-        'printed_at'      => 'datetime',
-        'requested_at'    => 'datetime',
-        'is_reprint'      => 'boolean',
+        'total_amount' => 'decimal:2',
+        'printed_at' => 'datetime',
+        'requested_at' => 'datetime',
+        'is_reprint' => 'boolean',
     ];
 
     public const TYPE_INTERNAL_BILL = 'INTERNAL_BILL';
-    public const TYPE_BILL_REPRINT  = 'BILL_REPRINT';
+
+    public const TYPE_BILL_REPRINT = 'BILL_REPRINT';
 
     public function billingGroup(): BelongsTo
     {

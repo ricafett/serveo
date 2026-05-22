@@ -39,16 +39,16 @@ class BillingService
 
             $subtotal = $group->chargesTotal();
             $bill = BillingDocument::create([
-                'billing_group_id'     => $group->id,
-                'printer_id'           => $printer->id,
-                'document_type'        => BillingDocument::TYPE_INTERNAL_BILL,
-                'document_status'      => 'GENERATED',
-                'document_number'      => 'B-'.date('Ymd').'-'.str_pad((string) (BillingDocument::whereDate('created_at', today())->count() + 1), 4, '0', STR_PAD_LEFT),
-                'subtotal_amount'      => $subtotal,
-                'total_amount'         => $subtotal,
-                'requested_at'         => now(),
-                'is_reprint'           => false,
-                'created_by_user_id'   => $cashier->id,
+                'billing_group_id' => $group->id,
+                'printer_id' => $printer->id,
+                'document_type' => BillingDocument::TYPE_INTERNAL_BILL,
+                'document_status' => 'GENERATED',
+                'document_number' => 'B-'.date('Ymd').'-'.str_pad((string) (BillingDocument::whereDate('created_at', today())->count() + 1), 4, '0', STR_PAD_LEFT),
+                'subtotal_amount' => $subtotal,
+                'total_amount' => $subtotal,
+                'requested_at' => now(),
+                'is_reprint' => false,
+                'created_by_user_id' => $cashier->id,
             ]);
 
             $this->printQueue->enqueueBill($bill, $cashier);
@@ -66,10 +66,10 @@ class BillingService
                 "Conta {$bill->document_number} gerada para {$group->display_code}",
                 ['total' => (float) $bill->total_amount],
                 [
-                    'billing_group_id'    => $group->id,
-                    'service_session_id'  => $group->service_session_id,
+                    'billing_group_id' => $group->id,
+                    'service_session_id' => $group->service_session_id,
                     'billing_document_id' => $bill->id,
-                    'actor_user_id'       => $cashier->id,
+                    'actor_user_id' => $cashier->id,
                 ],
             );
 
@@ -92,17 +92,17 @@ class BillingService
         }
 
         $reprint = BillingDocument::create([
-            'billing_group_id'                 => $original->billing_group_id,
-            'printer_id'                       => $printer->id,
-            'document_type'                    => BillingDocument::TYPE_BILL_REPRINT,
-            'document_status'                  => 'GENERATED',
-            'document_number'                  => $original->document_number.'-R'.($original->billingGroup?->billingDocuments()?->where('is_reprint', true)?->count() + 1),
-            'subtotal_amount'                  => $original->subtotal_amount,
-            'total_amount'                     => $original->total_amount,
-            'requested_at'                     => now(),
-            'reprint_of_billing_document_id'   => $original->id,
-            'is_reprint'                       => true,
-            'created_by_user_id'               => $cashier->id,
+            'billing_group_id' => $original->billing_group_id,
+            'printer_id' => $printer->id,
+            'document_type' => BillingDocument::TYPE_BILL_REPRINT,
+            'document_status' => 'GENERATED',
+            'document_number' => $original->document_number.'-R'.($original->billingGroup?->billingDocuments()?->where('is_reprint', true)?->count() + 1),
+            'subtotal_amount' => $original->subtotal_amount,
+            'total_amount' => $original->total_amount,
+            'requested_at' => now(),
+            'reprint_of_billing_document_id' => $original->id,
+            'is_reprint' => true,
+            'created_by_user_id' => $cashier->id,
         ]);
 
         $this->printQueue->enqueueBill($reprint, $cashier);
@@ -112,10 +112,10 @@ class BillingService
             "Reimpressão de conta #{$original->id}",
             [],
             [
-                'billing_group_id'    => $original->billing_group_id,
-                'service_session_id'  => $original->billingGroup?->service_session_id,
+                'billing_group_id' => $original->billing_group_id,
+                'service_session_id' => $original->billingGroup?->service_session_id,
                 'billing_document_id' => $reprint->id,
-                'actor_user_id'       => $cashier->id,
+                'actor_user_id' => $cashier->id,
             ],
         );
 
@@ -136,13 +136,13 @@ class BillingService
 
         return DB::transaction(function () use ($group, $cashier, $amount, $label, $notes) {
             $payment = PaymentRecord::create([
-                'billing_group_id'     => $group->id,
-                'recorded_by_user_id'  => $cashier->id,
-                'recorded_at'          => now(),
-                'amount'               => $amount,
-                'payment_label'        => $label,
-                'notes'                => $notes,
-                'is_voided'            => false,
+                'billing_group_id' => $group->id,
+                'recorded_by_user_id' => $cashier->id,
+                'recorded_at' => now(),
+                'amount' => $amount,
+                'payment_label' => $label,
+                'notes' => $notes,
+                'is_voided' => false,
             ]);
 
             // Auto-update status based on resulting balance.
@@ -151,8 +151,8 @@ class BillingService
                 $closed = BillingStatus::where('code', BillingStatus::CLOSED)->value('id');
                 $group->update([
                     'billing_status_id' => $closed,
-                    'is_closed'         => true,
-                    'closed_at'         => now(),
+                    'is_closed' => true,
+                    'closed_at' => now(),
                 ]);
                 $group->openOccupiedZones()->update(['is_open' => false, 'released_at' => now()]);
             } else {
@@ -167,10 +167,10 @@ class BillingService
                 "Pagamento {$label} de {$amount} EUR registado para {$group->display_code}",
                 ['amount' => $amount, 'label' => $label],
                 [
-                    'billing_group_id'   => $group->id,
+                    'billing_group_id' => $group->id,
                     'service_session_id' => $group->service_session_id,
-                    'payment_record_id'  => $payment->id,
-                    'actor_user_id'      => $cashier->id,
+                    'payment_record_id' => $payment->id,
+                    'actor_user_id' => $cashier->id,
                 ],
             );
 
@@ -190,10 +190,10 @@ class BillingService
             return;
         }
         $payment->update([
-            'is_voided'         => true,
-            'voided_at'         => now(),
+            'is_voided' => true,
+            'voided_at' => now(),
             'voided_by_user_id' => $cashier->id,
-            'notes'             => trim(($payment->notes ?? '')."\nVOID: ".$notes),
+            'notes' => trim(($payment->notes ?? '')."\nVOID: ".$notes),
         ]);
 
         Audit::record(
@@ -201,10 +201,10 @@ class BillingService
             "Pagamento #{$payment->id} anulado",
             ['notes' => $notes],
             [
-                'billing_group_id'   => $payment->billing_group_id,
+                'billing_group_id' => $payment->billing_group_id,
                 'service_session_id' => $payment->billingGroup?->service_session_id,
-                'payment_record_id'  => $payment->id,
-                'actor_user_id'      => $cashier->id,
+                'payment_record_id' => $payment->id,
+                'actor_user_id' => $cashier->id,
             ],
         );
     }
@@ -218,6 +218,7 @@ class BillingService
         if ($assignment?->printer) {
             return $assignment->printer;
         }
+
         // fallback: any active BILL printer
         return Printer::where('printer_type', Printer::TYPE_BILL)->where('is_active', true)->first();
     }

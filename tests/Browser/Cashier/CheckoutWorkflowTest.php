@@ -9,6 +9,7 @@ use App\Models\Printer;
 use App\Models\Row;
 use App\Models\SeatPair;
 use App\Models\Section;
+use App\Models\Venue;
 use Laravel\Dusk\Browser;
 
 beforeEach(function () {
@@ -16,7 +17,7 @@ beforeEach(function () {
     $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
 
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $section = Section::firstOrCreate(
         ['venue_id' => $venue->id, 'section_code' => 'TEST'],
         ['name' => 'Test Section', 'sort_order' => 99, 'is_active' => true],

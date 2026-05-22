@@ -15,7 +15,7 @@ class ServiceSession extends Model
 
     protected $casts = [
         'starts_at' => 'datetime',
-        'ends_at'   => 'datetime',
+        'ends_at' => 'datetime',
     ];
 
     public function venue(): BelongsTo

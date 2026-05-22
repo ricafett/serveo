@@ -1,15 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\BillingDocumentController;
-use App\Http\Controllers\Api\BillingGroupController;
-use App\Http\Controllers\Api\EventLogController;
-use App\Http\Controllers\Api\FloorController;
-use App\Http\Controllers\Api\OccupiedZoneController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\ProductionTicketController;
-use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\Admin\AccountingExportController;
 use App\Http\Controllers\Api\Admin\BillingStatusController;
 use App\Http\Controllers\Api\Admin\MenuCategoryController;
@@ -24,6 +14,16 @@ use App\Http\Controllers\Api\Admin\SectionController;
 use App\Http\Controllers\Api\Admin\TranslationController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VenueController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingDocumentController;
+use App\Http\Controllers\Api\BillingGroupController;
+use App\Http\Controllers\Api\EventLogController;
+use App\Http\Controllers\Api\FloorController;
+use App\Http\Controllers\Api\OccupiedZoneController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProductionTicketController;
+use App\Http\Controllers\Api\SessionController;
 use Illuminate\Support\Facades\Route;
 
 /*

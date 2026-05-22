@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Cache;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -13,6 +14,6 @@ abstract class TestCase extends BaseTestCase
         // Tests assert against English strings; set locale explicitly
         // so translation resolution is predictable regardless of DB state.
         app()->setLocale('en-US');
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
     }
 }

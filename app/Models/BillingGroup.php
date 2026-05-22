@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class BillingGroup extends Model
 {
@@ -15,9 +17,9 @@ class BillingGroup extends Model
     ];
 
     protected $casts = [
-        'opened_at'      => 'datetime',
-        'closed_at'      => 'datetime',
-        'is_closed'      => 'boolean',
+        'opened_at' => 'datetime',
+        'closed_at' => 'datetime',
+        'is_closed' => 'boolean',
     ];
 
     public function serviceSession(): BelongsTo
@@ -66,7 +68,7 @@ class BillingGroup extends Model
     }
 
     /** All unique servers assigned to any open zone of this group. */
-    public function assignedServers(): \Illuminate\Support\Collection
+    public function assignedServers(): Collection
     {
         return $this->occupiedZones
             ->pluck('server')
@@ -75,7 +77,7 @@ class BillingGroup extends Model
     }
 
     /** Servers who favorited this group. */
-    public function favoritedBy(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function favoritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'billing_group_favorites')
             ->withPivot('is_manual')
@@ -125,7 +127,7 @@ class BillingGroup extends Model
             ->values();
 
         if ($locations->isNotEmpty()) {
-            $label .= ' (' . $locations->join(', ') . ')';
+            $label .= ' ('.$locations->join(', ').')';
         }
 
         return $label;

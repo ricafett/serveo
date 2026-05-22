@@ -14,7 +14,7 @@ class MenuItem extends Model
 
     protected $casts = [
         'unit_price' => 'decimal:2',
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function category(): BelongsTo

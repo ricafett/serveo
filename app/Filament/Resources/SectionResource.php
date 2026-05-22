@@ -2,26 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\SectionResource\Pages;
 use App\Models\Section;
 use App\Models\Venue;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class SectionResource extends BaseResource
 {
     protected static ?string $model = Section::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-rectangle-stack';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+
     protected static ?string $navigationLabel = 'app.navigation_label_sections';
+
     protected static ?int $navigationSort = 20;
 
     public static function canViewAny(): bool
@@ -75,9 +77,9 @@ class SectionResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListSections::route('/'),
+            'index' => Pages\ListSections::route('/'),
             'create' => Pages\CreateSection::route('/create'),
-            'edit'   => Pages\EditSection::route('/{record}/edit'),
+            'edit' => Pages\EditSection::route('/{record}/edit'),
         ];
     }
 }

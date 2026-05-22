@@ -16,7 +16,9 @@ class OrderEntry extends Component
     public int $billingGroupId;
 
     public ?int $selectedZoneId = null;
+
     public ?int $selectedDeliveryPairId = null;
+
     public ?string $notes = null;
 
     /** @var array<int, array{id: int, display_name: string, unit_price: float, category_id: int, route_type: string}> */
@@ -28,6 +30,7 @@ class OrderEntry extends Component
     public ?int $defaultCategoryId = null;
 
     public ?string $errorMessage = null;
+
     public ?string $successMessage = null;
 
     public function mount(int $billingGroupId): void

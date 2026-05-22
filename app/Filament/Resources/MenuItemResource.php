@@ -2,26 +2,28 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\MenuItemResource\Pages;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class MenuItemResource extends BaseResource
 {
     protected static ?string $model = MenuItem::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-clipboard-document-list';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $navigationLabel = 'app.navigation_label_menu_items';
+
     protected static ?int $navigationSort = 31;
 
     public static function canViewAny(): bool
@@ -82,9 +84,9 @@ class MenuItemResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMenuItems::route('/'),
+            'index' => Pages\ListMenuItems::route('/'),
             'create' => Pages\CreateMenuItem::route('/create'),
-            'edit'   => Pages\EditMenuItem::route('/{record}/edit'),
+            'edit' => Pages\EditMenuItem::route('/{record}/edit'),
         ];
     }
 }

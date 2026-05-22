@@ -6,12 +6,9 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
-use App\Models\BillingDocument;
 use App\Models\BillingGroup;
-use App\Models\BillingStatus;
 use App\Models\MenuItem;
 use App\Models\OccupiedZone;
-use App\Models\OrderItem;
 use App\Models\ProductionTicket;
 use App\Models\Row;
 use App\Models\SeatPair;
@@ -26,14 +23,16 @@ class DemoTransactionSeeder extends Seeder
         $session = ServiceSession::where('status', 'OPEN')->first();
         if (! $session) {
             $this->command->warn('No open service session found. Run CoreSeeder first.');
+
             return;
         }
 
-        $server  = User::where('username', 'server1')->first();
+        $server = User::where('username', 'server1')->first();
         $cashier = User::where('username', 'cashier1')->first();
 
         if (! $server || ! $cashier) {
             $this->command->warn('Required users not found. Run CoreSeeder first.');
+
             return;
         }
 
@@ -46,6 +45,7 @@ class DemoTransactionSeeder extends Seeder
 
         if (! $group) {
             $this->command->warn('G-001 billing group not found. Run CoreSeeder first.');
+
             return;
         }
 
@@ -53,12 +53,12 @@ class DemoTransactionSeeder extends Seeder
         $zone2 = OccupiedZone::where('billing_group_id', $group->id)->where('row_id', $rowA2->id)->first();
 
         // Fetch menu items
-        $bacalhau  = MenuItem::where('display_name', 'Bacalhau à brás')->first();
-        $bitoque   = MenuItem::where('display_name', 'Bitoque')->first();
-        $vinho     = MenuItem::where('display_name', 'Vinho tinto - copo')->first();
-        $cerveja   = MenuItem::where('display_name', 'Cerveja imperial')->first();
-        $sopa      = MenuItem::where('display_name', 'Sopa do dia')->first();
-        $pudim     = MenuItem::where('display_name', 'Pudim flan')->first();
+        $bacalhau = MenuItem::where('display_name', 'Bacalhau à brás')->first();
+        $bitoque = MenuItem::where('display_name', 'Bitoque')->first();
+        $vinho = MenuItem::where('display_name', 'Vinho tinto - copo')->first();
+        $cerveja = MenuItem::where('display_name', 'Cerveja imperial')->first();
+        $sopa = MenuItem::where('display_name', 'Sopa do dia')->first();
+        $pudim = MenuItem::where('display_name', 'Pudim flan')->first();
 
         // Order 1: mixed kitchen + bar for G-001
         $pair2 = SeatPair::where('row_id', $rowA1->id)->where('pair_sequence', 2)->first();
@@ -129,7 +129,7 @@ class DemoTransactionSeeder extends Seeder
         }
 
         $this->command->info('Demo transactions seeded successfully.');
-        $this->command->info("  - G-001: 3 orders, 1 bill + reprint, 1 partial payment (20 EUR)");
+        $this->command->info('  - G-001: 3 orders, 1 bill + reprint, 1 partial payment (20 EUR)');
         $this->command->info("  - {$group2->display_code}: 1 order, full payment, closed");
     }
 }

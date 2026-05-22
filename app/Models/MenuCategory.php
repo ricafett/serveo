@@ -12,8 +12,10 @@ class MenuCategory extends Model
     protected $casts = ['is_active' => 'boolean'];
 
     public const ROUTE_KITCHEN = 'KITCHEN';
-    public const ROUTE_BAR     = 'BAR';
-    public const ROUTE_NONE    = 'NONE';
+
+    public const ROUTE_BAR = 'BAR';
+
+    public const ROUTE_NONE = 'NONE';
 
     public function items(): HasMany
     {

@@ -5,6 +5,7 @@ namespace App\Domain\Printing;
 use App\Models\BillingDocument;
 use App\Models\OrderItem;
 use App\Models\ProductionTicket;
+use Illuminate\Support\Carbon;
 
 /**
  * Plain-text 80mm renderer. Tickets are 42-char wide ASCII payloads suitable
@@ -38,7 +39,7 @@ class TicketRenderer
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
             $name = $item->menuItem?->display_name ?? "Item #{$item->menu_item_id}";
-            $qty  = $item->quantity;
+            $qty = $item->quantity;
             $left = sprintf('%2dx %s', $qty, $name);
             $lines[] = mb_strimwidth($left, 0, self::WIDTH);
             if ($item->delivery_reference_label) {
@@ -86,11 +87,11 @@ class TicketRenderer
 
         $lines[] = str_repeat('-', self::WIDTH);
         $lines[] = $this->row(__('ticket.subtotal'), number_format((float) $bill->subtotal_amount, 2, ',', ' ').' EUR');
-        $lines[] = $this->row(__('ticket.total'),    number_format((float) $bill->total_amount,    2, ',', ' ').' EUR');
+        $lines[] = $this->row(__('ticket.total'), number_format((float) $bill->total_amount, 2, ',', ' ').' EUR');
 
         $paid = (float) $bill->billingGroup?->paymentsTotal();
         if ($paid > 0) {
-            $lines[] = $this->row(__('ticket.paid'),  number_format($paid, 2, ',', ' ').' EUR');
+            $lines[] = $this->row(__('ticket.paid'), number_format($paid, 2, ',', ' ').' EUR');
             $lines[] = $this->row(__('ticket.due'), number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' EUR');
         }
 
@@ -100,7 +101,7 @@ class TicketRenderer
         return implode("\n", $lines)."\n";
     }
 
-    private function localTime(?\Illuminate\Support\Carbon $carbon): string
+    private function localTime(?Carbon $carbon): string
     {
         return $carbon?->timezone(config('app.timezone'))->format('Y-m-d H:i') ?? '-';
     }
@@ -112,6 +113,7 @@ class TicketRenderer
             return $text;
         }
         $pad = (int) floor((self::WIDTH - $len) / 2);
+
         return str_repeat(' ', $pad).$text;
     }
 
@@ -121,6 +123,7 @@ class TicketRenderer
         if ($space < 1) {
             return $left.' '.$right;
         }
+
         return $left.str_repeat(' ', $space).$right;
     }
 }

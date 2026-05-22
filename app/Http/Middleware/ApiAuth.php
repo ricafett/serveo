@@ -11,15 +11,15 @@ class ApiAuth
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         if (! auth()->check()) {
             return response()->json([
                 'success' => false,
-                'error'   => [
-                    'code'    => 'UNAUTHENTICATED',
+                'error' => [
+                    'code' => 'UNAUTHENTICATED',
                     'message' => 'Unauthenticated.',
                 ],
             ], 401);

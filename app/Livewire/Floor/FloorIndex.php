@@ -7,7 +7,6 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
-use App\Models\OccupiedZone;
 use App\Models\Row;
 use App\Models\Section;
 use App\Models\ServiceSession;
@@ -32,22 +31,33 @@ class FloorIndex extends Component
     public bool $showFreeSeats = true;
 
     public bool $showCreateModal = false;
+
     public ?int $selectedRowId = null;
+
     public ?int $selectedStartSeq = null;
+
     public ?int $selectedEndSeq = null;
 
     // Create billing group form
     public ?string $name = null;
+
     public ?string $statusCode = null;
+
     public ?int $coverCount = null;
+
     public ?string $notes = null;
 
     // Zone assignment form
     public ?int $zoneRowId = null;
+
     public ?int $zoneStartSeq = null;
+
     public ?int $zoneEndSeq = null;
+
     public ?int $zoneSeatCount = null;
+
     public ?string $zoneEndLabel = null;
+
     public ?string $deliveryLabel = null;
 
     public ?string $errorMessage = null;
@@ -69,6 +79,7 @@ class FloorIndex extends Component
 
         if (! $this->serviceSessionId) {
             $this->redirect(route('home'), navigate: true);
+
             return;
         }
 
@@ -192,6 +203,7 @@ class FloorIndex extends Component
                 $currentGroup = $group;
                 $currentServer = $server;
                 $currentDefaultServerId = $defaultServerId;
+
                 continue;
             }
 
@@ -252,7 +264,7 @@ class FloorIndex extends Component
     {
         $row = Row::with('section')->find($rowId);
 
-        return ($row?->section?->section_code ?? '') . ($row?->row_code ?? '') . str_pad((string) $seq, 2, '0', STR_PAD_LEFT);
+        return ($row?->section?->section_code ?? '').($row?->row_code ?? '').str_pad((string) $seq, 2, '0', STR_PAD_LEFT);
     }
 
     public function getRowDisplayItems(Row $row): array
@@ -350,7 +362,7 @@ class FloorIndex extends Component
         $this->zoneEndLabel = $this->locationForRowAndSeq($this->zoneRowId, $endSeq);
     }
 
-    public function updatedZoneEndLabel(string|null $value): void
+    public function updatedZoneEndLabel(?string $value): void
     {
         $this->errorMessage = null;
 
@@ -359,10 +371,11 @@ class FloorIndex extends Component
         }
 
         $row = Row::with(['section', 'seatPairs'])->find($this->zoneRowId);
-        $prefix = ($row?->section?->section_code ?? '') . ($row?->row_code ?? '');
+        $prefix = ($row?->section?->section_code ?? '').($row?->row_code ?? '');
 
         if (! str_starts_with($value, $prefix)) {
             $this->errorMessage = __('floor.invalid_end_pair');
+
             return;
         }
 
@@ -372,6 +385,7 @@ class FloorIndex extends Component
         $maxSeq = $row?->seatPairs->max('pair_sequence') ?? 0;
         if ($seq < $this->zoneStartSeq || $seq > $maxSeq) {
             $this->errorMessage = __('floor.invalid_end_pair');
+
             return;
         }
 
@@ -413,12 +427,14 @@ class FloorIndex extends Component
 
         if (! Auth::user()?->can('floor.open_billing_group')) {
             $this->errorMessage = __('Unauthorized to open billing group.');
+
             return;
         }
 
         $session = $this->session;
         if (! $session) {
             $this->errorMessage = __('No open service session.');
+
             return;
         }
 
@@ -436,6 +452,7 @@ class FloorIndex extends Component
 
         if ($this->zoneEndSeq && $this->zoneEndSeq < $this->zoneStartSeq) {
             $this->errorMessage = __('floor.invalid_end_pair');
+
             return;
         }
 
@@ -465,7 +482,7 @@ class FloorIndex extends Component
 
             $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
         } catch (ZoneOverlapException $e) {
-            $this->errorMessage = __('Zone overlap: ') . $e->getMessage();
+            $this->errorMessage = __('Zone overlap: ').$e->getMessage();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
         }

@@ -17,9 +17,9 @@ class OccupiedZone extends Model
     ];
 
     protected $casts = [
-        'opened_at'   => 'datetime',
+        'opened_at' => 'datetime',
         'released_at' => 'datetime',
-        'is_open'     => 'boolean',
+        'is_open' => 'boolean',
     ];
 
     public function billingGroup(): BelongsTo
@@ -92,7 +92,7 @@ class OccupiedZone extends Model
         $rowCode = $this->row?->row_code ?? '';
         $pair = str_pad((string) $this->end_seat_pair_sequence, 2, '0', STR_PAD_LEFT);
 
-        return $sectionCode . $rowCode . $pair;
+        return $sectionCode.$rowCode.$pair;
     }
 
     public function location(): string
@@ -103,7 +103,7 @@ class OccupiedZone extends Model
         $rowCode = $this->row?->row_code ?? '';
         $pair = str_pad((string) $this->start_seat_pair_sequence, 2, '0', STR_PAD_LEFT);
 
-        return $sectionCode . $rowCode . $pair;
+        return $sectionCode.$rowCode.$pair;
     }
 
     private function locationForSequence(?int $sequence): ?string
@@ -118,7 +118,7 @@ class OccupiedZone extends Model
         $rowCode = $this->row?->row_code ?? '';
         $pair = str_pad((string) $sequence, 2, '0', STR_PAD_LEFT);
 
-        return $sectionCode . $rowCode . $pair;
+        return $sectionCode.$rowCode.$pair;
     }
 
     private function ensureRowSectionLoaded(): void

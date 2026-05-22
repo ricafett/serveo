@@ -41,13 +41,13 @@ class FloorController extends ApiController
 
         $result = $sections->map(function ($section) use ($groupedZones) {
             return [
-                'sectionId'   => $section->id,
+                'sectionId' => $section->id,
                 'sectionCode' => $section->section_code,
-                'rows'        => $section->rows->map(function ($row) use ($groupedZones) {
+                'rows' => $section->rows->map(function ($row) use ($groupedZones) {
                     $rowZones = $groupedZones->get($row->id, collect());
 
                     return [
-                        'rowId'   => $row->id,
+                        'rowId' => $row->id,
                         'rowCode' => $row->row_code,
                         'seatPairs' => $row->seatPairs->map(function ($pair) use ($rowZones) {
                             $zone = $rowZones->first(function ($z) use ($pair) {
@@ -57,7 +57,7 @@ class FloorController extends ApiController
 
                             $data = [
                                 'pairSequence' => $pair->pair_sequence,
-                                'state'        => $zone ? 'OCCUPIED' : 'FREE',
+                                'state' => $zone ? 'OCCUPIED' : 'FREE',
                             ];
 
                             if ($zone) {
@@ -74,7 +74,7 @@ class FloorController extends ApiController
 
         return $this->success([
             'sessionId' => $session->id,
-            'sections'  => $result,
+            'sections' => $result,
         ]);
     }
 }

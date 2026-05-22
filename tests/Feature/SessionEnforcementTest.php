@@ -5,8 +5,6 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\BillingDocument;
-use App\Models\BillingGroup;
-use App\Models\BillingStatus;
 use App\Models\MenuItem;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
@@ -14,14 +12,16 @@ use App\Models\OrderItem;
 use App\Models\PaymentRecord;
 use App\Models\Row;
 use App\Models\ServiceSession;
-use App\Models\User;
+use App\Models\Venue;
+use Database\Seeders\CoreSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
-    $this->seed(\Database\Seeders\CoreSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    $this->seed(CoreSeeder::class);
 });
 
 // ------------------------------------------------------------------
@@ -30,7 +30,7 @@ beforeEach(function () {
 
 it('rejects order submission when session is closed', function () {
     $server = makeUser('SERVER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -53,7 +53,7 @@ it('rejects order submission when session is closed', function () {
 
 it('rejects void item when session is closed', function () {
     $server = makeUser('SERVER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -90,7 +90,7 @@ it('rejects void item when session is closed', function () {
 
 it('rejects bill generation when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -110,7 +110,7 @@ it('rejects bill generation when session is closed', function () {
 
 it('rejects payment recording when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -130,7 +130,7 @@ it('rejects payment recording when session is closed', function () {
 
 it('rejects bill reprint when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -162,7 +162,7 @@ it('rejects bill reprint when session is closed', function () {
 
 it('rejects payment void when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -191,7 +191,7 @@ it('rejects payment void when session is closed', function () {
 
 it('rejects status change when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -211,7 +211,7 @@ it('rejects status change when session is closed', function () {
 
 it('rejects group close when session is closed', function () {
     $cashier = makeUser('CASHIER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -231,7 +231,7 @@ it('rejects group close when session is closed', function () {
 
 it('rejects group reopen when session is closed', function () {
     $server = makeUser('SERVER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -252,7 +252,7 @@ it('rejects group reopen when session is closed', function () {
 
 it('rejects zone assignment when session is closed', function () {
     $server = makeUser('SERVER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -273,7 +273,7 @@ it('rejects zone assignment when session is closed', function () {
 
 it('rejects zone release when session is closed', function () {
     $server = makeUser('SERVER');
-    $venue = \App\Models\Venue::first();
+    $venue = Venue::first();
     $session = ServiceSession::create([
         'venue_id' => $venue->id,
         'session_type' => 'DINNER',
@@ -284,14 +284,14 @@ it('rejects zone release when session is closed', function () {
     $group = createBillingGroup($session, $server);
     $row = Row::first();
     $zone = OccupiedZone::create([
-        'billing_group_id'         => $group->id,
-        'row_id'                   => $row->id,
+        'billing_group_id' => $group->id,
+        'row_id' => $row->id,
         'start_seat_pair_sequence' => 1,
-        'end_seat_pair_sequence'   => 3,
-        'default_delivery_mode'    => 'CENTER',
-        'opened_at'                => now(),
-        'is_open'                  => true,
-        'created_by_user_id'       => $group->opened_by_user_id,
+        'end_seat_pair_sequence' => 3,
+        'default_delivery_mode' => 'CENTER',
+        'opened_at' => now(),
+        'is_open' => true,
+        'created_by_user_id' => $group->opened_by_user_id,
     ]);
 
     expect(fn () => app(OccupancyService::class)->releaseZone($zone, $server))
@@ -308,14 +308,14 @@ it('allows order submission when session is open', function () {
     $group = createBillingGroup($session, $server);
     $row = Row::first();
     $zone = OccupiedZone::create([
-        'billing_group_id'         => $group->id,
-        'row_id'                   => $row->id,
+        'billing_group_id' => $group->id,
+        'row_id' => $row->id,
         'start_seat_pair_sequence' => 1,
-        'end_seat_pair_sequence'   => 3,
-        'default_delivery_mode'    => 'CENTER',
-        'opened_at'                => now(),
-        'is_open'                  => true,
-        'created_by_user_id'       => $group->opened_by_user_id,
+        'end_seat_pair_sequence' => 3,
+        'default_delivery_mode' => 'CENTER',
+        'opened_at' => now(),
+        'is_open' => true,
+        'created_by_user_id' => $group->opened_by_user_id,
     ]);
     $menuItem = MenuItem::first();
 

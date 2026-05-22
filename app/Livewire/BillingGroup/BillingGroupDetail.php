@@ -15,14 +15,20 @@ use Livewire\Component;
 class BillingGroupDetail extends Component
 {
     public int $id;
+
     public ?BillingGroup $group = null;
 
     // Add zone modal
     public bool $showAddZoneModal = false;
+
     public ?int $zoneRowId = null;
+
     public ?int $zoneStartSeq = null;
+
     public ?int $zoneEndSeq = null;
+
     public ?string $deliveryLabel = null;
+
     public ?string $errorMessage = null;
 
     // Status change
@@ -84,11 +90,13 @@ class BillingGroupDetail extends Component
 
         if (! Auth::user()?->can('floor.assign_zone')) {
             $this->errorMessage = __('Unauthorized to assign zones.');
+
             return;
         }
 
         if ($this->group?->is_closed) {
             $this->errorMessage = __('Cannot add zones to a closed group.');
+
             return;
         }
 
@@ -113,7 +121,7 @@ class BillingGroupDetail extends Component
             $this->showAddZoneModal = false;
             $this->loadGroup();
         } catch (ZoneOverlapException $e) {
-            $this->errorMessage = __('Zone overlap: ') . $e->getMessage();
+            $this->errorMessage = __('Zone overlap: ').$e->getMessage();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -128,6 +136,7 @@ class BillingGroupDetail extends Component
 
         if (! Auth::user()?->can('floor.release_zone')) {
             $this->dispatch('notify', message: __('Unauthorized to release zones.'));
+
             return;
         }
 
@@ -143,6 +152,7 @@ class BillingGroupDetail extends Component
     {
         if (! Auth::user()?->can('billing_document.create')) {
             $this->dispatch('notify', message: __('Unauthorized to print bills.'));
+
             return;
         }
 
@@ -158,6 +168,7 @@ class BillingGroupDetail extends Component
     {
         if (! Auth::user()?->can('billing_group.reopen')) {
             $this->dispatch('notify', message: __('Unauthorized to reopen groups.'));
+
             return;
         }
 
@@ -186,13 +197,14 @@ class BillingGroupDetail extends Component
 
         if ($pivot) {
             // Cannot unfavorite if this server has open zones assigned to this group.
-            $hasAssignedZone = \App\Models\OccupiedZone::where('billing_group_id', $this->group->id)
+            $hasAssignedZone = OccupiedZone::where('billing_group_id', $this->group->id)
                 ->where('server_id', $user->id)
                 ->where('is_open', true)
                 ->exists();
 
             if ($hasAssignedZone || ($pivot->pivot->is_manual === false)) {
                 $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
+
                 return;
             }
             $this->group->favoritedBy()->detach($user->id);
@@ -209,6 +221,7 @@ class BillingGroupDetail extends Component
         if (! $user || ! $this->group) {
             return false;
         }
+
         return $this->group->favoritedBy->where('id', $user->id)->isNotEmpty();
     }
 

@@ -15,9 +15,9 @@ class PaymentRecord extends Model
 
     protected $casts = [
         'recorded_at' => 'datetime',
-        'voided_at'   => 'datetime',
-        'amount'      => 'decimal:2',
-        'is_voided'   => 'boolean',
+        'voided_at' => 'datetime',
+        'amount' => 'decimal:2',
+        'is_voided' => 'boolean',
     ];
 
     public function billingGroup(): BelongsTo

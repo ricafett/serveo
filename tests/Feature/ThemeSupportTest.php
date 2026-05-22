@@ -9,10 +9,10 @@ beforeEach(function () {
 
 it('defaults user theme to system', function () {
     $user = User::create([
-        'username'  => 'themetest',
-        'name'      => 'Theme Test',
-        'email'     => 'theme@example.test',
-        'password'  => Hash::make('secret'),
+        'username' => 'themetest',
+        'name' => 'Theme Test',
+        'email' => 'theme@example.test',
+        'password' => Hash::make('secret'),
         'is_active' => true,
     ]);
 
@@ -31,12 +31,12 @@ it('allows setting theme to light or dark', function () {
 
 it('returns theme in login response', function () {
     $user = User::create([
-        'username'  => 'themetest',
-        'name'      => 'Theme Test',
-        'email'     => 'theme@example.test',
-        'password'  => Hash::make('secret'),
+        'username' => 'themetest',
+        'name' => 'Theme Test',
+        'email' => 'theme@example.test',
+        'password' => Hash::make('secret'),
         'is_active' => true,
-        'theme'     => User::THEME_DARK,
+        'theme' => User::THEME_DARK,
     ]);
     $user->assignRole('SERVER');
 

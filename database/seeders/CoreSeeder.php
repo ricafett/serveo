@@ -29,11 +29,11 @@ class CoreSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['username' => 'admin'],
             [
-                'name'                    => 'System Admin',
-                'email'                   => 'admin@serveo.local',
-                'password'                => Hash::make('password'),
+                'name' => 'System Admin',
+                'email' => 'admin@serveo.local',
+                'password' => Hash::make('password'),
                 'preferred_language_code' => 'pt-PT',
-                'is_active'               => true,
+                'is_active' => true,
             ]
         );
         $admin->syncRoles(['ADMIN']);
@@ -41,11 +41,11 @@ class CoreSeeder extends Seeder
         $cashier = User::updateOrCreate(
             ['username' => 'cashier1'],
             [
-                'name'                    => 'Cashier One',
-                'email'                   => 'cashier1@serveo.local',
-                'password'                => Hash::make('password'),
+                'name' => 'Cashier One',
+                'email' => 'cashier1@serveo.local',
+                'password' => Hash::make('password'),
                 'preferred_language_code' => 'pt-PT',
-                'is_active'               => true,
+                'is_active' => true,
             ]
         );
         $cashier->syncRoles(['CASHIER']);
@@ -53,11 +53,11 @@ class CoreSeeder extends Seeder
         $server = User::updateOrCreate(
             ['username' => 'server1'],
             [
-                'name'                    => 'Server One',
-                'email'                   => 'server1@serveo.local',
-                'password'                => Hash::make('password'),
+                'name' => 'Server One',
+                'email' => 'server1@serveo.local',
+                'password' => Hash::make('password'),
                 'preferred_language_code' => 'pt-PT',
-                'is_active'               => true,
+                'is_active' => true,
             ]
         );
         $server->syncRoles(['SERVER']);
@@ -72,8 +72,8 @@ class CoreSeeder extends Seeder
             ['venue_id' => $venue->id, 'session_label' => now()->toDateString().' DINNER'],
             [
                 'session_type' => 'DINNER',
-                'starts_at'    => now()->setTime(19, 0),
-                'status'       => 'OPEN',
+                'starts_at' => now()->setTime(19, 0),
+                'status' => 'OPEN',
             ]
         );
 
@@ -160,8 +160,8 @@ class CoreSeeder extends Seeder
                 ['display_name' => $name],
                 [
                     'menu_category_id' => $cat->id,
-                    'unit_price'       => $price,
-                    'is_active'        => true,
+                    'unit_price' => $price,
+                    'is_active' => true,
                 ]
             );
         }
@@ -213,11 +213,11 @@ class CoreSeeder extends Seeder
             ['service_session_id' => $session->id, 'display_code' => 'G-001'],
             [
                 'billing_status_id' => $active->id,
-                'cover_count'       => 6,
+                'cover_count' => 6,
                 'opened_by_user_id' => $server->id,
-                'opened_at'         => now(),
-                'is_closed'         => false,
-                'version_number'    => 1,
+                'opened_at' => now(),
+                'is_closed' => false,
+                'version_number' => 1,
             ]
         );
 
@@ -226,10 +226,10 @@ class CoreSeeder extends Seeder
             [
                 'default_delivery_mode' => 'CENTER',
                 'delivery_center_label' => 'Sala A · linha 1 · centro',
-                'opened_at'             => now(),
-                'is_open'               => true,
-                'created_by_user_id'    => $server->id,
-                'server_id'             => $server->id,
+                'opened_at' => now(),
+                'is_open' => true,
+                'created_by_user_id' => $server->id,
+                'server_id' => $server->id,
             ]
         );
         OccupiedZone::updateOrCreate(
@@ -237,10 +237,10 @@ class CoreSeeder extends Seeder
             [
                 'default_delivery_mode' => 'CENTER',
                 'delivery_center_label' => 'Sala A · linha 2 · centro',
-                'opened_at'             => now(),
-                'is_open'               => true,
-                'created_by_user_id'    => $server->id,
-                'server_id'             => $server->id,
+                'opened_at' => now(),
+                'is_open' => true,
+                'created_by_user_id' => $server->id,
+                'server_id' => $server->id,
             ]
         );
 

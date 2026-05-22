@@ -4,9 +4,11 @@ This document describes the testing setup and conventions for the Serveo applica
 
 ## Test Stack
 
+- **Pint** (v1) — Laravel's PSR-12 code style fixer (wraps PHP-CS-Fixer).
+- **Larastan** (v3) — PHPStan static analysis tuned for Laravel. Catches type errors, undefined methods, and incorrect Facade/model usage without running the code.
 - **Pest** (v4) — primary test runner for unit and feature tests.
 - **Laravel Dusk** (v8) — end-to-end browser tests covering full user journeys.
-- **PHPUnit** (v11) — underlying framework for Pest and Dusk.
+- **PHPUnit** (v12) — underlying framework for Pest and Dusk.
 
 ## Running Tests
 
@@ -21,12 +23,32 @@ Dusk browser tests with Filament admin pages are slow (~2–10s each) because th
 Use the provided PowerShell script to run the full suite with automatic `.env` management:
 
 ```powershell
-.\run-tests.ps1                     # Run translation check, Pest, and Dusk
+.\run-tests.ps1                     # Run Pint, PHPStan, translation check, Pest, and Dusk
+.\run-tests.ps1 -NoLint             # Skip Pint and PHPStan
 .\run-tests.ps1 -PestOnly           # Run only Pest tests
 .\run-tests.ps1 -DuskOnly           # Run only Dusk tests
 .\run-tests.ps1 -NoTranslationCheck # Skip translation check
 .\run-tests.ps1 -PestFilter "MultilingualTest" -DuskFilter "ThemeAndLanguageTest"
 ```
+
+### Linting and Static Analysis
+
+Pint (code style) and PHPStan (static analysis) run **before** the `.env` swap — they don't need a database. They use your local `.env`.
+
+Run them standalone:
+
+```bash
+# Pint — check code style without fixing (CI mode)
+./vendor/bin/pint --test
+
+# Pint — auto-fix code style
+./vendor/bin/pint
+
+# PHPStan — static analysis
+./vendor/bin/phpstan analyse --memory-limit=512M
+```
+
+PHPStan is configured at level 5 in `phpstan.neon`. The level can be raised as the codebase matures (max is 9).
 
 The script automatically swaps `.env` with `.env.dusk.local` before tests and restores it after, even on failure or interruption. It also starts the `php -S` server required by Dusk.
 

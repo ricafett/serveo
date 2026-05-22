@@ -37,15 +37,15 @@ class BillingGroupService
 
             $group = BillingGroup::create([
                 'service_session_id' => $session->id,
-                'display_code'       => $code,
-                'name'               => $name,
-                'billing_status_id'  => $statusId,
-                'cover_count'        => $coverCount,
-                'notes'              => $notes,
-                'opened_by_user_id'  => $actor->id,
-                'opened_at'          => now(),
-                'is_closed'          => false,
-                'version_number'     => 1,
+                'display_code' => $code,
+                'name' => $name,
+                'billing_status_id' => $statusId,
+                'cover_count' => $coverCount,
+                'notes' => $notes,
+                'opened_by_user_id' => $actor->id,
+                'opened_at' => now(),
+                'is_closed' => false,
+                'version_number' => 1,
             ]);
 
             $groupName = $name ? "\"{$name}\" ({$code})" : $code;
@@ -62,8 +62,8 @@ class BillingGroupService
     }
 
     private array $validTransitions = [
-        BillingStatus::ACTIVE  => [BillingStatus::CLOSED],
-        BillingStatus::CLOSED  => [],
+        BillingStatus::ACTIVE => [BillingStatus::CLOSED],
+        BillingStatus::CLOSED => [],
     ];
 
     private function ensureTransitionAllowed(User $user, string $from, string $to): void

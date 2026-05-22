@@ -2,9 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
@@ -12,11 +9,12 @@ use App\Domain\Floor\ZoneOverlapException;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\Row;
-use App\Models\Section;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Panel;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -24,9 +22,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class BillingGroupDetail extends Page
 {
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static bool $shouldRegisterNavigation = false;
+
     protected string $view = 'filament.pages.billing-group-detail';
+
     protected static ?string $title = null;
 
     public static function getNavigationLabel(): string
@@ -36,15 +37,16 @@ class BillingGroupDetail extends Page
 
     public function getTitle(): string
     {
-        return __('billing.group_title') . ' ' . $this->group?->display_code;
+        return __('billing.group_title').' '.$this->group?->display_code;
     }
 
-    public static function getSlug(?\Filament\Panel $panel = null): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return 'billing-groups-detail/{record}';
     }
 
     public ?int $record = null;
+
     public ?BillingGroup $group = null;
 
     public function mount(int $record): void
@@ -152,6 +154,7 @@ class BillingGroupDetail extends Page
         }
         if (! Auth::user()?->can('floor.release_zone')) {
             Notification::make()->title(__('billing.zone_release_unauthorized'))->danger()->send();
+
             return;
         }
         try {
@@ -166,10 +169,10 @@ class BillingGroupDetail extends Page
     public function getViewData(): array
     {
         return [
-            'group'    => $this->group,
-            'charges'  => $this->group?->chargesTotal() ?? 0,
-            'paid'     => $this->group?->paymentsTotal() ?? 0,
-            'balance'  => $this->group?->balance() ?? 0,
+            'group' => $this->group,
+            'charges' => $this->group?->chargesTotal() ?? 0,
+            'paid' => $this->group?->paymentsTotal() ?? 0,
+            'balance' => $this->group?->balance() ?? 0,
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Domain\Billing\BillingService;
 use App\Http\Controllers\ApiController;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,8 +18,8 @@ class BillingDocumentController extends ApiController
     {
         $validated = $request->validate([
             'billingGroupId' => ['required', 'exists:billing_groups,id'],
-            'documentType'   => ['required', 'string', 'in:INTERNAL_BILL'],
-            'print'          => ['nullable', 'boolean'],
+            'documentType' => ['required', 'string', 'in:INTERNAL_BILL'],
+            'print' => ['nullable', 'boolean'],
         ]);
 
         $group = BillingGroup::findOrFail($validated['billingGroupId']);
@@ -29,20 +30,21 @@ class BillingDocumentController extends ApiController
 
         try {
             $bill = $this->billingService->generateInternalBill($group, $request->user());
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             if (str_contains($e->getMessage(), 'cashier printer')) {
                 return $this->error('PRINTER_ROUTE_MISSING', $e->getMessage(), status: 422);
             }
+
             return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
 
         return $this->success([
             'billingDocumentId' => $bill->id,
-            'documentType'      => $bill->document_type,
-            'documentStatus'    => $bill->document_status,
-            'totalAmount'       => (string) $bill->total_amount,
+            'documentType' => $bill->document_type,
+            'documentStatus' => $bill->document_status,
+            'totalAmount' => (string) $bill->total_amount,
         ], status: 201);
     }
 
@@ -54,21 +56,22 @@ class BillingDocumentController extends ApiController
 
         try {
             $reprint = $this->billingService->reprintBill($billingDocument, $request->user());
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
         } catch (\RuntimeException $e) {
             if (str_contains($e->getMessage(), 'cashier printer')) {
                 return $this->error('PRINTER_ROUTE_MISSING', $e->getMessage(), status: 422);
             }
+
             return $this->error('PRINT_FAILED', $e->getMessage(), status: 500);
         }
 
         return $this->success([
             'billingDocumentId' => $reprint->id,
-            'documentType'      => $reprint->document_type,
-            'documentStatus'    => $reprint->document_status,
-            'totalAmount'       => (string) $reprint->total_amount,
-            'isReprint'         => true,
+            'documentType' => $reprint->document_type,
+            'documentStatus' => $reprint->document_status,
+            'totalAmount' => (string) $reprint->total_amount,
+            'isReprint' => true,
         ]);
     }
 }

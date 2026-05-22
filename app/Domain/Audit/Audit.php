@@ -38,28 +38,28 @@ class Audit
 
     /**
      * @param  array<string, mixed>  $payload
-     * @param  array<string, mixed>  $relations Optional foreign keys (billing_group_id, etc.)
+     * @param  array<string, mixed>  $relations  Optional foreign keys (billing_group_id, etc.)
      */
     public static function record(string $eventType, string $summary, array $payload = [], array $relations = []): AuditEvent
     {
         return AuditEvent::create(array_merge([
             'service_session_id' => $relations['service_session_id'] ?? null,
-            'event_type'         => $eventType,
-            'event_time'         => now(),
-            'actor_user_id'      => $relations['actor_user_id'] ?? Auth::id(),
-            'billing_group_id'   => $relations['billing_group_id']   ?? null,
-            'occupied_zone_id'   => $relations['occupied_zone_id']   ?? null,
-            'order_header_id'    => $relations['order_header_id']    ?? null,
-            'order_item_id'      => $relations['order_item_id']      ?? null,
+            'event_type' => $eventType,
+            'event_time' => now(),
+            'actor_user_id' => $relations['actor_user_id'] ?? Auth::id(),
+            'billing_group_id' => $relations['billing_group_id'] ?? null,
+            'occupied_zone_id' => $relations['occupied_zone_id'] ?? null,
+            'order_header_id' => $relations['order_header_id'] ?? null,
+            'order_item_id' => $relations['order_item_id'] ?? null,
             'production_ticket_id' => $relations['production_ticket_id'] ?? null,
-            'billing_document_id'  => $relations['billing_document_id']  ?? null,
-            'payment_record_id'    => $relations['payment_record_id']    ?? null,
+            'billing_document_id' => $relations['billing_document_id'] ?? null,
+            'payment_record_id' => $relations['payment_record_id'] ?? null,
             'accounting_export_id' => $relations['accounting_export_id'] ?? null,
-            'entity_type'        => $relations['entity_type'] ?? null,
-            'entity_id'          => $relations['entity_id']   ?? null,
-            'summary'            => $summary,
-            'payload_json'       => $payload,
-            'created_at'         => now(),
+            'entity_type' => $relations['entity_type'] ?? null,
+            'entity_id' => $relations['entity_id'] ?? null,
+            'summary' => $summary,
+            'payload_json' => $payload,
+            'created_at' => now(),
         ]));
     }
 
@@ -67,7 +67,7 @@ class Audit
     {
         return self::record($eventType, $summary, $payload, [
             'entity_type' => $model::class,
-            'entity_id'   => $model->getKey(),
+            'entity_id' => $model->getKey(),
         ]);
     }
 }

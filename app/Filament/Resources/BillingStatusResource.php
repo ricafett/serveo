@@ -2,25 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\BillingStatusResource\Pages;
 use App\Models\BillingStatus;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class BillingStatusResource extends BaseResource
 {
     protected static ?string $model = BillingStatus::class;
-    protected static string | UnitEnum | null $navigationGroup = 'app.navigation_group_config';
-    protected static string | BackedEnum | null $navigationIcon  = 'heroicon-o-flag';
+
+    protected static string|UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-flag';
+
     protected static ?string $navigationLabel = 'app.navigation_label_billing_status';
+
     protected static ?int $navigationSort = 50;
 
     public static function canViewAny(): bool
@@ -70,9 +72,9 @@ class BillingStatusResource extends BaseResource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBillingStatuses::route('/'),
+            'index' => Pages\ListBillingStatuses::route('/'),
             'create' => Pages\CreateBillingStatus::route('/create'),
-            'edit'   => Pages\EditBillingStatus::route('/{record}/edit'),
+            'edit' => Pages\EditBillingStatus::route('/{record}/edit'),
         ];
     }
 }

@@ -10,9 +10,13 @@ class BillingStatus extends Model
 
     protected $casts = ['is_active' => 'boolean'];
 
-    public const WAITING          = 'WAITING';
-    public const ACTIVE           = 'ACTIVE';
-    public const CHECK_REQUESTED  = 'CHECK_REQUESTED';
-    public const PARTIALLY_PAID   = 'PARTIALLY_PAID';
-    public const CLOSED           = 'CLOSED';
+    public const WAITING = 'WAITING';
+
+    public const ACTIVE = 'ACTIVE';
+
+    public const CHECK_REQUESTED = 'CHECK_REQUESTED';
+
+    public const PARTIALLY_PAID = 'PARTIALLY_PAID';
+
+    public const CLOSED = 'CLOSED';
 }
