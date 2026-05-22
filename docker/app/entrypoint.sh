@@ -1,11 +1,24 @@
 #!/bin/sh
 set -e
 
+# Ensure .env exists so artisan key:generate has a file to write to.
+# .env is excluded from the Docker image by .dockerignore,
+# but .env.example IS included.
+if [ ! -f .env ]; then
+    echo "[entrypoint] Creating .env from .env.example..."
+    cp .env.example .env
+fi
+
 # Generate APP_KEY before anything that boots Laravel.
 # key:generate writes to .env — it doesn't need the database.
+# Docker compose may pass APP_KEY= as an empty string, which overrides
+# the .env value (Laravel uses immutable dotenv). We must export the
+# newly generated key so this shell process uses it.
 if [ -z "$APP_KEY" ]; then
     echo "[entrypoint] APP_KEY is empty, generating..."
     php artisan key:generate --force
+    export APP_KEY="$(grep ^APP_KEY= .env | cut -d= -f2-)"
+    echo "[entrypoint] APP_KEY generated and exported for this session."
 fi
 
 # Wait for PostgreSQL using raw PDO — no Laravel boot needed.
