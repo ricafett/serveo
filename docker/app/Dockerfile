@@ -42,6 +42,11 @@ RUN mkdir -p storage/framework/cache \
 # Install dependencies (skip post-autoload scripts — entrypoint handles optimization at runtime)
 RUN composer install --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
+# Manually run the asset-publishing steps that --no-scripts skipped.
+# These don't need a database connection and are required for the UI to load styles.
+RUN php artisan package:discover --ansi \
+    && php artisan filament:upgrade --ansi
+
 # Set final permissions
 RUN chown -R serveo:serveo /var/www/html
 

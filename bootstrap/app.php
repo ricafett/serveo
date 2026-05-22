@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust Cloudflare Tunnel and other reverse proxies so that
+        // X-Forwarded-Proto/Host/For headers are honored.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'api.auth' => ApiAuth::class,
             'permission' => RequirePermission::class,
