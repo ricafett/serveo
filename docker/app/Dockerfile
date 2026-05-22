@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-bookworm
+FROM php:8.4-fpm-bookworm
 
 ARG WWWUSER=1000
 ARG WWWGROUP=1000
@@ -32,12 +32,18 @@ WORKDIR /var/www/html
 # Copy app as ROOT so composer can write composer.lock
 COPY . /var/www/html
 
-# Install dependencies
-RUN composer install --no-dev --no-interaction --optimize-autoloader --no-progress
+# Create storage/cache directories needed at runtime
+RUN mkdir -p storage/framework/cache \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache
 
-# Set up directories and permissions
-RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R serveo:serveo /var/www/html
+# Install dependencies (skip post-autoload scripts — entrypoint handles optimization at runtime)
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
+
+# Set final permissions
+RUN chown -R serveo:serveo /var/www/html
 
 # Entrypoint: runs migrate + optimize at runtime with real env vars, then starts php-fpm
 COPY --chmod=755 docker/app/entrypoint.sh /entrypoint.sh
