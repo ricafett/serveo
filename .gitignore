@@ -14,3 +14,4 @@ Heroku.Procfile
 /build.log
 opencode.json
 .env.bak
+audit/*
