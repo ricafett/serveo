@@ -10,7 +10,7 @@ class OrderHeader extends Model
 {
     protected $fillable = [
         'billing_group_id', 'occupied_zone_id', 'ordered_by_user_id',
-        'ordered_at', 'submission_status', 'notes',
+        'ordered_at', 'submission_status', 'notes', 'idempotency_key',
     ];
 
     protected $casts = [
