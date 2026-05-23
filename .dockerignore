@@ -7,6 +7,7 @@
 .env
 .env.*
 !.env.example
+!.env.ci
 
 # Dependencies (installed fresh in image)
 vendor/

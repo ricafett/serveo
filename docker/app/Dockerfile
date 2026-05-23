@@ -39,21 +39,14 @@ RUN mkdir -p storage/framework/cache \
              storage/logs \
              bootstrap/cache
 
-# Install dependencies (skip post-autoload scripts — entrypoint handles optimization at runtime)
-RUN composer install --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
-
-# Manually run the asset-publishing steps that --no-scripts skipped.
-# Set dummy env vars so artisan can boot without a real database:
-# - APP_KEY: needed for encryption/decryption service providers
-# - CACHE_STORE=array: prevents DatabaseTranslationLoader from hitting the DB
-# - DB_CONNECTION=sqlite + DB_DATABASE=:memory:: in-memory fallback for any
-#   code paths that try to open a DB connection during bootstrap.
-RUN export APP_KEY=base64:dummykeyfordockerbuildonly12345= \
-    && export DB_CONNECTION=sqlite \
-    && export DB_DATABASE=:memory: \
-    && export CACHE_STORE=array \
-    && php artisan package:discover --ansi \
-    && php artisan filament:upgrade --ansi
+# Install dependencies. Use .env.ci to provide a safe build-time
+# environment so all Composer post-autoload hooks (package:discover,
+# filament:upgrade, and any future hooks) run correctly without a
+# real database. .env.ci is deleted after install — it never reaches
+# the production image.
+COPY .env.ci .env
+RUN composer install --no-dev --no-interaction --no-progress --optimize-autoloader
+RUN rm .env
 
 # Set final permissions
 RUN chown -R serveo:serveo /var/www/html
