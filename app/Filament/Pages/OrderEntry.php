@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 /**
  * @deprecated Operational order entry UI has moved to Livewire at /orders/new/{billingGroupId}. This Filament page is kept for backward compatibility during transition.
@@ -54,9 +55,12 @@ class OrderEntry extends Page
 
     public ?string $notes = null;
 
+    public string $idempotencyKey;
+
     public function mount(int $record): void
     {
         $this->record = $record;
+        $this->idempotencyKey = (string) Str::uuid();
         $this->group = BillingGroup::with(['occupiedZones.row.seatPairs'])->findOrFail($record);
         if ($this->group->is_closed) {
             abort(403, __('billing.closed_group'));
@@ -114,7 +118,7 @@ class OrderEntry extends Page
         }, $this->cart);
 
         try {
-            app(OrderService::class)->submit($this->group, Auth::user(), $lines, $zone, $this->notes);
+            app(OrderService::class)->submit($this->group, Auth::user(), $lines, $zone, $this->notes, $this->idempotencyKey);
             Notification::make()->title(__('order.order_sent'))->success()->send();
             $this->redirect(BillingGroupDetail::getUrl(['record' => $this->group->id]));
         } catch (\Throwable $e) {

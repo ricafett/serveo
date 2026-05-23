@@ -22,6 +22,7 @@ class OrderController extends ApiController
         $validated = $request->validate([
             'billingGroupId' => ['required', 'exists:billing_groups,id'],
             'occupiedZoneId' => ['nullable', 'exists:occupied_zones,id'],
+            'idempotencyKey' => ['nullable', 'string', 'max:64'],
             'notes' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.menuItemId' => ['required', 'exists:menu_items,id'],
@@ -56,6 +57,7 @@ class OrderController extends ApiController
                 $lines,
                 $zone,
                 $validated['notes'] ?? null,
+                $validated['idempotencyKey'] ?? null,
             );
         } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);

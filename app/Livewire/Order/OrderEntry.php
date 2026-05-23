@@ -9,6 +9,7 @@ use App\Models\MenuItem;
 use App\Models\OccupiedZone;
 use App\Models\SeatPair;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class OrderEntry extends Component
@@ -33,9 +34,15 @@ class OrderEntry extends Component
 
     public ?string $successMessage = null;
 
+    /** Idempotency key to prevent duplicate order submissions. */
+    public string $idempotencyKey;
+
+    public bool $isSubmitting = false;
+
     public function mount(int $billingGroupId): void
     {
         $this->billingGroupId = $billingGroupId;
+        $this->idempotencyKey = (string) Str::uuid();
 
         $zones = $this->group?->occupiedZones ?? collect();
         if ($zones->count() === 1) {
@@ -126,6 +133,11 @@ class OrderEntry extends Component
 
     public function submitOrder(array $cart = []): void
     {
+        // Prevent concurrent submissions from the same component instance.
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -174,6 +186,8 @@ class OrderEntry extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             $lines = collect($cart)->map(fn ($item) => [
                 'menu_item_id' => $item['menu_item_id'],
                 'quantity' => $item['quantity'],
@@ -188,15 +202,19 @@ class OrderEntry extends Component
                 $lines,
                 $zone,
                 $this->notes,
+                $this->idempotencyKey,
             );
 
             $this->successMessage = __('Order submitted successfully.');
             $this->notes = null;
             $this->selectedDeliveryPairId = null;
+            $this->idempotencyKey = (string) Str::uuid();
 
             $this->dispatch('order-submitted');
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 

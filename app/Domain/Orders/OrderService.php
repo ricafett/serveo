@@ -15,6 +15,7 @@ use App\Models\PrinterRoute;
 use App\Models\ProductionTicket;
 use App\Models\SeatPair;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -28,6 +29,10 @@ class OrderService
      * Create one OrderHeader plus items and immediately group lines by route into
      * ProductionTicket records, then queue print jobs.
      *
+     * When an $idempotencyKey is provided, duplicate submissions with the same key
+     * for the same billing group are detected and safely return the existing order
+     * instead of creating a duplicate.
+     *
      * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null}>  $lines
      */
     public function submit(
@@ -36,6 +41,7 @@ class OrderService
         array $lines,
         ?OccupiedZone $zone = null,
         ?string $notes = null,
+        ?string $idempotencyKey = null,
     ): OrderHeader {
         $this->ensureCan($actor, 'order.create');
         if (empty($lines)) {
@@ -51,15 +57,35 @@ class OrderService
             throw new RuntimeException('Occupied zone does not belong to this billing group.');
         }
 
-        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes) {
-            $header = OrderHeader::create([
-                'billing_group_id' => $group->id,
-                'occupied_zone_id' => $zone?->id,
-                'ordered_by_user_id' => $actor->id,
-                'ordered_at' => now(),
-                'submission_status' => 'SUBMITTED',
-                'notes' => $notes,
-            ]);
+        // Idempotency check: if a key is provided, return the existing order instead of creating a duplicate.
+        if ($idempotencyKey !== null) {
+            $existing = OrderHeader::where('billing_group_id', $group->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+        }
+
+        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes, $idempotencyKey) {
+            try {
+                $header = OrderHeader::create([
+                    'billing_group_id' => $group->id,
+                    'occupied_zone_id' => $zone?->id,
+                    'ordered_by_user_id' => $actor->id,
+                    'ordered_at' => now(),
+                    'submission_status' => 'SUBMITTED',
+                    'notes' => $notes,
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                // Race condition: another request inserted this idempotency key
+                // between our pre-check and the insert. Return the existing order.
+                return OrderHeader::where('billing_group_id', $group->id)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->firstOrFail();
+            }
 
             $createdItems = [];
             foreach ($lines as $line) {
