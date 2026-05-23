@@ -41,50 +41,6 @@ php artisan migrate --force
 echo "[entrypoint] Caching config, routes and views..."
 php artisan optimize
 
-echo "[entrypoint] ===== Startup summary ====="
-echo "  APP_KEY: $(echo "$APP_KEY" | cut -c1-20)..."
-echo "  APP_URL: $APP_URL"
-echo "  APP_ENV: $APP_ENV"
-echo "  APP_DEBUG: $APP_DEBUG"
-echo "  DB_HOST: $DB_HOST:$DB_PORT ($DB_DATABASE)"
-echo "  CACHE_STORE: $CACHE_STORE"
-echo "  SESSION_DRIVER: $SESSION_DRIVER"
-echo "  .env exists: $(test -f .env && echo yes || echo no)"
-echo "  debug.php: $(test -f public/debug.php && echo yes || echo no)"
-echo "[entrypoint] ====="
-
-# Always write fresh debug.php so it matches the running image.
-echo "[entrypoint] Writing debug.php into mounted volume..."
-cat > public/debug.php << 'DEBUGEOPHP'
-<?php
-header('Content-Type: text/plain; charset=utf-8');
-echo "=== IMAGE ===\ncommit: 0ba0d85 (build-backup)\nnginx: if_not_empty fix\n\n";
-echo "=== SERVER ===\nPHP: " . PHP_VERSION . "\nContainer: " . gethostname() . "\n\n";
-$key = getenv('APP_KEY') ?: '(empty)';
-echo "=== APP_KEY ===\nvalue: " . substr($key, 0, 25) . "...\nvalid: " . (str_starts_with($key, 'base64:') ? 'YES' : 'NO') . "\n\n";
-echo "=== HEADERS ===\n";
-foreach ($_SERVER as $k => $v) {
-    if (str_starts_with($k, 'HTTP_') || in_array($k, ['SERVER_NAME','SERVER_PORT','REMOTE_ADDR','REQUEST_SCHEME','HTTPS','SERVER_PROTOCOL']))
-        echo "  $k: $v\n";
-}
-echo "\n=== PROXY HEADERS (raw) ===\n";
-foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR','HTTP_X_FORWARDED_PORT','HTTP_CF_VISITOR','HTTP_CF_CONNECTING_IP'] as $h) {
-    $v = $_SERVER[$h] ?? null;
-    if ($v === null) echo "  $h: NOT SET\n";
-    elseif ($v === '') echo "  $h: EMPTY STRING (BAD - nginx bug)\n";
-    else echo "  $h: $v\n";
-}
-echo "\n=== DB ===\n";
-try { new PDO("pgsql:host=".getenv('DB_HOST').";port=".getenv('DB_PORT').";dbname=".getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'), [PDO::ATTR_TIMEOUT=>3]); echo "CONNECTED\n"; } catch(Exception $e) { echo "FAILED: ".$e->getMessage()."\n"; }
-echo "\n=== PUBLIC ASSETS ===\n";
-echo "manifest.json: " . (file_exists('/var/www/html/public/build/manifest.json') ? 'YES' : 'MISSING') . "\n";
-echo "filament css:  " . (file_exists('/var/www/html/public/css/filament/filament/app.css') ? 'YES' : 'MISSING') . "\n";
-echo "filament js:   " . (file_exists('/var/www/html/public/js/filament/filament/app.js') ? 'YES' : 'MISSING') . "\n";
-echo "backup build:  " . (is_dir('/var/www/build-backup') ? 'YES' : 'MISSING') . "\n";
-echo "backup fonts:  " . (is_dir('/var/www/fonts-backup') ? 'YES' : 'MISSING') . "\n";
-DEBUGEOPHP
-echo "[entrypoint] debug.php written."
-
 # Restore Vite build assets from backup if the volume is stale.
 # The app-public named volume mounts over public/ and hides the image's
 # public/build/ directory. This backup is outside the volume mount.
@@ -106,6 +62,49 @@ if [ ! -f public/css/filament/filament/app.css ] && [ -d /var/www/css-backup ]; 
         fi
     done
     echo "[entrypoint] Filament assets restored."
+fi
+
+if [ "$APP_DEBUG" = "true" ]; then
+    echo "[entrypoint] ===== Startup summary ====="
+    echo "  APP_KEY: $(echo "$APP_KEY" | cut -c1-20)..."
+    echo "  APP_URL: $APP_URL"
+    echo "  APP_ENV: $APP_ENV"
+    echo "  DB_HOST: $DB_HOST:$DB_PORT ($DB_DATABASE)"
+    echo "  CACHE_STORE: $CACHE_STORE"
+    echo "  SESSION_DRIVER: $SESSION_DRIVER"
+    echo "  .env exists: $(test -f .env && echo yes || echo no)"
+    echo "[entrypoint] ====="
+
+    # Write debug.php for diagnostic access when debugging is on.
+    echo "[entrypoint] Writing debug.php (APP_DEBUG=true)..."
+    cat > public/debug.php << 'DEBUGEOPHP'
+<?php
+header('Content-Type: text/plain; charset=utf-8');
+echo "=== IMAGE ===\ncommit: 3d955a2\nnginx: if_not_empty fix\ntrustProxies: at:*\n\n";
+echo "=== SERVER ===\nPHP: " . PHP_VERSION . "\nContainer: " . gethostname() . "\n\n";
+$key = getenv('APP_KEY') ?: '(empty)';
+echo "=== APP_KEY ===\nvalue: " . substr($key, 0, 25) . "...\nvalid: " . (str_starts_with($key, 'base64:') ? 'YES' : 'NO') . "\n\n";
+echo "=== HEADERS ===\n";
+foreach ($_SERVER as $k => $v) {
+    if (str_starts_with($k, 'HTTP_') || in_array($k, ['SERVER_NAME','SERVER_PORT','REMOTE_ADDR','REQUEST_SCHEME','HTTPS','SERVER_PROTOCOL']))
+        echo "  $k: $v\n";
+}
+echo "\n=== PROXY HEADERS (raw) ===\n";
+foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR','HTTP_X_FORWARDED_PORT','HTTP_CF_VISITOR','HTTP_CF_CONNECTING_IP'] as $h) {
+    $v = $_SERVER[$h] ?? null;
+    if ($v === null) echo "  $h: NOT SET\n";
+    elseif ($v === '') echo "  $h: EMPTY STRING\n";
+    else echo "  $h: $v\n";
+}
+echo "\n=== PUBLIC ASSETS ===\n";
+echo "manifest.json: " . (file_exists('/var/www/html/public/build/manifest.json') ? 'YES' : 'MISSING') . "\n";
+echo "filament css:  " . (file_exists('/var/www/html/public/css/filament/filament/app.css') ? 'YES' : 'MISSING') . "\n";
+echo "filament js:   " . (file_exists('/var/www/html/public/js/filament/filament/app.js') ? 'YES' : 'MISSING') . "\n";
+DEBUGEOPHP
+    echo "[entrypoint] debug.php written."
+else
+    # In production, ensure debug.php is absent.
+    rm -f public/debug.php 2>/dev/null || true
 fi
 
 echo "[entrypoint] Starting php-fpm..."
