@@ -272,3 +272,24 @@ it('does not clear cart on submit error', function () {
         ->assertSet('errorMessage', 'Cannot add orders to a closed group.')
         ->assertNotDispatched('order-submitted');
 });
+
+// ------------------------------------------------------------------
+// Idempotency / duplicate submission prevention
+// ------------------------------------------------------------------
+
+it('prevents duplicate orders when submitted with the same idempotency key via Livewire', function () {
+    $this->actingAs($this->server);
+
+    // Simulate a double-click: set the same idempotency key for two submissions.
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->set('idempotencyKey', 'lw-test-duplicate-key')
+        ->call('submitOrder', [cartItem($this->kitchenItem->id, 2)])
+        ->assertSet('successMessage', 'Order submitted successfully.')
+        // The key is regenerated on success. Override it back to the original for the second call.
+        ->set('idempotencyKey', 'lw-test-duplicate-key')
+        ->call('submitOrder', [cartItem($this->kitchenItem->id, 2)])
+        ->assertSet('successMessage', 'Order submitted successfully.');
+
+    // Only one order should exist despite two submissions.
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(1);
+});

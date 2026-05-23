@@ -5,6 +5,7 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\AuditEvent;
 use App\Models\MenuItem;
+use App\Models\OrderHeader;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use App\Models\Row;
@@ -55,4 +56,76 @@ it('records an audit event for every order submission', function () {
         [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
 
     expect(AuditEvent::where('event_type', 'ORDER_SUBMITTED')->count())->toBe(1);
+});
+
+// ------------------------------------------------------------------
+// Idempotency / duplicate submission prevention
+// ------------------------------------------------------------------
+
+it('returns the same order when submitted twice with the same idempotency key', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $key = 'test-idempotency-key-' . uniqid();
+
+    $header1 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone, null, $key
+    );
+
+    $header2 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone, null, $key
+    );
+
+    // Same order header should be returned (not a new one).
+    expect($header1->id)->toBe($header2->id);
+    expect($header1->submission_status)->toBe('SUBMITTED');
+
+    // Only one order should exist.
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(1);
+
+    // Only one audit event for ORDER_SUBMITTED.
+    expect(AuditEvent::where('event_type', 'ORDER_SUBMITTED')->count())->toBe(1);
+});
+
+it('creates separate orders when different idempotency keys are used', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $barItem = MenuItem::where('display_name', 'Vinho copo')->first();
+
+    $header1 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone, null, 'key-one-' . uniqid()
+    );
+
+    $header2 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $barItem->id, 'quantity' => 2]],
+        $this->zone, null, 'key-two-' . uniqid()
+    );
+
+    // Different orders should be created.
+    expect($header1->id)->not->toBe($header2->id);
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(2);
+});
+
+it('allows duplicate submissions when no idempotency key is provided (backward compatibility)', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $header1 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+
+    $header2 = app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+
+    // Without an idempotency key, duplicate orders are still allowed (existing behavior).
+    expect($header1->id)->not->toBe($header2->id);
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(2);
 });

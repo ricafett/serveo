@@ -4,6 +4,7 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\MenuItem;
+use App\Models\OrderHeader;
 use App\Models\Row;
 
 beforeEach(function () {
@@ -101,4 +102,35 @@ it('enforces role permissions on order endpoints', function () {
             ['menuItemId' => $kitchenItem->id, 'quantity' => 1],
         ],
     ])->assertStatus(403);
+});
+
+it('prevents duplicate orders via api when idempotency key is provided', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $key = 'api-idempotency-key-' . uniqid();
+
+    $payload = [
+        'billingGroupId' => $this->group->id,
+        'occupiedZoneId' => $this->zone->id,
+        'idempotencyKey' => $key,
+        'notes' => 'API idempotent order',
+        'items' => [
+            ['menuItemId' => $kitchenItem->id, 'quantity' => 2],
+        ],
+    ];
+
+    // First submission should succeed with 201.
+    $response1 = $this->actingAs($this->server)->postJson('/api/v1/orders', $payload);
+    $response1->assertStatus(201);
+    $orderId1 = $response1->json('data.orderHeaderId');
+
+    // Second submission with the same idempotency key should return same order (200, not 201).
+    $response2 = $this->actingAs($this->server)->postJson('/api/v1/orders', $payload);
+    $response2->assertStatus(201);
+    $orderId2 = $response2->json('data.orderHeaderId');
+
+    // Same order ID should be returned.
+    expect($orderId1)->toBe($orderId2);
+
+    // Only one order should exist in the database.
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(1);
 });
