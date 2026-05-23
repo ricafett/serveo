@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/ricafett/serveo:sha-0498fb5
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -41,7 +41,7 @@ services:
       - serveo
 
   web:
-    image: ghcr.io/ricafett/serveo-web:sha-0498fb5
+    image: ghcr.io/ricafett/serveo-web:latest
     container_name: serveo-web
     restart: unless-stopped
     ports:
@@ -82,7 +82,7 @@ services:
       - serveo
 
   worker:
-    image: ghcr.io/ricafett/serveo:sha-0498fb5
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-worker
     restart: unless-stopped
     working_dir: /var/www/html
@@ -119,7 +119,7 @@ services:
       - serveo
 
   scheduler:
-    image: ghcr.io/ricafett/serveo:sha-0498fb5
+    image: ghcr.io/ricafett/serveo:latest
     container_name: serveo-scheduler
     restart: unless-stopped
     working_dir: /var/www/html
