@@ -290,6 +290,8 @@
                 type="button"
                 @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name }; }))"
                 :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
+                wire:target="submitOrder"
+                wire:loading.attr="disabled"
                 class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {{ __('order.submit') }}
