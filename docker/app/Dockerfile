@@ -58,13 +58,18 @@ RUN export APP_KEY=base64:dummykeyfordockerbuildonly12345= \
 # Set final permissions
 RUN chown -R serveo:serveo /var/www/html
 
-# Backup public/build/ so the entrypoint can restore it when the
+# Backup public assets so the entrypoint can restore them when the
 # app-public volume is stale. The volume mounts over public/ so
-# the image's files there are hidden; this copy survives that.
-RUN cp -a /var/www/html/public/build /var/www/build-backup 2>/dev/null || true \
-    && cp -a /var/www/html/public/css /var/www/css-backup 2>/dev/null || true \
-    && cp -a /var/www/html/public/js /var/www/js-backup 2>/dev/null || true \
-    && cp -a /var/www/html/public/fonts /var/www/fonts-backup 2>/dev/null || true
+# the image's files there are hidden; these copies survive that.
+RUN echo "=== Checking public/build/ before backup ===" \
+    && ls -la /var/www/html/public/build/ \
+    && echo "=== Creating backup directories ===" \
+    && cp -a /var/www/html/public/build /var/www/build-backup \
+    && cp -a /var/www/html/public/css /var/www/css-backup \
+    && cp -a /var/www/html/public/js /var/www/js-backup \
+    && cp -a /var/www/html/public/fonts /var/www/fonts-backup \
+    && echo "=== Backup complete ===" \
+    && ls /var/www/build-backup/manifest.json
 
 # Entrypoint: runs migrate + optimize at runtime with real env vars, then starts php-fpm
 COPY --chmod=755 docker/app/entrypoint.sh /entrypoint.sh
