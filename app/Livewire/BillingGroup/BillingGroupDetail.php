@@ -34,6 +34,8 @@ class BillingGroupDetail extends Component
     // Status change
     public ?string $newStatusCode = null;
 
+    public bool $isSubmitting = false;
+
     public function mount(int $id): void
     {
         $this->id = $id;
@@ -86,6 +88,10 @@ class BillingGroupDetail extends Component
 
     public function addZone(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
 
         if (! Auth::user()?->can('floor.assign_zone')) {
@@ -109,6 +115,8 @@ class BillingGroupDetail extends Component
         $row = Row::findOrFail($this->zoneRowId);
 
         try {
+            $this->isSubmitting = true;
+
             app(OccupancyService::class)->assignZone(
                 $this->group,
                 $row,
@@ -124,11 +132,17 @@ class BillingGroupDetail extends Component
             $this->errorMessage = __('Zone overlap: ').$e->getMessage();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function releaseZone(int $zoneId): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $zone = OccupiedZone::findOrFail($zoneId);
         if ($zone->billing_group_id !== $this->group?->id) {
             return;
@@ -141,15 +155,23 @@ class BillingGroupDetail extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             app(OccupancyService::class)->releaseZone($zone, Auth::user());
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->dispatch('notify', message: $e->getMessage());
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function printBill(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         if (! Auth::user()?->can('billing_document.create')) {
             $this->dispatch('notify', message: __('Unauthorized to print bills.'));
 
@@ -157,15 +179,23 @@ class BillingGroupDetail extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             app(BillingService::class)->generateInternalBill($this->group, Auth::user());
             $this->dispatch('notify', message: __('Bill sent to printer.'));
         } catch (\Throwable $e) {
             $this->dispatch('notify', message: $e->getMessage());
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function reopenGroup(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         if (! Auth::user()?->can('billing_group.reopen')) {
             $this->dispatch('notify', message: __('Unauthorized to reopen groups.'));
 
@@ -173,11 +203,15 @@ class BillingGroupDetail extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             app(BillingGroupService::class)->reopen($this->group, Auth::user());
             $this->loadGroup();
             $this->dispatch('notify', message: __('Group reopened.'));
         } catch (\Throwable $e) {
             $this->dispatch('notify', message: $e->getMessage());
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 

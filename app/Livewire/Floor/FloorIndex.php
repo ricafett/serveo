@@ -62,6 +62,8 @@ class FloorIndex extends Component
 
     public ?string $errorMessage = null;
 
+    public bool $isSubmitting = false;
+
     public function mount(): void
     {
         // URL params take priority over session-stored preferences
@@ -423,6 +425,10 @@ class FloorIndex extends Component
 
     public function createBillingGroup(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
 
         if (! Auth::user()?->can('floor.open_billing_group')) {
@@ -457,6 +463,8 @@ class FloorIndex extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             $service = app(BillingGroupService::class);
             $group = $service->open(
                 $session,
@@ -485,6 +493,8 @@ class FloorIndex extends Component
             $this->errorMessage = __('Zone overlap: ').$e->getMessage();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
