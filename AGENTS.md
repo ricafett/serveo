@@ -169,6 +169,51 @@ Allowed focus:
 - Use Filament primarily for admin/configuration surfaces, not for core service-floor UX.
 - **All UI components, screens, and design changes must support both light and dark themes from inception.** Configure Tailwind `dark:` variants and test both modes before considering UI work complete.
 
+### Livewire duplicate-submission prevention (REQUIRED)
+
+Every Livewire component with a public method that performs a write operation (create, update, delete, submit, record, print, reopen, release) **must** implement these two guards:
+
+**1. Server-side `$isSubmitting` mutex in the component:**
+
+```php
+public bool $isSubmitting = false;
+
+public function someWriteMethod(): void
+{
+    if ($this->isSubmitting) {
+        return;
+    }
+
+    // ... validation, permission checks ...
+
+    try {
+        $this->isSubmitting = true;
+        // ... the actual write operation ...
+    } catch (\Throwable $e) {
+        // error handling
+    } finally {
+        $this->isSubmitting = false;
+    }
+}
+```
+
+**2. Client-side `wire:loading` directives on the button:**
+
+```blade
+<button
+    wire:click="someWriteMethod"
+    wire:target="someWriteMethod"
+    wire:loading.attr="disabled"
+    class="... disabled:opacity-50 disabled:cursor-not-allowed"
+>
+    Submit
+</button>
+```
+
+For forms: add the directives to the submit button inside `<form wire:submit.prevent="methodName">`.
+
+**When adding a new write method, both guards are mandatory.** When adding a new write button, verify the `wire:loading` directives are present. Missing guards are a blocking review finding.
+
 ### Screen intent
 
 Agents should align screens with `screen-flows.md`.
@@ -399,6 +444,7 @@ Agents must create tests for critical workflows, not just happy-path demos.
 - Role-based authorization
 - Print queue persistence on failure
 - Audit-event creation
+- Duplicate-submission prevention on all write actions (isSubmitting guard)
 
 ### Test data rule
 
