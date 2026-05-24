@@ -46,7 +46,7 @@
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }} · {{ $doc->document_status }}</div>
                             </div>
                             @can('billing_document.reprint')
-                                <button type="button" wire:click="reprintBill({{ $doc->id }})" class="rounded-lg px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 min-h-[44px] transition-colors">
+                                <button type="button" wire:click="reprintBill({{ $doc->id }})" wire:target="reprintBill" wire:loading.attr="disabled" class="rounded-lg px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 min-h-[44px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                     {{ __('cashier.reprint') }}
                                 </button>
                             @endcan
@@ -80,7 +80,7 @@
                             </div>
                             @can('production_ticket.reprint')
                                 @if(! $ticket->is_void_slip)
-                                    <button type="button" wire:click="reprintTicket({{ $ticket->id }})" class="rounded-lg px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 min-h-[44px] transition-colors">
+                                    <button type="button" wire:click="reprintTicket({{ $ticket->id }})" wire:target="reprintTicket" wire:loading.attr="disabled" class="rounded-lg px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 min-h-[44px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         {{ __('cashier.reprint') }}
                                     </button>
                                 @endif
