@@ -21,6 +21,8 @@ class ReprintPanel extends Component
 
     public ?string $successMessage = null;
 
+    public bool $isSubmitting = false;
+
     public function mount(?int $billingGroupId = null): void
     {
         $this->billingGroupId = $billingGroupId;
@@ -39,6 +41,10 @@ class ReprintPanel extends Component
 
     public function reprintBill(int $billId): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -55,17 +61,25 @@ class ReprintPanel extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             $original = BillingDocument::findOrFail($billId);
             app(BillingService::class)->reprintBill($original, Auth::user());
             $this->successMessage = __('Bill reprint sent to printer.');
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function reprintTicket(int $ticketId): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -82,6 +96,8 @@ class ReprintPanel extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             $original = ProductionTicket::with('printer')->findOrFail($ticketId);
 
             $reprint = ProductionTicket::create([
@@ -106,6 +122,8 @@ class ReprintPanel extends Component
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 

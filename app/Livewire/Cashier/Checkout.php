@@ -26,6 +26,8 @@ class Checkout extends Component
 
     public ?string $successMessage = null;
 
+    public bool $isSubmitting = false;
+
     public function mount(int $id): void
     {
         $this->id = $id;
@@ -60,6 +62,10 @@ class Checkout extends Component
 
     public function printBill(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -70,16 +76,24 @@ class Checkout extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             app(BillingService::class)->generateInternalBill($this->group, Auth::user());
             $this->successMessage = __('Bill sent to printer.');
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function recordPayment(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -95,6 +109,8 @@ class Checkout extends Component
         ]);
 
         try {
+            $this->isSubmitting = true;
+
             app(BillingService::class)->recordPayment(
                 $this->group,
                 Auth::user(),
@@ -108,11 +124,17 @@ class Checkout extends Component
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function reopenGroup(): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -123,16 +145,24 @@ class Checkout extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             app(BillingGroupService::class)->reopen($this->group, Auth::user());
             $this->successMessage = __('Group reopened.');
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 
     public function reprintBill(int $billId): void
     {
+        if ($this->isSubmitting) {
+            return;
+        }
+
         $this->errorMessage = null;
         $this->successMessage = null;
 
@@ -143,12 +173,16 @@ class Checkout extends Component
         }
 
         try {
+            $this->isSubmitting = true;
+
             $original = BillingDocument::findOrFail($billId);
             app(BillingService::class)->reprintBill($original, Auth::user());
             $this->successMessage = __('Bill reprint sent to printer.');
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
         }
     }
 

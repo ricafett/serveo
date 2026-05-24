@@ -232,3 +232,90 @@ it('allows admin to access cashier screens', function () {
     $response = $this->actingAs($admin)->get('/lookup');
     $response->assertOk();
 });
+
+// ------------------------------------------------------------------
+// Duplicate Submission Prevention (isSubmitting guards)
+// ------------------------------------------------------------------
+
+it('prevents double-click on printBill in checkout', function () {
+    $this->actingAs($this->cashier);
+
+    // Set isSubmitting to simulate a request in flight
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('isSubmitting', true)
+        ->call('printBill')
+        ->assertSet('successMessage', null)
+        ->assertSet('errorMessage', null);
+
+    // No bill should have been created.
+    expect(BillingDocument::where('billing_group_id', $this->group->id)->count())->toBe(0);
+});
+
+it('prevents double-click on recordPayment in checkout', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('paymentAmount', 5.00)
+        ->set('paymentLabel', 'Cash')
+        ->set('isSubmitting', true)
+        ->call('recordPayment')
+        ->assertSet('successMessage', null);
+
+    expect(PaymentRecord::where('billing_group_id', $this->group->id)->count())->toBe(0);
+});
+
+it('prevents double-click on reopenGroup in checkout', function () {
+    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->actingAs($this->cashier);
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('isSubmitting', true)
+        ->call('reopenGroup')
+        ->assertSet('successMessage', null);
+
+    $group = BillingGroup::find($this->group->id);
+    expect($group->is_closed)->toBeTrue();
+});
+
+it('prevents double-click on reprintBill in checkout', function () {
+    $this->actingAs($this->cashier);
+
+    $bill = app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('isSubmitting', true)
+        ->call('reprintBill', $bill->id)
+        ->assertSet('successMessage', null);
+
+    // No reprint document should have been created.
+    $reprints = BillingDocument::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
+    expect($reprints)->toHaveCount(0);
+});
+
+it('prevents double-click on reprintTicket in reprint panel', function () {
+    $this->actingAs($this->cashier);
+
+    $ticket = ProductionTicket::where('billing_group_id', $this->group->id)->first();
+
+    Livewire::test(ReprintPanel::class, ['billingGroupId' => $this->group->id])
+        ->set('isSubmitting', true)
+        ->call('reprintTicket', $ticket->id)
+        ->assertSet('successMessage', null);
+
+    $reprints = ProductionTicket::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
+    expect($reprints)->toHaveCount(0);
+});
+
+it('prevents double-click on reprintBill in reprint panel', function () {
+    $this->actingAs($this->cashier);
+
+    $bill = app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
+
+    Livewire::test(ReprintPanel::class, ['billingGroupId' => $this->group->id])
+        ->set('isSubmitting', true)
+        ->call('reprintBill', $bill->id)
+        ->assertSet('successMessage', null);
+
+    $reprints = BillingDocument::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
+    expect($reprints)->toHaveCount(0);
+});
