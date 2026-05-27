@@ -38,6 +38,9 @@ echo "[entrypoint] Database is ready."
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force
 
+echo "[entrypoint] Running CoreSeeder..."
+php artisan db:seed --class=CoreSeeder --force
+
 echo "[entrypoint] Caching config, routes and views..."
 php artisan optimize
 
