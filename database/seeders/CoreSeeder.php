@@ -958,6 +958,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'modifier_selection_single', 'Única'],
             ['pt-PT', 'app', 'modifier_selection_multiple', 'Múltipla'],
             ['pt-PT', 'app', 'items', 'Itens'],
+            ['pt-PT', 'app', 'health_check_run', 'Verificar saúde'],
+            ['pt-PT', 'app', 'health_check_complete', 'Verificação de saúde concluída'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -968,6 +970,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'modifier_selection_single', 'Single'],
             ['en-US', 'app', 'modifier_selection_multiple', 'Multiple'],
             ['en-US', 'app', 'items', 'Items'],
+            ['en-US', 'app', 'health_check_run', 'Run Health Check'],
+            ['en-US', 'app', 'health_check_complete', 'Health check complete'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],

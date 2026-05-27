@@ -84,7 +84,7 @@ class PrinterResource extends BaseResource
                 Tables\Columns\TextColumn::make('health_status')->badge()->colors([
                     'success' => 'OK',
                     'danger' => 'UNREACHABLE',
-                    'warning' => 'WARNING',
+                    'warning' => ['WARNING', 'REACHABLE'],
                     'gray' => 'UNKNOWN',
                 ])->label(__('app.health')),
                 Tables\Columns\TextColumn::make('last_seen_at')->dateTime()->label(__('app.last_seen')),

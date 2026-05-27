@@ -11,9 +11,18 @@ use App\Models\Printer;
  *
  * Renders a plain UTF-8 payload terminated by a feed + cut sequence.
  * Falls back gracefully if the printer is unreachable.
+ *
+ * Socket safety:
+ *   - stream_select() enforces a 5-second write timeout (PHP's
+ *     stream_set_timeout only affects reads, not writes).
+ *   - try/finally guarantees fclose() even if fwrite() throws.
  */
 class LanEscPosAdapter implements PrinterAdapter
 {
+    private const CONNECT_TIMEOUT = 4.0;
+    private const WRITE_TIMEOUT = 5;
+    private const READ_TIMEOUT = 5;
+
     public function supports(Printer $printer): bool
     {
         return $printer->connection_type === Printer::CONN_LAN
@@ -28,26 +37,49 @@ class LanEscPosAdapter implements PrinterAdapter
         $errno = 0;
         $errstr = '';
 
-        // 4-second connect timeout so the worker doesn't stall service.
-        $socket = @fsockopen($host, $port, $errno, $errstr, 4.0);
+        $socket = @fsockopen($host, $port, $errno, $errstr, self::CONNECT_TIMEOUT);
         if ($socket === false) {
             return PrintResult::fail("LAN printer {$host}:{$port} unreachable: {$errstr}");
         }
 
-        stream_set_timeout($socket, 5);
+        try {
+            stream_set_timeout($socket, self::READ_TIMEOUT);
 
-        // ESC @  -> initialise printer
-        $init = "\x1B\x40";
-        // GS V 1 -> partial cut (most ESC/POS cutters)
-        $cut = "\n\n\n\x1D\x56\x01";
+            // ESC @  -> initialise printer
+            $init = "\x1B\x40";
+            // GS V 1 -> partial cut (most ESC/POS cutters)
+            $cut = "\n\n\n\x1D\x56\x01";
 
-        $bytes = @fwrite($socket, $init.$payload.$cut);
-        @fclose($socket);
+            $data = $init.$payload.$cut;
 
-        if ($bytes === false || $bytes === 0) {
-            return PrintResult::fail("LAN printer {$host}:{$port} accepted no bytes");
+            // Enforce write timeout via stream_select().
+            // PHP's stream_set_timeout() only affects fread(), not fwrite().
+            $write = [$socket];
+            $except = [$socket];
+            $read = null;
+            $selectResult = @stream_select($read, $write, $except, self::WRITE_TIMEOUT);
+
+            if ($selectResult === false) {
+                return PrintResult::fail("LAN printer {$host}:{$port} stream_select error");
+            }
+
+            if ($selectResult === 0) {
+                return PrintResult::fail("LAN printer {$host}:{$port} write timeout after ".self::WRITE_TIMEOUT.'s');
+            }
+
+            if (in_array($socket, $except, true)) {
+                return PrintResult::fail("LAN printer {$host}:{$port} connection exception");
+            }
+
+            $bytes = @fwrite($socket, $data);
+
+            if ($bytes === false || $bytes === 0) {
+                return PrintResult::fail("LAN printer {$host}:{$port} accepted no bytes");
+            }
+
+            return PrintResult::ok("Sent {$bytes} bytes to {$host}:{$port}");
+        } finally {
+            @fclose($socket);
         }
-
-        return PrintResult::ok("Sent {$bytes} bytes to {$host}:{$port}");
     }
 }

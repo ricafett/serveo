@@ -142,4 +142,6 @@ return [
     'modifier_selection_single' => 'Single',
     'modifier_selection_multiple' => 'Multiple',
     'items' => 'Items',
+    'health_check_run' => 'Run Health Check',
+    'health_check_complete' => 'Health check complete',
 ];
