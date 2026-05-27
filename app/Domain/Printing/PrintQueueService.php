@@ -47,7 +47,9 @@ class PrintQueueService
     }
 
     /**
-     * Re-queue a failed job. Returns true if a dispatch was scheduled.
+     * Re-queue a failed job (manual admin retry). Resets the attempt counter
+     * so the auto-retry loop gets a fresh start. Returns true if a dispatch
+     * was scheduled.
      */
     public function retry(PrintJob $job, ?User $actor = null): bool
     {
@@ -57,6 +59,7 @@ class PrintQueueService
         $job->update([
             'status' => PrintJob::STATUS_PENDING,
             'last_error' => null,
+            'attempts' => 0,
             'next_attempt_at' => now(),
         ]);
         DispatchPrintJob::dispatch($job->id)->onQueue('prints');

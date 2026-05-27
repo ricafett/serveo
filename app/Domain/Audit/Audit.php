@@ -31,6 +31,7 @@ class Audit
         'PAYMENT_RECORDED',
         'PAYMENT_VOIDED',
         'PRINT_JOB_RETRIED',
+        'PRINT_JOB_MAX_ATTEMPTS',
         'EXPORT_REQUESTED',
         'EXPORT_COMPLETED',
         'EXPORT_FAILED',

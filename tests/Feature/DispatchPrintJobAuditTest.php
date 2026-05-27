@@ -153,13 +153,14 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
         'created_by_user_id' => $this->server->id,
     ]);
 
+    // Set attempts=2 so this becomes the final attempt (incremented to 3 = max_attempts)
     $job = PrintJob::create([
         'job_kind' => PrintJob::KIND_PRODUCTION_TICKET,
         'printable_type' => ProductionTicket::class,
         'printable_id' => $ticket->id,
         'printer_id' => $printer->id,
         'status' => PrintJob::STATUS_PENDING,
-        'attempts' => 0,
+        'attempts' => 2,
         'max_attempts' => 3,
         'requested_by_user_id' => $this->server->id,
     ]);
@@ -186,6 +187,7 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
     $dispatchJob = new DispatchPrintJob($job->id);
     $dispatchJob->handle($registry, $renderer);
 
+    // On final attempt failure, PRODUCTION_TICKET_FAILED is emitted
     $event = AuditEvent::where('event_type', 'PRODUCTION_TICKET_FAILED')
         ->where('production_ticket_id', $ticket->id)
         ->first();

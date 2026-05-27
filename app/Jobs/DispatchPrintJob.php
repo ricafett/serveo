@@ -18,11 +18,18 @@ use Throwable;
 /**
  * Sends one queued PrintJob to its target printer using the configured adapter.
  *
+ * Implements automatic retry with exponential backoff:
+ *   - On transient failure, re-dispatches itself after a delay.
+ *   - After max_attempts, marks the job permanently FAILED and emits an audit event.
+ *   - The idempotency guard (STATUS_PRINTED / STATUS_CANCELED) prevents double-printing
+ *     if a job is re-queued after the adapter succeeded but the DB update failed.
+ *
  * Failure semantics:
  *   - Transport errors update the PrintJob row (status FAILED, last_error set,
- *     attempts++), keeping the job visible and retryable from the UI/CLI.
+ *     attempts++, next_attempt_at), keeping the job visible and retryable.
+ *   - Production tickets are only marked FAILED on the final attempt.
  *   - We do not throw on transport failures; the job is considered handled and
- *     the operator can retry.
+ *     self-retries via re-dispatch.
  */
 class DispatchPrintJob implements ShouldQueue
 {
@@ -40,7 +47,32 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
+        // Idempotency guard: already done or canceled
         if ($job->status === PrintJob::STATUS_PRINTED || $job->status === PrintJob::STATUS_CANCELED) {
+            return;
+        }
+
+        // Guard: max attempts exceeded → permanently FAILED
+        if ($job->attempts >= $job->max_attempts) {
+            $job->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'Max attempts reached',
+            ]);
+
+            if ($job->printable instanceof ProductionTicket) {
+                $job->printable->update(['ticket_status' => 'FAILED']);
+            }
+
+            Audit::record(
+                'PRINT_JOB_MAX_ATTEMPTS',
+                "PrintJob #{$job->id} reached max attempts ({$job->max_attempts})",
+                ['printer_id' => $job->printer_id, 'job_id' => $job->id],
+                [
+                    'actor_user_id' => $job->requested_by_user_id,
+                    'production_ticket_id' => $job->printable instanceof ProductionTicket ? $job->printable->id : null,
+                ],
+            );
+
             return;
         }
 
@@ -117,13 +149,19 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
+        // --- Transport failure ---
+        $isFinalAttempt = $job->attempts >= $job->max_attempts;
+        $backoffSeconds = $this->calculateBackoff($job->attempts);
+
         $job->update([
             'status' => PrintJob::STATUS_FAILED,
             'last_error' => $result->message,
+            'next_attempt_at' => now()->addSeconds($backoffSeconds),
         ]);
         $printer->update(['health_status' => 'UNREACHABLE', 'last_error' => $result->message]);
 
-        if ($printable instanceof ProductionTicket) {
+        // Only mark ProductionTicket as FAILED on the final attempt
+        if ($printable instanceof ProductionTicket && $isFinalAttempt) {
             $printable->update(['ticket_status' => 'FAILED']);
             Audit::record(
                 'PRODUCTION_TICKET_FAILED',
@@ -137,5 +175,25 @@ class DispatchPrintJob implements ShouldQueue
                 ],
             );
         }
+
+        // Auto-retry: re-dispatch with exponential backoff delay
+        if (! $isFinalAttempt) {
+            static::dispatch($job->id)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($backoffSeconds));
+        }
+    }
+
+    /**
+     * Calculate exponential backoff delay for a given attempt number.
+     *
+     * Sequence: 3s, 6s, 10s (capped at 10s).
+     *
+     * @param  int  $attempt  Current attempt number (1-based, AFTER increment)
+     * @return int  Delay in seconds
+     */
+    private function calculateBackoff(int $attempt): int
+    {
+        return min(3 * (int) pow(2, $attempt - 1), 10);
     }
 }
