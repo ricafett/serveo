@@ -108,4 +108,8 @@ else
 fi
 
 echo "[entrypoint] Starting php-fpm..."
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
 exec php-fpm
