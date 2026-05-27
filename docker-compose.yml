@@ -16,7 +16,8 @@ services:
       APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
       APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
-      LOG_LEVEL: ${LOG_LEVEL:-error}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      LOG_STACK: ${LOG_STACK:-daily}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
@@ -34,9 +35,17 @@ services:
       FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - serveo
 
@@ -49,7 +58,8 @@ services:
     volumes:
       - app-public:/var/www/html/public:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - serveo
 
@@ -62,6 +72,12 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-serveo}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-serveo}
       TZ: ${APP_TIMEZONE:-UTC}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USERNAME:-serveo} -d $${DB_DATABASE:-serveo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     volumes:
       - ${POSTGRES_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data
     ports:
@@ -74,6 +90,12 @@ services:
     container_name: serveo-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     volumes:
       - ${REDIS_DATA_PATH:-./data/redis}:/data
     ports:
@@ -95,7 +117,8 @@ services:
       APP_URL: ${APP_URL:-http://localhost}
       APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
-      LOG_LEVEL: ${LOG_LEVEL:-error}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      LOG_STACK: ${LOG_STACK:-daily}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
@@ -111,10 +134,19 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'queue:work' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
-      - app
-      - postgres
-      - redis
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - serveo
 
@@ -132,7 +164,8 @@ services:
       APP_URL: ${APP_URL:-http://localhost}
       APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
-      LOG_LEVEL: ${LOG_LEVEL:-error}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      LOG_STACK: ${LOG_STACK:-daily}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
@@ -148,8 +181,19 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'schedule:run' || pgrep -f 'sleep 60' || exit 1"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - serveo
 
