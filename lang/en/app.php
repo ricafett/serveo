@@ -144,4 +144,7 @@ return [
     'items' => 'Items',
     'health_check_run' => 'Run Health Check',
     'health_check_complete' => 'Health check complete',
+    'test_print' => 'Test Print',
+    'test_print_sent' => 'Test print sent successfully',
+    'test_print_failed' => 'Test print failed',
 ];

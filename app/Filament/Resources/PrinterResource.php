@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Filament\Resources\PrinterResource\Pages;
 use App\Models\Printer;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -92,6 +94,57 @@ class PrinterResource extends BaseResource
             ])
             ->actions([
                 Actions\EditAction::make(),
+                Actions\Action::make('testPrint')
+                    ->label(__('app.test_print'))
+                    ->icon('heroicon-o-play')
+                    ->color('gray')
+                    ->action(function (Printer $record) {
+                        $registry = app(PrinterAdapterRegistry::class);
+
+                        try {
+                            $adapter = $registry->for($record);
+
+                            // Minimal test print: header + printer info + timestamp
+                            $testPayload = "\x1B\x40"
+                                ."Serveo Test Print\n"
+                                ."Printer: {$record->name}\n"
+                                .now()->format('Y-m-d H:i:s')
+                                ."\n\n\n\x1D\x56\x01";
+
+                            $result = $adapter->send($record, $testPayload);
+
+                            if ($result->success) {
+                                $record->update([
+                                    'health_status' => 'OK',
+                                    'last_seen_at' => now(),
+                                    'last_error' => null,
+                                ]);
+
+                                Notification::make()
+                                    ->title(__('app.test_print'))
+                                    ->body(__('app.test_print_sent').' — '.$result->message)
+                                    ->success()
+                                    ->send();
+                            } else {
+                                $record->update([
+                                    'health_status' => 'UNREACHABLE',
+                                    'last_error' => $result->message,
+                                ]);
+
+                                Notification::make()
+                                    ->title(__('app.test_print'))
+                                    ->body(__('app.test_print_failed').': '.$result->message)
+                                    ->danger()
+                                    ->send();
+                            }
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->title(__('app.test_print'))
+                                ->body(__('app.test_print_failed').': '.$e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([Actions\DeleteBulkAction::make()]);
     }

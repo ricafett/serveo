@@ -960,6 +960,9 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'items', 'Itens'],
             ['pt-PT', 'app', 'health_check_run', 'Verificar saúde'],
             ['pt-PT', 'app', 'health_check_complete', 'Verificação de saúde concluída'],
+            ['pt-PT', 'app', 'test_print', 'Teste de impressão'],
+            ['pt-PT', 'app', 'test_print_sent', 'Teste de impressão enviado com sucesso'],
+            ['pt-PT', 'app', 'test_print_failed', 'Teste de impressão falhou'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -972,6 +975,9 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'items', 'Items'],
             ['en-US', 'app', 'health_check_run', 'Run Health Check'],
             ['en-US', 'app', 'health_check_complete', 'Health check complete'],
+            ['en-US', 'app', 'test_print', 'Test Print'],
+            ['en-US', 'app', 'test_print_sent', 'Test print sent successfully'],
+            ['en-US', 'app', 'test_print_failed', 'Test print failed'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],
