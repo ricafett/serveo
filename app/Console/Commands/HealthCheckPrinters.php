@@ -39,9 +39,6 @@ class HealthCheckPrinters extends Command
     /** Minimum interval between scheduled runs in seconds */
     private const INTERVAL_SECONDS = 90;
 
-    /** Minimal ESC/POS probe: init + status query (4 bytes) */
-    private const PROBE_PAYLOAD = "\x1B\x40\x1D\x72\x01";
-
     /** TCP ping connect timeout in seconds */
     private const PING_TIMEOUT = 3.0;
 
@@ -89,14 +86,17 @@ class HealthCheckPrinters extends Command
     /**
      * Probe a single printer and update its health status.
      *
+     * Uses the adapter's probe() method which MUST NOT produce mechanical
+     * side effects (no cut, no feed). Falls back to TCP ping on failure.
+     *
      * @return string The resulting health status key ('OK', 'REACHABLE', 'UNREACHABLE')
      */
     private function probePrinter(PrinterAdapterRegistry $registry, Printer $printer): string
     {
-        // Tier 1: ESC/POS probe via adapter
+        // Tier 1: Lightweight probe via adapter (no cut, no feed)
         try {
             $adapter = $registry->for($printer);
-            $result = $adapter->send($printer, self::PROBE_PAYLOAD);
+            $result = $adapter->probe($printer);
 
             if ($result->success) {
                 $printer->update([

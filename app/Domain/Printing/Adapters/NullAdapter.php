@@ -32,4 +32,12 @@ class NullAdapter implements PrinterAdapter
 
         return PrintResult::ok("Wrote payload to storage: {$path}");
     }
+
+    /**
+     * Null adapter always reports healthy — there is no physical printer to probe.
+     */
+    public function probe(Printer $printer): PrintResult
+    {
+        return PrintResult::ok('Null adapter — always OK');
+    }
 }

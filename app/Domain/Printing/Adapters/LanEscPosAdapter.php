@@ -82,4 +82,42 @@ class LanEscPosAdapter implements PrinterAdapter
             @fclose($socket);
         }
     }
+
+    /**
+     * Lightweight connectivity probe — no paper feed, no cut.
+     *
+     * Opens a TCP socket, sends ESC @ (init) + GS r 1 (status query),
+     * reads the response byte, then closes. Suitable for scheduled health
+     * checks that must not waste paper or interrupt in-progress tickets.
+     */
+    public function probe(Printer $printer): PrintResult
+    {
+        $host = $printer->address;
+        $port = $printer->port ?: 9100;
+
+        $socket = @fsockopen($host, $port, $errno, $errstr, self::CONNECT_TIMEOUT);
+        if ($socket === false) {
+            return PrintResult::fail("LAN printer {$host}:{$port} unreachable: {$errstr}");
+        }
+
+        try {
+            stream_set_timeout($socket, 2);
+
+            // ESC @ init + GS r 1 status query — no feed, no cut
+            $probePayload = "\x1B\x40\x1D\x72\x01";
+
+            $bytes = @fwrite($socket, $probePayload);
+
+            if ($bytes === false || $bytes === 0) {
+                return PrintResult::fail("LAN printer {$host}:{$port} probe write failed");
+            }
+
+            // Try to read the status response byte (printer may or may not respond)
+            $response = @fread($socket, 1);
+
+            return PrintResult::ok("LAN printer {$host}:{$port} probed OK");
+        } finally {
+            @fclose($socket);
+        }
+    }
 }

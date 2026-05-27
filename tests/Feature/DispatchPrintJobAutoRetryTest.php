@@ -8,6 +8,7 @@ use App\Domain\Printing\PrintQueueService;
 use App\Domain\Printing\PrintResult;
 use App\Domain\Printing\TicketRenderer;
 use App\Jobs\DispatchPrintJob;
+use Tests\Traits\DelegatesProbeToSend;
 use App\Models\AuditEvent;
 use App\Models\Printer;
 use App\Models\PrintJob;
@@ -51,6 +52,7 @@ it('re-dispatches itself on transport failure when under max_attempts', function
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -103,6 +105,7 @@ it('does NOT re-dispatch on transport failure when max_attempts reached', functi
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -154,6 +157,7 @@ it('sets next_attempt_at on transport failure', function () {
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -205,6 +209,7 @@ it('permanently fails when attempts already equal max_attempts at entry', functi
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -332,6 +337,7 @@ it('does NOT mark ProductionTicket FAILED on intermediate transport failure', fu
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -382,6 +388,7 @@ it('DOES mark ProductionTicket FAILED on final transport failure', function () {
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -430,6 +437,7 @@ it('emits PRODUCTION_TICKET_FAILED audit on final transport failure only', funct
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -560,6 +568,7 @@ it('skips already-printed job (idempotency guard)', function () {
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -608,6 +617,7 @@ it('successfully prints on first attempt and does not re-dispatch', function () 
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {
@@ -663,6 +673,7 @@ it('re-dispatches with correct exponential backoff delay', function () {
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool { return true; }
         public function send(Printer $printer, string $payload): PrintResult
         {

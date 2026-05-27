@@ -49,4 +49,13 @@ class UsbAgentAdapter implements PrinterAdapter
 
         return PrintResult::ok('Submitted to USB agent');
     }
+
+    /**
+     * Lightweight probe — same transport as send() but with a minimal
+     * payload so the agent can distinguish health checks from real prints.
+     */
+    public function probe(Printer $printer): PrintResult
+    {
+        return $this->send($printer, "\x1B\x40\x1D\x72\x01");
+    }
 }

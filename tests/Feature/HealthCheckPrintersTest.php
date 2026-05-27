@@ -37,7 +37,7 @@ it('sets health_status to OK when adapter probe succeeds', function () {
 
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('send')->andReturn(PrintResult::ok('Sent 4 bytes'));
+    $adapter->shouldReceive('probe')->andReturn(PrintResult::ok('Sent 4 bytes'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -77,7 +77,7 @@ it('sets health_status to REACHABLE when probe fails but TCP ping succeeds', fun
     // Adapter probe fails
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('send')->andReturn(PrintResult::fail('Printer busy'));
+    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Printer busy'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -113,7 +113,7 @@ it('sets health_status to UNREACHABLE when both probe and ping fail', function (
 
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('send')->andReturn(PrintResult::fail('Connection refused'));
+    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Connection refused'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -153,7 +153,7 @@ it('skips inactive printers', function () {
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
     // Should only be called once (for the active printer)
-    $adapter->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
+    $adapter->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -186,7 +186,7 @@ it('handles adapter exception gracefully and falls back to ping', function () {
 
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('send')->andThrow(new RuntimeException('Adapter exploded'));
+    $adapter->shouldReceive('probe')->andThrow(new RuntimeException('Adapter exploded'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -216,7 +216,7 @@ it('outputs summary after probing', function () {
 
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('send')->andReturn(PrintResult::fail('Down'));
+    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Down'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);
@@ -260,7 +260,7 @@ it('skips run when mutex cache key exists', function () {
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
     // send() should NEVER be called because the mutex blocks execution
-    $adapter->shouldReceive('send')->never();
+    $adapter->shouldReceive('probe')->never();
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     // for() should NEVER be called
@@ -296,7 +296,7 @@ it('--force bypasses the mutex even when cache key exists', function () {
     $adapter = Mockery::mock(PrinterAdapter::class);
     $adapter->shouldReceive('supports')->andReturn(true);
     // send() SHOULD be called because --force bypasses the mutex
-    $adapter->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
+    $adapter->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
     $registry->shouldReceive('for')->andReturn($adapter);

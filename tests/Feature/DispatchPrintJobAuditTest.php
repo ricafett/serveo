@@ -12,6 +12,7 @@ use App\Models\Printer;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use Illuminate\Support\Facades\Auth;
+use Tests\Traits\DelegatesProbeToSend;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -47,6 +48,7 @@ it('emits PRODUCTION_TICKET_PRINTED on successful production ticket print', func
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool
         {
             return true;
@@ -108,6 +110,7 @@ it('emits BILL_PRINTED on successful bill print', function () {
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool
         {
             return true;
@@ -167,6 +170,7 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
 
     $adapter = new class implements PrinterAdapter
     {
+        use DelegatesProbeToSend;
         public function supports(Printer $printer): bool
         {
             return true;

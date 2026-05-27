@@ -23,4 +23,14 @@ interface PrinterAdapter
      * to the printer. MUST NOT throw on transport errors; return PrintResult::fail.
      */
     public function send(Printer $printer, string $payload): PrintResult;
+
+    /**
+     * Lightweight connectivity check. MUST NOT produce any mechanical
+     * side effects — no paper feed, no cut. Used by the health-check
+     * scheduler and the admin test-print diagnostic.
+     *
+     * Default implementation falls back to send() for adapters that
+     * don't need to distinguish probe from print.
+     */
+    public function probe(Printer $printer): PrintResult;
 }
