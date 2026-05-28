@@ -38,7 +38,7 @@
                                         <span class="px-1">{{ $line['qty'] }}</span>
                                         <button class="px-1" wire:click="changeQty({{ $line['index'] }}, 1)">+</button>
                                     </td>
-                                    <td class="py-1 text-right">{{ number_format($line['subtotal'], 2, ',', ' ') }}</td>
+                                    <td class="py-1 text-right">{{ number_format($line['subtotal'], 2, ',', ' ') }} EUR</td>
                                     <td class="py-1 pl-2">
                                         <button wire:click="removeItem({{ $line['index'] }})"
                                             class="text-sm text-danger-600 dark:text-danger-400">{{ __('order.remove') }}</button>

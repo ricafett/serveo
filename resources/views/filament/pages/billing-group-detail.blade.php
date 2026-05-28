@@ -74,7 +74,7 @@
                                     <td class="py-1">{{ $item->quantity }}</td>
                                     <td class="py-1">{{ $item->fulfillment_route }}</td>
                                     <td class="py-1">{{ $item->delivery_reference_label }}</td>
-                                    <td class="py-1 text-right">{{ number_format((float)$item->line_subtotal, 2, ',', ' ') }}</td>
+                                    <td class="py-1 text-right">{{ number_format((float)$item->line_subtotal, 2, ',', ' ') }} EUR</td>
                                 </tr>
                             @endforeach
                         </tbody>
