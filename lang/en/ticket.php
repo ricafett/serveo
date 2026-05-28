@@ -15,4 +15,7 @@ return [
     'paid' => 'Paid',
     'due' => 'Due',
     'no_fiscal' => 'Internal document - no fiscal value',
+    'currency' => 'EUR',
+    'unknown_item' => 'Item #:id',
+    'delivery_arrow' => '   -> :label',
 ];

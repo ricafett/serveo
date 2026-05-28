@@ -932,6 +932,9 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'ticket', 'paid', 'Pago'],
             ['pt-PT', 'ticket', 'due', 'Em dívida'],
             ['pt-PT', 'ticket', 'no_fiscal', 'Documento interno - sem valor fiscal'],
+            ['pt-PT', 'ticket', 'currency', 'EUR'],
+            ['pt-PT', 'ticket', 'unknown_item', 'Item #:id'],
+            ['pt-PT', 'ticket', 'delivery_arrow', '   -> :label'],
 
             ['en-US', 'ticket', 'void', 'VOID'],
             ['en-US', 'ticket', 'reprint', 'REPRINT'],
@@ -947,6 +950,9 @@ class CoreSeeder extends Seeder
             ['en-US', 'ticket', 'paid', 'Paid'],
             ['en-US', 'ticket', 'due', 'Due'],
             ['en-US', 'ticket', 'no_fiscal', 'Internal document - no fiscal value'],
+            ['en-US', 'ticket', 'currency', 'EUR'],
+            ['en-US', 'ticket', 'unknown_item', 'Item #:id'],
+            ['en-US', 'ticket', 'delivery_arrow', '   -> :label'],
 
             // ---------- app (modifier sets & variants) ----------
             ['pt-PT', 'app', 'navigation_label_modifier_sets', 'Conjuntos de modificadores'],

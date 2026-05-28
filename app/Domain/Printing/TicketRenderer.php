@@ -38,7 +38,7 @@ class TicketRenderer
 
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
-            $name = $item->menuItem?->display_name ?? "Item #{$item->menu_item_id}";
+            $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);
             if ($item->variant_name) {
                 $name .= ' - '.$item->variant_name;
             }
@@ -49,7 +49,7 @@ class TicketRenderer
             $left = sprintf('%2dx %s', $qty, $name);
             $lines[] = mb_strimwidth($left, 0, self::WIDTH);
             if ($item->delivery_reference_label) {
-                $lines[] = '   -> '.$item->delivery_reference_label;
+                $lines[] = __('ticket.delivery_arrow', ['label' => $item->delivery_reference_label]);
             }
         }
 
@@ -85,7 +85,7 @@ class TicketRenderer
         }
 
         foreach ($items as $item) {
-            $name = $item->menuItem?->display_name ?? "Item #{$item->menu_item_id}";
+            $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);
             if ($item->variant_name) {
                 $name .= ' - '.$item->variant_name;
             }
@@ -93,18 +93,18 @@ class TicketRenderer
                 $name .= ' ('.$item->modifier_name.')';
             }
             $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
-            $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' EUR';
+            $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
             $lines[] = $this->row($left, $right);
         }
 
         $lines[] = str_repeat('-', self::WIDTH);
-        $lines[] = $this->row(__('ticket.subtotal'), number_format((float) $bill->subtotal_amount, 2, ',', ' ').' EUR');
-        $lines[] = $this->row(__('ticket.total'), number_format((float) $bill->total_amount, 2, ',', ' ').' EUR');
+        $lines[] = $this->row(__('ticket.subtotal'), number_format((float) $bill->subtotal_amount, 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.total'), number_format((float) $bill->total_amount, 2, ',', ' ').' '.__('ticket.currency'));
 
         $paid = (float) $bill->billingGroup?->paymentsTotal();
         if ($paid > 0) {
-            $lines[] = $this->row(__('ticket.paid'), number_format($paid, 2, ',', ' ').' EUR');
-            $lines[] = $this->row(__('ticket.due'), number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' EUR');
+            $lines[] = $this->row(__('ticket.paid'), number_format($paid, 2, ',', ' ').' '.__('ticket.currency'));
+            $lines[] = $this->row(__('ticket.due'), number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' '.__('ticket.currency'));
         }
 
         $lines[] = str_repeat('=', self::WIDTH);
