@@ -971,6 +971,13 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'test_print_failed', 'Teste de impressão falhou'],
             ['pt-PT', 'app', 'cashier_printer', 'Impressora de contas'],
             ['pt-PT', 'app', 'cashier_printer_help', 'Impressora usada para imprimir contas de clientes'],
+            ['pt-PT', 'app', 'print_config_section', 'Configuração de impressão'],
+            ['pt-PT', 'app', 'print_char_width', 'Caracteres por linha'],
+            ['pt-PT', 'app', 'print_char_width_help', 'Largura do conteúdo do ticket em caracteres (20–64, padrão 42)'],
+            ['pt-PT', 'app', 'print_begin_space', 'Linhas de avanço inicial'],
+            ['pt-PT', 'app', 'print_begin_space_help', 'Linhas em branco antes do conteúdo (0–10, padrão 0)'],
+            ['pt-PT', 'app', 'print_end_space', 'Linhas de avanço final'],
+            ['pt-PT', 'app', 'print_end_space_help', 'Linhas em branco após o conteúdo, antes do corte (0–10, padrão 3)'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -988,6 +995,13 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'test_print_failed', 'Test print failed'],
             ['en-US', 'app', 'cashier_printer', 'Bill Printer'],
             ['en-US', 'app', 'cashier_printer_help', 'Printer used to print customer bills'],
+            ['en-US', 'app', 'print_config_section', 'Print Configuration'],
+            ['en-US', 'app', 'print_char_width', 'Characters per line'],
+            ['en-US', 'app', 'print_char_width_help', 'Ticket content width in characters (20–64, default 42)'],
+            ['en-US', 'app', 'print_begin_space', 'Begin feed lines'],
+            ['en-US', 'app', 'print_begin_space_help', 'Blank lines fed before content (0–10, default 0)'],
+            ['en-US', 'app', 'print_end_space', 'End feed lines'],
+            ['en-US', 'app', 'print_end_space_help', 'Blank lines fed after content, before cut (0–10, default 3)'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],

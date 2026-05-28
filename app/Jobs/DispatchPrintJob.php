@@ -39,11 +39,22 @@ class DispatchPrintJob implements ShouldQueue
 
     public function __construct(public int $printJobId) {}
 
-    public function handle(PrinterAdapterRegistry $registry, TicketRenderer $renderer): void
+    public function handle(PrinterAdapterRegistry $registry): void
     {
         /** @var PrintJob|null $job */
         $job = PrintJob::with(['printer', 'printable'])->find($this->printJobId);
         if (! $job) {
+            return;
+        }
+
+        // Restore the locale that was active when the print job was created,
+        // so printed output uses the correct language regardless of queue worker defaults.
+        if ($job->locale) {
+            app()->setLocale($job->locale);
+        }
+
+        // Idempotency guard: already done or canceled
+        if ($job->status === PrintJob::STATUS_PRINTED || $job->status === PrintJob::STATUS_CANCELED) {
             return;
         }
 
@@ -96,6 +107,13 @@ class DispatchPrintJob implements ShouldQueue
 
             return;
         }
+
+        // Create TicketRenderer with printer-specific configuration
+        $renderer = new TicketRenderer(
+            charWidth: $printer->print_char_width ?? 42,
+            beginSpace: $printer->print_begin_space ?? 0,
+            endSpace: $printer->print_end_space ?? 3,
+        );
 
         try {
             $payload = match (true) {

@@ -149,4 +149,11 @@ return [
     'test_print_failed' => 'Test print failed',
     'cashier_printer' => 'Bill Printer',
     'cashier_printer_help' => 'Printer used to print customer bills',
+    'print_config_section' => 'Print Configuration',
+    'print_char_width' => 'Characters per line',
+    'print_char_width_help' => 'Ticket content width in characters (20–64, default 42)',
+    'print_begin_space' => 'Begin feed lines',
+    'print_begin_space_help' => 'Blank lines fed before content (0–10, default 0)',
+    'print_end_space' => 'End feed lines',
+    'print_end_space_help' => 'Blank lines fed after content, before cut (0–10, default 3)',
 ];

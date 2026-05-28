@@ -8,12 +8,21 @@ use App\Models\ProductionTicket;
 use Illuminate\Support\Carbon;
 
 /**
- * Plain-text 80mm renderer. Tickets are 42-char wide ASCII payloads suitable
+ * Plain-text 80mm renderer. Tickets are configurable-width payloads suitable
  * for any standard ESC/POS printer or fallback file output.
  */
 class TicketRenderer
 {
-    private const WIDTH = 42;
+    public function __construct(
+        private readonly int $charWidth = 42,
+        private readonly int $beginSpace = 0,
+        private readonly int $endSpace = 3,
+    ) {}
+
+    private function width(): int
+    {
+        return $this->charWidth;
+    }
 
     public function renderProductionTicket(ProductionTicket $ticket): string
     {
@@ -24,7 +33,7 @@ class TicketRenderer
         if ($ticket->is_reprint) {
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
-        $lines[] = str_repeat('=', self::WIDTH);
+        $lines[] = str_repeat('=', $this->width());
         $lines[] = __('ticket.group').': '.($ticket->billingGroup?->display_code ?? '-');
         if ($ticket->occupiedZone) {
             $z = $ticket->occupiedZone;
@@ -34,7 +43,7 @@ class TicketRenderer
             $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;
         }
         $lines[] = __('ticket.time').':  '.$this->localTime($ticket->requested_at);
-        $lines[] = str_repeat('-', self::WIDTH);
+        $lines[] = str_repeat('-', $this->width());
 
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
@@ -47,16 +56,16 @@ class TicketRenderer
             }
             $qty = $item->quantity;
             $left = sprintf('%2dx %s', $qty, $name);
-            $lines[] = mb_strimwidth($left, 0, self::WIDTH);
+            $lines[] = mb_strimwidth($left, 0, $this->width());
             if ($item->delivery_reference_label) {
                 $lines[] = __('ticket.delivery_arrow', ['label' => $item->delivery_reference_label]);
             }
         }
 
-        $lines[] = str_repeat('=', self::WIDTH);
+        $lines[] = str_repeat('=', $this->width());
         $lines[] = __('ticket.ticket_num').' #'.$ticket->id;
 
-        return implode("\n", $lines)."\n";
+        return $this->wrap(implode("\n", $lines)."\n");
     }
 
     public function renderBill(BillingDocument $bill): string
@@ -68,11 +77,11 @@ class TicketRenderer
         if ($bill->is_reprint) {
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
-        $lines[] = str_repeat('=', self::WIDTH);
+        $lines[] = str_repeat('=', $this->width());
         $lines[] = __('ticket.group').':    '.$bill->billingGroup?->display_code;
         $lines[] = __('ticket.document').': '.($bill->document_number ?: '#'.$bill->id);
         $lines[] = __('ticket.time').':      '.$this->localTime($bill->requested_at);
-        $lines[] = str_repeat('-', self::WIDTH);
+        $lines[] = str_repeat('-', $this->width());
 
         $items = collect();
         foreach ($bill->billingGroup?->orderHeaders ?? [] as $header) {
@@ -97,7 +106,7 @@ class TicketRenderer
             $lines[] = $this->row($left, $right);
         }
 
-        $lines[] = str_repeat('-', self::WIDTH);
+        $lines[] = str_repeat('-', $this->width());
         $lines[] = $this->row(__('ticket.subtotal'), number_format((float) $bill->subtotal_amount, 2, ',', ' ').' '.__('ticket.currency'));
         $lines[] = $this->row(__('ticket.total'), number_format((float) $bill->total_amount, 2, ',', ' ').' '.__('ticket.currency'));
 
@@ -107,10 +116,24 @@ class TicketRenderer
             $lines[] = $this->row(__('ticket.due'), number_format((float) $bill->total_amount - $paid, 2, ',', ' ').' '.__('ticket.currency'));
         }
 
-        $lines[] = str_repeat('=', self::WIDTH);
+        $lines[] = str_repeat('=', $this->width());
         $lines[] = $this->center(__('ticket.no_fiscal'));
 
-        return implode("\n", $lines)."\n";
+        return $this->wrap(implode("\n", $lines)."\n");
+    }
+
+    private function wrap(string $payload): string
+    {
+        $result = '';
+        if ($this->beginSpace > 0) {
+            $result .= str_repeat("\n", $this->beginSpace);
+        }
+        $result .= $payload;
+        if ($this->endSpace > 0) {
+            $result .= str_repeat("\n", $this->endSpace);
+        }
+
+        return $result;
     }
 
     private function localTime(?Carbon $carbon): string
@@ -121,17 +144,17 @@ class TicketRenderer
     private function center(string $text): string
     {
         $len = mb_strlen($text);
-        if ($len >= self::WIDTH) {
+        if ($len >= $this->width()) {
             return $text;
         }
-        $pad = (int) floor((self::WIDTH - $len) / 2);
+        $pad = (int) floor(($this->width() - $len) / 2);
 
         return str_repeat(' ', $pad).$text;
     }
 
     private function row(string $left, string $right): string
     {
-        $space = self::WIDTH - mb_strlen($left) - mb_strlen($right);
+        $space = $this->width() - mb_strlen($left) - mb_strlen($right);
         if ($space < 1) {
             return $left.' '.$right;
         }

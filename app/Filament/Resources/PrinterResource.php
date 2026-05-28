@@ -72,6 +72,30 @@ class PrinterResource extends BaseResource
             Forms\Components\TextInput::make('agent_printer_id')->label(__('app.agent_internal_id'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
             Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Section::make(__('app.print_config_section'))
+                ->schema([
+                    Forms\Components\TextInput::make('print_char_width')
+                        ->label(__('app.print_char_width'))
+                        ->numeric()
+                        ->minValue(20)
+                        ->maxValue(64)
+                        ->default(42)
+                        ->helperText(__('app.print_char_width_help')),
+                    Forms\Components\TextInput::make('print_begin_space')
+                        ->label(__('app.print_begin_space'))
+                        ->numeric()
+                        ->minValue(0)
+                        ->maxValue(10)
+                        ->default(0)
+                        ->helperText(__('app.print_begin_space_help')),
+                    Forms\Components\TextInput::make('print_end_space')
+                        ->label(__('app.print_end_space'))
+                        ->numeric()
+                        ->minValue(0)
+                        ->maxValue(10)
+                        ->default(3)
+                        ->helperText(__('app.print_end_space_help')),
+                ])->columns(3),
         ]);
     }
 
