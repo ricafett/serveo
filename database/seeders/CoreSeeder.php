@@ -963,6 +963,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'test_print', 'Teste de impressão'],
             ['pt-PT', 'app', 'test_print_sent', 'Teste de impressão enviado com sucesso'],
             ['pt-PT', 'app', 'test_print_failed', 'Teste de impressão falhou'],
+            ['pt-PT', 'app', 'cashier_printer', 'Impressora de contas'],
+            ['pt-PT', 'app', 'cashier_printer_help', 'Impressora usada para imprimir contas de clientes'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -978,6 +980,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'test_print', 'Test Print'],
             ['en-US', 'app', 'test_print_sent', 'Test print sent successfully'],
             ['en-US', 'app', 'test_print_failed', 'Test print failed'],
+            ['en-US', 'app', 'cashier_printer', 'Bill Printer'],
+            ['en-US', 'app', 'cashier_printer_help', 'Printer used to print customer bills'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],

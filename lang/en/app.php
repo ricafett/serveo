@@ -147,4 +147,6 @@ return [
     'test_print' => 'Test Print',
     'test_print_sent' => 'Test print sent successfully',
     'test_print_failed' => 'Test print failed',
+    'cashier_printer' => 'Bill Printer',
+    'cashier_printer_help' => 'Printer used to print customer bills',
 ];
