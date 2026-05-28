@@ -141,7 +141,7 @@ class PrinterResource extends BaseResource
                                 ."PT sp: ç Ç ã Ã õ Õ á Á é É í Í ó Ó ú Ú â Â ê Ê ô Ô à À\n"
                                 ."\n"
                                 ."--- Special characters ---\n"
-                                ."EUR (Euro)\n"
+                                ."€ (Euro)\n"
                                 ."\n"
                                 ."--- Character map ---\n"
                                 ."0123456789\n"

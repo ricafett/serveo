@@ -47,22 +47,23 @@ class LanEscPosAdapter implements PrinterAdapter
 
             // ESC @  -> initialise printer (must come first — ESC @ resets codepage)
             $init = "\x1B\x40";
-            // ESC t 3 -> select PC860 character code table (Portuguese: çãõáéíóúâêôà)
-            $charsetInit = "\x1B\x74\x03";
+            // FS .   -> cancel Kanji/Chinese character mode
+            //           (required on some printers before Western codepages take effect)
+            $cancelKanji = "\x1C\x2E";
+            // ESC t 16 -> select WPC1252 character code table (full Portuguese + €)
+            $charsetInit = "\x1B\x74\x10";
             // GS V 1 -> partial cut (most ESC/POS cutters)
             $cut = "\n\n\n\x1D\x56\x01";
 
-            // Convert UTF-8 text payload to CP860 for correct Portuguese character rendering.
-            // ESC/POS command bytes are single-byte and unaffected by the conversion.
-            // iconv supports CP860 on more PHP builds than mb_convert_encoding; fall back
-            // to CP850 via mbstring if iconv is absent (CP850 misses õíúâêôà but covers most).
+            // Convert UTF-8 text payload to Windows-1252 (WPC1252) which includes
+            // full Portuguese diacritics and the Euro sign (€ at 0x80).
             $encodedPayload = function_exists('iconv')
-                ? iconv('UTF-8', 'CP860//TRANSLIT', $payload)
+                ? iconv('UTF-8', 'Windows-1252//TRANSLIT', $payload)
                 : (function_exists('mb_convert_encoding')
-                    ? mb_convert_encoding($payload, 'CP850', 'UTF-8')
+                    ? mb_convert_encoding($payload, 'Windows-1252', 'UTF-8')
                     : $payload);
 
-            $data = $init.$charsetInit.$encodedPayload.$cut;
+            $data = $init.$cancelKanji.$charsetInit.$encodedPayload.$cut;
 
             // Enforce write timeout via stream_select().
             // PHP's stream_set_timeout() only affects fread(), not fwrite().
