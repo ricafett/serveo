@@ -8,6 +8,7 @@ use App\Models\User;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -87,7 +88,7 @@ class UserResource extends BaseResource
                     Printer::where('is_active', true)
                         ->pluck('name', 'id')
                 )
-                ->visible(fn (Forms\Get $get) => collect($get('roles'))->contains('CASHIER'))
+                ->visible(fn (Get $get) => collect($get('roles'))->contains('CASHIER'))
                 ->helperText(__('app.cashier_printer_help'))
                 ->nullable(),
         ]);
