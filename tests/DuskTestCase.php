@@ -25,6 +25,7 @@ abstract class DuskTestCase extends BaseTestCase
         'billing_documents',
         'billing_groups',
         'cashier_printer_assignments',
+        'fulfillment_routes',
         'occupied_zones',
         'order_headers',
         'order_items',

@@ -90,6 +90,27 @@ test('cashier can print bill from checkout', function () {
     });
 });
 
+test('cashier without printer assignment gets error on bill print', function () {
+    // Create a cashier WITHOUT a printer assignment.
+    $cashierNoPrinter = makeUser('CASHIER');
+
+    $this->browse(function (Browser $browser) use ($cashierNoPrinter) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $cashierNoPrinter->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/checkout/{$this->group->id}")
+            ->waitForText('Checkout', 5)
+            ->press('Print Bill')
+            ->waitForText('No cashier printer is assigned to this user.', 10);
+    });
+});
+
 test('cashier can record partial payment', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
