@@ -128,12 +128,24 @@ class PrinterResource extends BaseResource
                         try {
                             $adapter = $registry->for($record);
 
-                            // Minimal test print: header + printer info + timestamp
-                            $testPayload = "\x1B\x40"
-                                ."Serveo Test Print\n"
+                            // Test print payload: adapter handles init + cut.
+                            // Includes Portuguese character set to verify encoding.
+                            $testPayload = "=== Serveo Test Print ===\n"
                                 ."Printer: {$record->name}\n"
-                                .now()->format('Y-m-d H:i:s')
-                                ."\n\n\n\x1D\x56\x01";
+                                ."Date: ".now()->format('Y-m-d H:i:s')."\n"
+                                ."\n"
+                                ."--- Portuguese characters ---\n"
+                                ."Lower: à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö ø ù ú û ü\n"
+                                ."Upper: À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö Ø Ù Ú Û Ü\n"
+                                ."PT sp: ç Ç ã Ã õ Õ á Á é É í Í ó Ó ú Ú â Â ê Ê ô Ô à À\n"
+                                ."\n"
+                                ."--- Special characters ---\n"
+                                ."\xE2\x82\xAC (Euro sign)\n"
+                                ."\n"
+                                ."--- Character map ---\n"
+                                ."0123456789\n"
+                                .'!"#$%&\'()*+,-./:;<=>?@'."\n"
+                                ."[\\]^_`{|}~\n";
 
                             $result = $adapter->send($record, $testPayload);
 
