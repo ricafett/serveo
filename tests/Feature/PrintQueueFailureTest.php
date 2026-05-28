@@ -74,3 +74,56 @@ it('lists failed jobs in PrintJobResource scope', function () {
     $failedCount = PrintJob::where('status', PrintJob::STATUS_FAILED)->count();
     expect($failedCount)->toBeGreaterThanOrEqual(1);
 });
+
+it('batch retries multiple failed jobs', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    // Create 2 orders with 2 different items (each creates separate print jobs)
+    app(OrderService::class)->submit($this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
+    app(OrderService::class)->submit($this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
+
+    $jobs = PrintJob::whereIn('status', [PrintJob::STATUS_PENDING, PrintJob::STATUS_PRINTED])->get();
+    expect($jobs)->toHaveCount(2);
+
+    // Mark both as FAILED
+    foreach ($jobs as $job) {
+        $job->update(['status' => PrintJob::STATUS_FAILED, 'last_error' => 'test error']);
+    }
+
+    Queue::fake();
+    $results = app(PrintQueueService::class)->retryBatch($jobs->pluck('id')->toArray(), $this->cashier);
+
+    expect($results['success'])->toBe(2)
+        ->and($results['skipped'])->toBe(0);
+    Queue::assertPushed(DispatchPrintJob::class, 2);
+
+    foreach ($jobs as $job) {
+        expect($job->refresh()->status)->toBe(PrintJob::STATUS_PENDING)
+            ->and($job->last_error)->toBeNull();
+    }
+});
+
+it('batch retry skips already printed jobs', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    app(OrderService::class)->submit($this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
+    app(OrderService::class)->submit($this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
+
+    $jobs = PrintJob::whereIn('status', [PrintJob::STATUS_PENDING, PrintJob::STATUS_PRINTED])->get();
+    expect($jobs)->toHaveCount(2);
+
+    // One failed, one printed
+    $jobs[0]->update(['status' => PrintJob::STATUS_FAILED, 'last_error' => 'test error']);
+    // jobs[1] stays as PRINTED
+
+    Queue::fake();
+    $results = app(PrintQueueService::class)->retryBatch($jobs->pluck('id')->toArray(), $this->cashier);
+
+    expect($results['success'])->toBe(1)
+        ->and($results['skipped'])->toBe(1);
+    Queue::assertPushed(DispatchPrintJob::class, 1);
+});

@@ -11,7 +11,9 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
@@ -99,6 +101,36 @@ class PrintJobResource extends BaseResource
                         $record->update(['status' => 'CANCELED']);
                         Notification::make()->title('Cancelado')->send();
                     }),
+            ])
+            ->bulkActions([
+                BulkAction::make('retry_batch')
+                    ->label(__('app.retry_selected'))
+                    ->icon('heroicon-o-arrow-path')
+                    ->visible(fn () => Auth::user()?->can('print_job.retry'))
+                    ->action(function (Collection $records, PrintQueueService $queue) {
+                        $results = $queue->retryBatch($records->pluck('id')->toArray(), Auth::user());
+
+                        foreach ($records as $record) {
+                            Audit::record(
+                                'PRINT_JOB_RETRIED',
+                                "Print job #{$record->id} reenviado (batch)",
+                                ['kind' => $record->job_kind],
+                                ['actor_user_id' => Auth::id()],
+                            );
+                        }
+
+                        $message = __('app.retry_batch_result', [
+                            'success' => $results['success'],
+                            'skipped' => $results['skipped'],
+                        ]);
+
+                        Notification::make()
+                            ->title($results['success'] > 0 ? __('app.retry_batch_success') : __('app.retry_batch_none'))
+                            ->body($message)
+                            ->success()
+                            ->send();
+                    })
+                    ->deselectRecordsAfterCompletion(),
             ]);
     }
 

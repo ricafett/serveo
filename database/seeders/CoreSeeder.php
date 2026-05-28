@@ -978,6 +978,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'print_begin_space_help', 'Linhas em branco antes do conteúdo (0–10, padrão 0)'],
             ['pt-PT', 'app', 'print_end_space', 'Linhas de avanço final'],
             ['pt-PT', 'app', 'print_end_space_help', 'Linhas em branco após o conteúdo, antes do corte (0–10, padrão 3)'],
+            ['pt-PT', 'app', 'retry_selected', 'Reenviar selecionados'],
+            ['pt-PT', 'app', 'retry_batch_result', ':success reenviado(s), :skipped ignorado(s)'],
+            ['pt-PT', 'app', 'retry_batch_success', 'Reenviado(s)'],
+            ['pt-PT', 'app', 'retry_batch_none', 'Nenhum reenviado'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -1002,6 +1006,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'print_begin_space_help', 'Blank lines fed before content (0–10, default 0)'],
             ['en-US', 'app', 'print_end_space', 'End feed lines'],
             ['en-US', 'app', 'print_end_space_help', 'Blank lines fed after content, before cut (0–10, default 3)'],
+            ['en-US', 'app', 'retry_selected', 'Retry selected'],
+            ['en-US', 'app', 'retry_batch_result', ':success retried, :skipped skipped'],
+            ['en-US', 'app', 'retry_batch_success', 'Retried'],
+            ['en-US', 'app', 'retry_batch_none', 'Nothing retried'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],
