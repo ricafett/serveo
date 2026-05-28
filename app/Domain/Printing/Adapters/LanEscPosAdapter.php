@@ -45,20 +45,24 @@ class LanEscPosAdapter implements PrinterAdapter
         try {
             stream_set_timeout($socket, self::READ_TIMEOUT);
 
-            // ESC t 2 -> select PC850 character code table (supports Portuguese: çãõáéíóúâêôà)
-            $charsetInit = "\x1B\x74\x02";
-            // ESC @  -> initialise printer
+            // ESC @  -> initialise printer (must come first — ESC @ resets codepage)
             $init = "\x1B\x40";
+            // ESC t 3 -> select PC860 character code table (Portuguese: çãõáéíóúâêôà)
+            $charsetInit = "\x1B\x74\x03";
             // GS V 1 -> partial cut (most ESC/POS cutters)
             $cut = "\n\n\n\x1D\x56\x01";
 
-            // Convert UTF-8 text payload to CP850 for correct Portuguese character rendering.
+            // Convert UTF-8 text payload to CP860 for correct Portuguese character rendering.
             // ESC/POS command bytes are single-byte and unaffected by the conversion.
-            $encodedPayload = function_exists('mb_convert_encoding')
-                ? mb_convert_encoding($payload, 'CP850', 'UTF-8')
-                : $payload;
+            // iconv supports CP860 on more PHP builds than mb_convert_encoding; fall back
+            // to CP850 via mbstring if iconv is absent (CP850 misses õíúâêôà but covers most).
+            $encodedPayload = function_exists('iconv')
+                ? iconv('UTF-8', 'CP860//TRANSLIT', $payload)
+                : (function_exists('mb_convert_encoding')
+                    ? mb_convert_encoding($payload, 'CP850', 'UTF-8')
+                    : $payload);
 
-            $data = $charsetInit.$init.$encodedPayload.$cut;
+            $data = $init.$charsetInit.$encodedPayload.$cut;
 
             // Enforce write timeout via stream_select().
             // PHP's stream_set_timeout() only affects fread(), not fwrite().

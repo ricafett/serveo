@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -72,7 +73,7 @@ class PrinterResource extends BaseResource
             Forms\Components\TextInput::make('agent_printer_id')->label(__('app.agent_internal_id'))
                 ->visible(fn (Get $get) => $get('connection_type') === 'USB_AGENT'),
             Forms\Components\Toggle::make('is_active')->default(true),
-            Forms\Components\Section::make(__('app.print_config_section'))
+            Section::make(__('app.print_config_section'))
                 ->schema([
                     Forms\Components\TextInput::make('print_char_width')
                         ->label(__('app.print_char_width'))
@@ -140,7 +141,7 @@ class PrinterResource extends BaseResource
                                 ."PT sp: ç Ç ã Ã õ Õ á Á é É í Í ó Ó ú Ú â Â ê Ê ô Ô à À\n"
                                 ."\n"
                                 ."--- Special characters ---\n"
-                                ."\xE2\x82\xAC (Euro sign)\n"
+                                ."EUR (Euro)\n"
                                 ."\n"
                                 ."--- Character map ---\n"
                                 ."0123456789\n"
