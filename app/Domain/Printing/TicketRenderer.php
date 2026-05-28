@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 class TicketRenderer
 {
     public function __construct(
-        private readonly int $charWidth = 42,
+        private readonly int $charWidth = 48,
         private readonly int $beginSpace = 0,
         private readonly int $endSpace = 3,
     ) {}

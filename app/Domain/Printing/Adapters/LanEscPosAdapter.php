@@ -53,7 +53,8 @@ class LanEscPosAdapter implements PrinterAdapter
             // ESC t 16 -> select WPC1252 character code table (full Portuguese + €)
             $charsetInit = "\x1B\x74\x10";
             // GS V 1 -> partial cut (most ESC/POS cutters)
-            $cut = "\n\n\n\x1D\x56\x01";
+            // 5 newlines before cut give enough clearance from last printed line
+            $cut = "\n\n\n\n\n\x1D\x56\x01";
 
             // Convert UTF-8 text payload to Windows-1252 (WPC1252) which includes
             // full Portuguese diacritics and the Euro sign (€ at 0x80).

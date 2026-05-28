@@ -80,7 +80,7 @@ class PrinterResource extends BaseResource
                         ->numeric()
                         ->minValue(20)
                         ->maxValue(64)
-                        ->default(42)
+                        ->default(48)
                         ->helperText(__('app.print_char_width_help')),
                     Forms\Components\TextInput::make('print_begin_space')
                         ->label(__('app.print_begin_space'))

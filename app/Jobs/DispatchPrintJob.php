@@ -110,7 +110,7 @@ class DispatchPrintJob implements ShouldQueue
 
         // Create TicketRenderer with printer-specific configuration
         $renderer = new TicketRenderer(
-            charWidth: $printer->print_char_width ?? 42,
+            charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
             endSpace: $printer->print_end_space ?? 3,
         );

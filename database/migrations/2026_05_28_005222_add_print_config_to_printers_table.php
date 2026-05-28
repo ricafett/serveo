@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('printers', function (Blueprint $table) {
-            $table->unsignedTinyInteger('print_char_width')->default(42)->after('agent_printer_id');
+            $table->unsignedTinyInteger('print_char_width')->default(48)->after('agent_printer_id');
             $table->unsignedTinyInteger('print_begin_space')->default(0)->after('print_char_width');
             $table->unsignedTinyInteger('print_end_space')->default(3)->after('print_begin_space');
         });
