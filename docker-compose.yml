@@ -12,8 +12,8 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: ${APP_DEBUG:-false}
       APP_URL: ${APP_URL:-http://localhost}
-      APP_LOCALE: ${APP_LOCALE:-en}
-      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
+      APP_LOCALE: ${APP_LOCALE:-pt-PT}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-pt-PT}
       APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
       LOG_LEVEL: ${LOG_LEVEL:-warning}
@@ -115,6 +115,8 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: ${APP_DEBUG:-false}
       APP_URL: ${APP_URL:-http://localhost}
+      APP_LOCALE: ${APP_LOCALE:-pt-PT}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-pt-PT}
       APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
       LOG_CHANNEL: ${LOG_CHANNEL:-stack}
       LOG_LEVEL: ${LOG_LEVEL:-warning}
