@@ -21,7 +21,7 @@ class BillingGroupResource extends BaseResource
 {
     protected static ?string $model = BillingGroup::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'app.navigation_group_config';
+    protected static string|\UnitEnum|null $navigationGroup = 'app.navigation_group_operation';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
