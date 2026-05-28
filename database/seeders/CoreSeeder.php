@@ -18,6 +18,7 @@ use App\Models\Seat;
 use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
+use App\Models\Setting;
 use App\Models\TranslationKey;
 use App\Models\User;
 use App\Models\Venue;
@@ -26,10 +27,29 @@ use Illuminate\Support\Facades\Hash;
 
 class CoreSeeder extends Seeder
 {
+    /**
+     * Bump this number when seed data changes in a release.
+     * Existing deployments with a lower version will re-run the seeder.
+     * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
+     */
+    private const SEED_VERSION = 1;
+
     public function run(): void
     {
+        // Skip if already seeded at or above current version.
+        // Allow forcing via --force flag or CORE_SEED_FRESH env variable.
+        $forceFresh = (bool) env('CORE_SEED_FRESH', false);
+        $currentVersion = (int) Setting::getValue('core_seed_version', 0);
+
+        if (! $forceFresh && $currentVersion >= self::SEED_VERSION) {
+            $this->command?->info("CoreSeeder: already seeded (version {$currentVersion}). Skipping.");
+
+            return;
+        }
+
+        $this->command?->info("CoreSeeder: running (current version: {$currentVersion}, target: ".self::SEED_VERSION.')...');
         // ---- Users ----
-        $admin = User::updateOrCreate(
+        $admin = User::firstOrCreate(
             ['username' => 'admin'],
             [
                 'name' => 'System Admin',
@@ -41,7 +61,7 @@ class CoreSeeder extends Seeder
         );
         $admin->syncRoles(['ADMIN']);
 
-        $cashier = User::updateOrCreate(
+        $cashier = User::firstOrCreate(
             ['username' => 'cashier1'],
             [
                 'name' => 'Cashier One',
@@ -53,7 +73,7 @@ class CoreSeeder extends Seeder
         );
         $cashier->syncRoles(['CASHIER']);
 
-        $server = User::updateOrCreate(
+        $server = User::firstOrCreate(
             ['username' => 'server1'],
             [
                 'name' => 'Server One',
@@ -86,7 +106,7 @@ class CoreSeeder extends Seeder
             ['ACTIVE', 'Ativo',   10],
             ['CLOSED', 'Fechado', 20],
         ] as [$code, $name, $sort]) {
-            BillingStatus::updateOrCreate(
+            BillingStatus::firstOrCreate(
                 ['code' => $code],
                 ['display_name' => $name, 'sort_order' => $sort, 'is_active' => true]
             );
@@ -216,39 +236,39 @@ class CoreSeeder extends Seeder
         }
 
         // ---- Printers ----
-        $kitchenPrinter = Printer::updateOrCreate(
+        $kitchenPrinter = Printer::firstOrCreate(
             ['name' => 'Cozinha LAN'],
             ['printer_type' => 'KITCHEN', 'connection_type' => 'LAN', 'address' => '192.168.1.50', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
         );
-        $barPrinter = Printer::updateOrCreate(
+        $barPrinter = Printer::firstOrCreate(
             ['name' => 'Bar LAN'],
             ['printer_type' => 'BAR', 'connection_type' => 'LAN', 'address' => '192.168.1.51', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
         );
-        $billPrinter = Printer::updateOrCreate(
+        $billPrinter = Printer::firstOrCreate(
             ['name' => 'Caixa 1'],
             ['printer_type' => 'BILL', 'connection_type' => 'LAN', 'address' => '192.168.1.60', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
         );
 
         // ---- Printer routes ----
-        PrinterRoute::updateOrCreate(
+        PrinterRoute::firstOrCreate(
             ['venue_id' => $venue->id, 'document_type' => 'PRODUCTION_TICKET', 'fulfillment_route' => 'KITCHEN'],
             ['printer_id' => $kitchenPrinter->id, 'is_active' => true]
         );
-        PrinterRoute::updateOrCreate(
+        PrinterRoute::firstOrCreate(
             ['venue_id' => $venue->id, 'document_type' => 'PRODUCTION_TICKET', 'fulfillment_route' => 'BAR'],
             ['printer_id' => $barPrinter->id, 'is_active' => true]
         );
-        PrinterRoute::updateOrCreate(
+        PrinterRoute::firstOrCreate(
             ['venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'KITCHEN'],
             ['printer_id' => $kitchenPrinter->id, 'is_active' => true]
         );
-        PrinterRoute::updateOrCreate(
+        PrinterRoute::firstOrCreate(
             ['venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'BAR'],
             ['printer_id' => $barPrinter->id, 'is_active' => true]
         );
 
         // ---- Cashier printer assignment ----
-        CashierPrinterAssignment::updateOrCreate(
+        CashierPrinterAssignment::firstOrCreate(
             ['user_id' => $cashier->id, 'printer_id' => $billPrinter->id],
             ['is_active' => true]
         );
@@ -1032,5 +1052,8 @@ class CoreSeeder extends Seeder
                 ['translation_value' => $val, 'is_active' => true]
             );
         }
+
+        // Record that seeding completed at this version
+        Setting::setValue('core_seed_version', self::SEED_VERSION);
     }
 }
