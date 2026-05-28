@@ -29,6 +29,7 @@ return [
     'search_placeholder' => 'Search by name, code or section...',
     'no_groups_found' => 'No billing groups found.',
     'amount' => 'Amount',
+    'fill_balance' => 'Fill balance',
     'payment_method' => 'Payment Method',
     'production_tickets' => 'Production Tickets',
     'items' => 'items',

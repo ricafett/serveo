@@ -206,6 +206,9 @@ Charges belong to the billing group even when the group spans multiple occupied 
 ### BR-055 — Zone detail remains operationally visible
 Even though totals are group-level, zone-level associations must remain visible for service traceability.
 
+### BR-081 — Payment does not release zones
+Recording a payment, including a full payment that brings the balance to zero, shall not automatically release occupied zones. Zone release is a separate, explicit action that must be performed by an authorized user.
+
 ## 6. Roles and permissions
 
 ### BR-056 — Interactive MVP roles

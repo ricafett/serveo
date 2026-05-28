@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-8" wire:poll.10s="refreshData">
+<div class="p-4 sm:p-6 lg:p-8" x-data="{ releaseModal: @entangle('showReleaseModal') }" wire:poll.10s="refreshData">
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
@@ -81,6 +81,38 @@
             </div>
         </div>
 
+        {{-- Occupied Zones --}}
+        <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.occupied_zones') }}</h2>
+                <span class="text-base text-gray-500 dark:text-gray-400">{{ $group?->occupiedZones?->count() ?? 0 }}</span>
+            </div>
+            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                @forelse($group?->occupiedZones ?? [] as $zone)
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <div>
+                            <div class="text-base font-medium text-gray-900 dark:text-white">{{ $zone->rangeLabelWithCount() }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ $zone->defaultDeliveryLabel() }}
+                                @if($zone->server)
+                                    · {{ $zone->server->name }}
+                                @endif
+                            </div>
+                        </div>
+                        @if($zone->is_open && ! $group?->is_closed)
+                            @can('floor.release_zone')
+                                <button type="button" wire:click="confirmReleaseZone({{ $zone->id }})" class="text-base text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px]">
+                                    {{ __('billing.release_zone') }}
+                                </button>
+                            @endcan
+                        @endif
+                    </div>
+                @empty
+                    <div class="px-4 py-6 text-center text-base text-gray-500 dark:text-gray-400">{{ __('billing.no_zones') }}</div>
+                @endforelse
+            </div>
+        </div>
+
         {{-- Orders --}}
         <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
@@ -142,35 +174,6 @@
             </div>
         @endif
 
-        {{-- Bills --}}
-        @if($group?->billingDocuments?->count() > 0)
-            <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                    <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.printed_bills') }}</h2>
-                </div>
-                <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                    @foreach($group->billingDocuments as $doc)
-                        <div class="px-4 py-3 flex items-center justify-between">
-                            <div>
-                                <div class="text-base text-gray-900 dark:text-white">
-                                    {{ $doc->document_number }}
-                                    @if($doc->is_reprint)
-                                        <span class="text-sm text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
-                                    @endif
-                                </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }} €</div>
-                            </div>
-                            @can('billing_document.reprint')
-                                <button type="button" wire:click="reprintBill({{ $doc->id }})" wire:target="reprintBill" wire:loading.attr="disabled" class="text-base text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 px-2 py-1 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {{ __('cashier.reprint') }}
-                                </button>
-                            @endcan
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
         {{-- Payment Form --}}
         @if(! $group?->is_closed)
             @can('payment.record')
@@ -182,7 +185,14 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('cashier.amount') }}</label>
-                                <input id="payment-amount" type="number" wire:model="paymentAmount" step="0.01" min="0.01" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3">
+                                <div class="flex gap-2">
+                                    <input id="payment-amount" type="number" wire:model="paymentAmount" step="0.01" min="0.01" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3">
+                                    @if($this->balance > 0)
+                                        <button type="button" wire:click="fillBalance" class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] whitespace-nowrap transition-colors">
+                                            {{ __('cashier.fill_balance') }}
+                                        </button>
+                                    @endif
+                                </div>
                                 @error('paymentAmount') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -201,5 +211,55 @@
                 </div>
             @endcan
         @endif
+    </div>
+
+    {{-- Release Zone Confirmation Modal --}}
+    <div
+        x-show="releaseModal"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        style="display: none;"
+    >
+        <div
+            x-show="releaseModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/50 dark:bg-black/70"
+            @click="$wire.cancelReleaseZone()"
+        ></div>
+        <div
+            x-show="releaseModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
+            x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
+        >
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.release_zone') }}</h2>
+                    <button type="button" @click="$wire.cancelReleaseZone()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <p class="text-base text-gray-600 dark:text-gray-400 mb-6">{{ __('billing.release_confirm') }}</p>
+
+                <div class="flex gap-3">
+                    <button type="button" @click="$wire.cancelReleaseZone()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">
+                        {{ __('app.cancel') }}
+                    </button>
+                    <button type="button" wire:click="releaseZone" wire:target="releaseZone" wire:loading.attr="disabled" class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {{ __('billing.release_zone') }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

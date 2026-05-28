@@ -4,8 +4,10 @@ namespace App\Livewire\Cashier;
 
 use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
+use App\Domain\Floor\OccupancyService;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
+use App\Models\OccupiedZone;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -27,6 +29,11 @@ class Checkout extends Component
     public ?string $successMessage = null;
 
     public bool $isSubmitting = false;
+
+    // Zone release modal
+    public bool $showReleaseModal = false;
+
+    public ?int $releaseZoneId = null;
 
     public function mount(int $id): void
     {
@@ -178,6 +185,60 @@ class Checkout extends Component
             $original = BillingDocument::findOrFail($billId);
             app(BillingService::class)->reprintBill($original, Auth::user());
             $this->successMessage = __('Bill reprint sent to printer.');
+            $this->loadGroup();
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
+    public function fillBalance(): void
+    {
+        $this->paymentAmount = round($this->balance, 2);
+    }
+
+    public function confirmReleaseZone(int $zoneId): void
+    {
+        $this->releaseZoneId = $zoneId;
+        $this->showReleaseModal = true;
+        $this->errorMessage = null;
+    }
+
+    public function cancelReleaseZone(): void
+    {
+        $this->showReleaseModal = false;
+        $this->releaseZoneId = null;
+    }
+
+    public function releaseZone(): void
+    {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        if (! $this->releaseZoneId) {
+            return;
+        }
+
+        $zone = OccupiedZone::findOrFail($this->releaseZoneId);
+        if ($zone->billing_group_id !== $this->group?->id) {
+            return;
+        }
+
+        if (! Auth::user()?->can('floor.release_zone')) {
+            $this->errorMessage = __('Unauthorized to release zones.');
+
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            app(OccupancyService::class)->releaseZone($zone, Auth::user());
+            $this->successMessage = __('Zone released.');
+            $this->showReleaseModal = false;
+            $this->releaseZoneId = null;
             $this->loadGroup();
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();

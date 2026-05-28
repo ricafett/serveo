@@ -50,13 +50,13 @@ it('partial payment keeps group ACTIVE when PARTIALLY_PAID status does not exist
         ->and($this->group->is_closed)->toBeFalse();
 });
 
-it('full payment closes the group and releases zones', function () {
+it('full payment closes the group but does not release zones', function () {
     app(BillingService::class)->recordPayment($this->group, $this->cashier, 36.00, 'Numerário');
     $this->group->refresh();
 
     expect($this->group->is_closed)->toBeTrue()
         ->and($this->group->status?->code)->toBe(BillingStatus::CLOSED)
-        ->and($this->zone->refresh()->is_open)->toBeFalse();
+        ->and($this->zone->refresh()->is_open)->toBeTrue();
 });
 
 it('reopens a closed group via service', function () {
@@ -66,4 +66,19 @@ it('reopens a closed group via service', function () {
     $this->group->refresh();
     expect($this->group->is_closed)->toBeFalse()
         ->and($this->group->status?->code)->toBe(BillingStatus::ACTIVE);
+});
+
+it('zone release via OccupancyService closes the zone', function () {
+    expect($this->zone->is_open)->toBeTrue();
+
+    app(OccupancyService::class)->releaseZone($this->zone, $this->cashier);
+
+    expect($this->zone->refresh()->is_open)->toBeFalse();
+});
+
+it('zone release is idempotent', function () {
+    app(OccupancyService::class)->releaseZone($this->zone, $this->cashier);
+    app(OccupancyService::class)->releaseZone($this->zone->refresh(), $this->cashier);
+
+    expect($this->zone->refresh()->is_open)->toBeFalse();
 });

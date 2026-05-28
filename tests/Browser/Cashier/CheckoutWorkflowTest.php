@@ -167,3 +167,75 @@ test('reprint panel lists bills and tickets', function () {
             ->assertSee('Production Tickets');
     });
 });
+
+test('checkout displays occupied zones', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->cashier->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/checkout/{$this->group->id}")
+            ->waitForText('Checkout', 5)
+            ->waitForText('Occupied Zones', 10);
+    });
+});
+
+test('fill balance button populates payment amount', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->cashier->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/checkout/{$this->group->id}")
+            ->waitForText('Checkout', 5)
+            ->press('Fill balance')
+            ->waitForText('Record Payment', 5);
+    });
+});
+
+test('zone release confirmation modal opens and can be cancelled', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->cashier->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/checkout/{$this->group->id}")
+            ->waitForText('Checkout', 5)
+            ->waitForText('Occupied Zones', 10)
+            ->press('Release')
+            ->waitForText('Cancel', 5)
+            ->press('Cancel');
+    });
+});
+
+test('reprint page has back button when accessed from checkout', function () {
+    $this->browse(function (Browser $browser) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->cashier->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Billing Groups', 5);
+
+        $browser->visit("/reprint/{$this->group->id}")
+            ->waitForText('Reprint & Documents', 5)
+            ->assertPresent('a[href*="checkout"]');
+    });
+});

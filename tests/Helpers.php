@@ -57,6 +57,7 @@ function bootScenario(): ServiceSession
     Role::findByName('CASHIER')->syncPermissions([
         'billing_group.view', 'billing_group.set_status', 'billing_group.reopen',
         'billing_document.create', 'billing_document.reprint',
+        'floor.release_zone',
         'payment.record', 'payment.void',
         'print_job.view', 'print_job.retry',
         'audit.view',

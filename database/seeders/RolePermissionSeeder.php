@@ -95,6 +95,7 @@ class RolePermissionSeeder extends Seeder
             'billing_group.reopen',
             'billing_document.create',
             'billing_document.reprint',
+            'floor.release_zone',
             'payment.record',
             'payment.void',
             'print_job.view',

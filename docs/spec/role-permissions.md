@@ -157,7 +157,7 @@ Legend:
 | Edit billing-group notes | Allow | Conditional | Allow | Deny | Deny |
 | Change billing-group status | Allow | Conditional | Allow | Deny | Deny |
 | Assign occupied zones | Allow | Deny | Allow | Deny | Deny |
-| Release occupied zones | Conditional | Deny | Allow | Deny | Deny |
+| Release occupied zones | Conditional | Allow | Allow | Deny | Deny |
 | View billing-group detail | Allow | Allow | Allow | Deny | Deny |
 | Search billing groups | Conditional | Allow | Allow | Deny | Deny |
 | Create orders | Allow | Deny | Allow | Deny | Deny |
@@ -188,8 +188,8 @@ Servers may search billing groups only if the UI needs it for operational recove
 ### RP-002 — Cashier status edits
 Cashiers may change billing-group status only where that status change is part of the checkout flow, such as moving a group toward CHECK_REQUESTED, PARTIALLY_PAID, or CLOSED according to business rules.
 
-### RP-003 — Server release of occupied zones
-Servers may release occupied zones only if the related billing-group workflow explicitly allows it and only while preserving auditability. Admin may always perform corrective release where needed.
+### RP-003 — Server and cashier release of occupied zones
+Servers may release occupied zones only if the related billing-group workflow explicitly allows it and only while preserving auditability. Cashiers may release zones from the checkout page. Admin may always perform corrective release where needed.
 
 ### RP-004 — Server void/correction permissions
 Servers may void or correct submitted items only if the current workflow allows it and the action generates the required void/correction print and audit trail.

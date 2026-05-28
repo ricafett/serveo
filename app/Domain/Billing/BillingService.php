@@ -146,6 +146,7 @@ class BillingService
             ]);
 
             // Auto-update status based on resulting balance.
+            // Zones are NOT released on payment — release is a separate explicit action.
             $balance = $group->balance();
             if ($balance <= 0.0001) {
                 $closed = BillingStatus::where('code', BillingStatus::CLOSED)->value('id');
@@ -154,7 +155,6 @@ class BillingService
                     'is_closed' => true,
                     'closed_at' => now(),
                 ]);
-                $group->openOccupiedZones()->update(['is_open' => false, 'released_at' => now()]);
             } else {
                 $partial = BillingStatus::where('code', BillingStatus::PARTIALLY_PAID)->value('id');
                 if ($partial) {
