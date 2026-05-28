@@ -16,24 +16,37 @@ This document describes the testing setup and conventions for the Serveo applica
 
 **The full test suite requires a large timeout — recommend 30 minutes (1800000 ms).**
 
-Dusk browser tests with Filament admin pages are slow (~2–30s each) because the single-threaded PHP built-in server serializes asset requests. Livewire interactions (print bill, submit order, payment recording) take 10–30s per operation. The full suite (translation check + Pest + Dusk) can easily exceed 15 minutes. Agent tasks and CI pipelines must allow at least 30 minutes or the test runner will be killed mid-Dusk with a false failure.
+Measured on a typical development machine (Windows, 22 parallel Pest processes):
+
+| Step | Typical duration | Notes |
+|---|---|---|
+| Pint (code style) | ~3s | Opt-in via `-Lint` flag |
+| PHPStan (static analysis) | ~30s | Opt-in via `-Lint` flag; 404 pre-existing errors |
+| Translation check | <1s | |
+| **Pest (346 tests, parallel)** | **~10 min** | `vendor/bin/pest --parallel --compact` |
+| **Dusk (77 tests, serial)** | **~7 min** | Single browser instance, inherently serial |
+| **Total** | **~17 min** | Allow 30 min for CI/agent tasks with margin |
+
+Livewire interactions (print bill, submit order, payment recording) take 10–30s per operation. Agent tasks and CI pipelines must allow at least 30 minutes or the test runner will be killed mid-Dusk with a false failure.
 
 ### Automated Test Runner (Recommended)
 
 Use the provided PowerShell script to run the full suite with automatic `.env` management:
 
 ```powershell
-.\run-tests.ps1                     # Run Pint, PHPStan, translation check, Pest, and Dusk
-.\run-tests.ps1 -NoLint             # Skip Pint and PHPStan
-.\run-tests.ps1 -PestOnly           # Run only Pest tests
+.\run-tests.ps1                     # Run translation check, Pest (parallel), and Dusk
+.\run-tests.ps1 -Lint               # Also run Pint and PHPStan before tests
+.\run-tests.ps1 -PestOnly           # Run only Pest tests (parallel)
 .\run-tests.ps1 -DuskOnly           # Run only Dusk tests
 .\run-tests.ps1 -NoTranslationCheck # Skip translation check
 .\run-tests.ps1 -PestFilter "MultilingualTest" -DuskFilter "ThemeAndLanguageTest"
 ```
 
+Pest runs with `--parallel --compact` using 22 processes by default. Pint and PHPStan are **opt-in** via `-Lint` because PHPStan has pre-existing errors that are not actionable in CI.
+
 ### Linting and Static Analysis
 
-Pint (code style) and PHPStan (static analysis) run **before** the `.env` swap — they don't need a database. They use your local `.env`.
+Pint (code style) and PHPStan (static analysis) are **opt-in** via the `-Lint` flag. They're disabled by default because PHPStan has pre-existing false-positive errors on Pest dynamic test properties.
 
 Run them standalone:
 
@@ -70,8 +83,11 @@ This is run automatically by `run-tests.ps1` before Pest and Dusk. It catches:
 
 ### Feature Tests (Pest)
 
+Pest runs in **parallel** via `vendor/bin/pest --parallel` (22 processes) for speed. For debugging, run serially:
+
 ```bash
-./vendor/bin/pest                    # All tests
+./vendor/bin/pest                    # All tests (serial, default)
+./vendor/bin/pest --parallel         # All tests (parallel, 22 processes)
 ./vendor/bin/pest tests/Feature      # Feature tests only
 ./vendor/bin/pest tests/Unit         # Unit tests only
 ```
