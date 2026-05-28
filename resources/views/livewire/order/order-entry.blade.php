@@ -544,8 +544,6 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             }
 
             this.closeModal();
-            // Switch to order tab on mobile
-            this.activeTab = 'order';
         },
 
         addToCartSimple(menuItem) {
