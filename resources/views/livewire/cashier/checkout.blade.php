@@ -69,15 +69,15 @@
         <div class="mb-6 grid grid-cols-3 gap-3">
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
                 <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.charges') }}</div>
-                <div class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ number_format($this->chargesTotal, 2) }}</div>
+                <div class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ number_format($this->chargesTotal, 2) }} €</div>
             </div>
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
                 <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.paid') }}</div>
-                <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($this->paymentsTotal, 2) }}</div>
+                <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($this->paymentsTotal, 2) }} €</div>
             </div>
             <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
                 <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('app.balance') }}</div>
-                <div class="mt-1 text-xl font-bold {{ $this->balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ number_format($this->balance, 2) }}</div>
+                <div class="mt-1 text-xl font-bold {{ $this->balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ number_format($this->balance, 2) }} €</div>
             </div>
         </div>
 
@@ -109,7 +109,7 @@
                                             <span class="text-sm text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
                                         @endif
                                     </div>
-                                    <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }}</span>
+                                    <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }} €</span>
                                 </div>
                             @endforeach
                         </div>
@@ -130,7 +130,7 @@
                     @foreach($group->paymentRecords as $payment)
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div>
-                                <div class="text-base text-gray-900 dark:text-white">{{ number_format($payment->amount, 2) }}</div>
+                                <div class="text-base text-gray-900 dark:text-white">{{ number_format($payment->amount, 2) }} €</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ $payment->recorded_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $payment->payment_label }}</div>
                             </div>
                             @if($payment->is_voided)
@@ -158,7 +158,7 @@
                                         <span class="text-sm text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
                                     @endif
                                 </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $doc->requested_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ number_format($doc->total_amount, 2) }} €</div>
                             </div>
                             @can('billing_document.reprint')
                                 <button type="button" wire:click="reprintBill({{ $doc->id }})" wire:target="reprintBill" wire:loading.attr="disabled" class="text-base text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 px-2 py-1 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed">
