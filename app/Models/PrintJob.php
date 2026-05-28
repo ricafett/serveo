@@ -12,6 +12,7 @@ class PrintJob extends Model
         'job_kind', 'printable_type', 'printable_id', 'printer_id',
         'status', 'attempts', 'max_attempts', 'payload', 'last_error',
         'next_attempt_at', 'completed_at', 'requested_by_user_id',
+        'locale',
     ];
 
     protected $casts = [

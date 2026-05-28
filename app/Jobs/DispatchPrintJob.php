@@ -47,7 +47,11 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
-        // Idempotency guard: already done or canceled
+        // Restore the locale that was active when the print job was created,
+        // so printed output uses the correct language regardless of queue worker defaults.
+        if ($job->locale) {
+            app()->setLocale($job->locale);
+        }
         if ($job->status === PrintJob::STATUS_PRINTED || $job->status === PrintJob::STATUS_CANCELED) {
             return;
         }

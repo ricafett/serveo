@@ -21,6 +21,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 3,
             'requested_by_user_id' => $actor?->id,
+            'locale' => app()->getLocale(),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints');
@@ -39,6 +40,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 3,
             'requested_by_user_id' => $actor?->id,
+            'locale' => app()->getLocale(),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints');
