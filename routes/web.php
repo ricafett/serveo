@@ -49,7 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:CASHIER,ADMIN')->group(function () {
         Route::get('/lookup', BillingGroupLookup::class)->name('lookup');
         Route::get('/checkout/{id}', Checkout::class)->name('checkout');
-        Route::get('/reprint', ReprintPanel::class)->name('reprint');
         Route::get('/reprint/{billingGroupId}', ReprintPanel::class)->name('reprint.group');
     });
 });

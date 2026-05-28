@@ -27,7 +27,7 @@ test('dashboard renders for server with floor tile', function () {
     });
 });
 
-test('dashboard renders for cashier with lookup and reprint tiles', function () {
+test('dashboard renders for cashier with lookup tile', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
@@ -39,7 +39,6 @@ test('dashboard renders for cashier with lookup and reprint tiles', function () 
             ->waitForText('Dashboard', 5)
             ->assertPathIs('/home')
             ->assertSee('Billing Groups')
-            ->assertSee('Reprint')
             ->assertDontSee('Floor')
             ->assertDontSee('Admin Panel');
     });
@@ -58,7 +57,6 @@ test('dashboard renders for admin with all tiles including admin panel', functio
             ->assertPathIs('/home')
             ->assertSee('Floor')
             ->assertSee('Billing Groups')
-            ->assertSee('Reprint')
             ->assertSee('Admin Panel')
             ->assertSee('Configuration and system settings');
     });

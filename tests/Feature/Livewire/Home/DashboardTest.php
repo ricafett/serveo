@@ -56,7 +56,6 @@ it('shows floor tile for server', function () {
     $response->assertSee('Floor');
     $response->assertSee('View occupancy and manage seating');
     $response->assertDontSee('Billing Groups');
-    $response->assertDontSee('Reprint');
     $response->assertDontSee('Admin Panel');
 });
 
@@ -71,7 +70,6 @@ it('hides operational tiles for server when no session is open', function () {
     // Tile labels should not appear in the tile grid
     $response->assertDontSee('View occupancy and manage seating');
     $response->assertDontSee('Search and manage billing groups');
-    $response->assertDontSee('Reprint bills and documents');
 });
 
 it('hides operational tiles for cashier when no session is open', function () {
@@ -83,7 +81,6 @@ it('hides operational tiles for cashier when no session is open', function () {
     $response = $this->actingAs($user)->get('/home');
     $response->assertSee('No open service session');
     $response->assertDontSee('Search and manage billing groups');
-    $response->assertDontSee('Reprint bills and documents');
 });
 
 it('shows admin panel tile even when no session is open', function () {
@@ -96,19 +93,16 @@ it('shows admin panel tile even when no session is open', function () {
     $response->assertSee('No open service session');
     $response->assertDontSee('View occupancy and manage seating');
     $response->assertDontSee('Search and manage billing groups');
-    $response->assertDontSee('Reprint bills and documents');
     $response->assertSee('Configuration and system settings');
 });
 
-it('shows lookup and reprint tiles for cashier', function () {
+it('shows lookup tile for cashier', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
 
     $response = $this->actingAs($user)->get('/home');
     $response->assertSee('Billing Groups');
     $response->assertSee('Search and manage billing groups');
-    $response->assertSee('Reprint');
-    $response->assertSee('Reprint bills and documents');
     $response->assertDontSee('Floor');
     $response->assertDontSee('Admin Panel');
 });
@@ -120,7 +114,6 @@ it('shows all tiles for admin', function () {
     $response = $this->actingAs($user)->get('/home');
     $response->assertSee('Floor');
     $response->assertSee('Billing Groups');
-    $response->assertSee('Reprint');
     $response->assertSee('Admin Panel');
     $response->assertSee('Configuration and system settings');
 });
