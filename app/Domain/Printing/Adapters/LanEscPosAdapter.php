@@ -45,12 +45,20 @@ class LanEscPosAdapter implements PrinterAdapter
         try {
             stream_set_timeout($socket, self::READ_TIMEOUT);
 
+            // ESC t 2 -> select PC850 character code table (supports Portuguese: çãõáéíóúâêôà)
+            $charsetInit = "\x1B\x74\x02";
             // ESC @  -> initialise printer
             $init = "\x1B\x40";
             // GS V 1 -> partial cut (most ESC/POS cutters)
             $cut = "\n\n\n\x1D\x56\x01";
 
-            $data = $init.$payload.$cut;
+            // Convert UTF-8 text payload to CP850 for correct Portuguese character rendering.
+            // ESC/POS command bytes are single-byte and unaffected by the conversion.
+            $encodedPayload = function_exists('mb_convert_encoding')
+                ? mb_convert_encoding($payload, 'CP850', 'UTF-8')
+                : $payload;
+
+            $data = $charsetInit.$init.$encodedPayload.$cut;
 
             // Enforce write timeout via stream_select().
             // PHP's stream_set_timeout() only affects fread(), not fwrite().
