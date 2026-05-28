@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\Printer;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions;
@@ -80,6 +81,16 @@ class UserResource extends BaseResource
                 ->options(Role::pluck('name', 'name'))
                 ->preload()
                 ->required(),
+            Forms\Components\Select::make('cashier_printer_id')
+                ->label(__('app.cashier_printer'))
+                ->options(
+                    Printer::where('printer_type', Printer::TYPE_BILL)
+                        ->where('is_active', true)
+                        ->pluck('name', 'id')
+                )
+                ->visible(fn (Forms\Get $get) => collect($get('roles'))->contains('CASHIER'))
+                ->helperText(__('app.cashier_printer_help'))
+                ->nullable(),
         ]);
     }
 
