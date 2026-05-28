@@ -68,4 +68,32 @@ class PrintQueueService
 
         return true;
     }
+
+    /**
+     * Batch retry multiple print jobs. Only jobs in FAILED or CANCELED
+     * state are eligible; others are silently skipped.
+     *
+     * @param  int[]  $printJobIds
+     * @return array{success: int, skipped: int}
+     */
+    public function retryBatch(array $printJobIds, ?User $actor = null): array
+    {
+        $results = ['success' => 0, 'skipped' => 0];
+
+        $jobs = PrintJob::whereIn('id', $printJobIds)
+            ->whereIn('status', [PrintJob::STATUS_FAILED, PrintJob::STATUS_CANCELED])
+            ->get();
+
+        foreach ($jobs as $job) {
+            if ($this->retry($job, $actor)) {
+                $results['success']++;
+            } else {
+                $results['skipped']++;
+            }
+        }
+
+        $results['skipped'] = count($printJobIds) - $results['success'];
+
+        return $results;
+    }
 }
