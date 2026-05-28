@@ -159,7 +159,7 @@
         </main>
 
         {{-- Bottom Navigation (Mobile-First) --}}
-        @include('components.operational.nav')
+        @include('components.operational.nav', ['showTopBar' => request()->routeIs('home')])
     </div>
 
     @livewireScripts

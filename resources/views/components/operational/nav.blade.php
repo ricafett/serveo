@@ -75,7 +75,7 @@ unset($item);
     </nav>
 
     {{-- Desktop Side Navigation --}}
-    <nav class="hidden sm:flex fixed left-0 top-14 bottom-0 w-16 lg:w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col py-4 z-20">
+    <nav class="hidden sm:flex fixed left-0 {{ ($showTopBar ?? true) ? 'top-14' : 'top-0' }} bottom-0 w-16 lg:w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col py-4 z-20">
         <div class="flex-1 space-y-1 px-2">
             @foreach($navItems as $item)
                 <a
