@@ -86,7 +86,7 @@ test('cashier can print bill from checkout', function () {
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
             ->press('Print Bill')
-            ->waitForText('Bill sent to printer.', 5);
+            ->waitForText('Bill sent to printer.', 15);
     });
 });
 

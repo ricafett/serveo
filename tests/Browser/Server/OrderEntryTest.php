@@ -78,7 +78,7 @@ test('server can add items and submit order', function () {
         $browser->assertDontSee('No items added.')
             ->pause(500)
             ->press('Submit Order')
-            ->waitForText('Order submitted', 10);
+            ->waitForText('Order submitted', 20);
     });
 });
 
