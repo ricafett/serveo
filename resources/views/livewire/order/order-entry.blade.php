@@ -149,7 +149,7 @@
                             <button
                                 type="button"
                                 @click="deliveryOpen = !deliveryOpen"
-                                class="w-full px-4 py-3 flex items-center justify-between text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 min-h-[44px]"
+                                    class="w-full px-4 py-3 flex items-center justify-between text-base font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px]"
                             >
                                 <span>{{ __('order.delivery') }}</span>
                                 <div class="flex items-center gap-2">
@@ -177,7 +177,7 @@
                                         <button
                                             type="button"
                                             wire:click="setZone(null)"
-                                            class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedZoneId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                            class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedZoneId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                                         >
                                             {{ __('order.group_level') }}
                                         </button>
@@ -185,7 +185,7 @@
                                             <button
                                                 type="button"
                                                 wire:click="setZone({{ $zone->id }})"
-                                                class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedZoneId === $zone->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                                class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedZoneId === $zone->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                                             >
                                                 {{ $zone->rangeLabel() }}
                                             </button>
@@ -199,7 +199,7 @@
                                             <button
                                                 type="button"
                                                 wire:click="setDeliveryPair(null)"
-                                                class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                                class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === null ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                                             >
                                                 {{ __('order.center') }}
                                             </button>
@@ -208,7 +208,7 @@
                                                     <button
                                                         type="button"
                                                         wire:click="setDeliveryPair({{ $pair->id }})"
-                                                        class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === $pair->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                                        class="rounded-lg px-3 py-2 text-base font-medium min-h-[44px] transition-colors {{ $selectedDeliveryPairId === $pair->id ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-1 ring-primary-300 dark:ring-primary-700 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
                                                     >
                                                         {{ $pair->pair_sequence }}
                                                     </button>
@@ -305,8 +305,9 @@
     {{-- Variant / Modifier Selection Modal --}}
     <div
         x-show="showModal"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         x-cloak
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        style="display: none;"
     >
         {{-- Backdrop --}}
         <div
@@ -317,7 +318,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-black/40 dark:bg-black/60"
+            class="fixed inset-0 bg-black/50 dark:bg-black/70"
             @click="closeModal()"
         ></div>
 
@@ -325,21 +326,21 @@
         <div
             x-show="showModal"
             x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="translate-y-full sm:translate-y-4 sm:opacity-0"
-            x-transition:enter-end="translate-y-0 sm:opacity-100"
+            x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
             x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="translate-y-0 sm:opacity-100"
-            x-transition:leave-end="translate-y-full sm:translate-y-4 sm:opacity-0"
-            class="relative w-full sm:max-w-sm mx-auto bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[80vh] overflow-y-auto"
+            x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
+            x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            class="relative w-[calc(100%-2rem)] sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
         >
-            <div class="p-5">
+            <div class="p-4 sm:p-6">
                 {{-- Header --}}
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white" x-text="modalItem ? modalItem.display_name : ''"></h3>
                     <button
                         type="button"
                         @click="closeModal()"
-                        class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -361,8 +362,19 @@
                                         :name="'variant_' + modalItem.id"
                                         :value="variant.display_name"
                                         x-model="modalSelectedVariant"
-                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                        class="sr-only"
                                     >
+                                    <span
+                                        class="flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                        :class="modalSelectedVariant === variant.display_name
+                                            ? 'border-primary-600 dark:border-primary-400 bg-primary-600 dark:bg-primary-400'
+                                            : 'border-gray-300 dark:border-gray-600'"
+                                    >
+                                        <span
+                                            class="h-2.5 w-2.5 rounded-full bg-white"
+                                            x-show="modalSelectedVariant === variant.display_name"
+                                        ></span>
+                                    </span>
                                     <span class="text-base text-gray-900 dark:text-white" x-text="variant.display_name"></span>
                                 </label>
                             </template>
@@ -384,8 +396,19 @@
                                         :name="'modifier_' + modalItem.id"
                                         value=""
                                         x-model="modalSelectedModifierSingle"
-                                        class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                        class="sr-only"
                                     >
+                                    <span
+                                        class="flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                        :class="!modalSelectedModifierSingle
+                                            ? 'border-primary-600 dark:border-primary-400 bg-primary-600 dark:bg-primary-400'
+                                            : 'border-gray-300 dark:border-gray-600'"
+                                    >
+                                        <span
+                                            class="h-2.5 w-2.5 rounded-full bg-white"
+                                            x-show="!modalSelectedModifierSingle"
+                                        ></span>
+                                    </span>
                                     <span class="text-base text-gray-500 dark:text-gray-400">{{ __('order.no_modifier') }}</span>
                                 </label>
                                 <template x-for="modifier in modalItem.modifier_set.items" :key="modifier.id">
@@ -399,8 +422,19 @@
                                             :name="'modifier_' + modalItem.id"
                                             :value="modifier.display_name"
                                             x-model="modalSelectedModifierSingle"
-                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500"
+                                            class="sr-only"
                                         >
+                                        <span
+                                            class="flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                            :class="modalSelectedModifierSingle === modifier.display_name
+                                                ? 'border-primary-600 dark:border-primary-400 bg-primary-600 dark:bg-primary-400'
+                                                : 'border-gray-300 dark:border-gray-600'"
+                                        >
+                                            <span
+                                                class="h-2.5 w-2.5 rounded-full bg-white"
+                                                x-show="modalSelectedModifierSingle === modifier.display_name"
+                                            ></span>
+                                        </span>
                                         <span class="text-base text-gray-900 dark:text-white" x-text="modifier.display_name"></span>
                                     </label>
                                 </template>
@@ -418,8 +452,22 @@
                                             type="checkbox"
                                             :value="modifier.display_name"
                                             x-model="modalSelectedModifiers"
-                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 rounded"
+                                            class="sr-only"
                                         >
+                                        <span
+                                            class="flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors"
+                                            :class="modalSelectedModifiers.includes(modifier.display_name)
+                                                ? 'border-primary-600 dark:border-primary-400 bg-primary-600 dark:bg-primary-400'
+                                                : 'border-gray-300 dark:border-gray-600'"
+                                        >
+                                            <svg
+                                                x-show="modalSelectedModifiers.includes(modifier.display_name)"
+                                                class="h-3 w-3 text-white"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </span>
                                         <span class="text-base text-gray-900 dark:text-white" x-text="modifier.display_name"></span>
                                     </label>
                                 </template>
