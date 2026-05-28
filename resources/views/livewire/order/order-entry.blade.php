@@ -111,10 +111,10 @@
                             <div class="mt-2 flex items-center justify-between">
                                 <span class="text-base text-gray-500 dark:text-gray-400">
                                     <template x-if="getItemTotalQuantity(menuItem.id) > 0">
-                                        <span x-text="(menuItem.unit_price * getItemTotalQuantity(menuItem.id)).toFixed(2)"></span>
+                                        <span x-text="(menuItem.unit_price * getItemTotalQuantity(menuItem.id)).toFixed(2) + ' €'"></span>
                                     </template>
                                     <template x-if="getItemTotalQuantity(menuItem.id) === 0">
-                                        <span x-text="menuItem.unit_price.toFixed(2)"></span>
+                                        <span x-text="menuItem.unit_price.toFixed(2) + ' €'"></span>
                                     </template>
                                 </span>
                                 <template x-if="getItemTotalQuantity(menuItem.id) > 0">
@@ -240,9 +240,9 @@
                                                     <template x-if="item.variant_name || item.modifier_name">
                                                         <span class="mx-1 text-gray-300 dark:text-gray-600">—</span>
                                                     </template>
-                                                    <span x-text="item.unit_price.toFixed(2)"></span>
+                                                    <span x-text="item.unit_price.toFixed(2) + ' €'"></span>
                                                     <span x-show="item.quantity > 1" class="ml-1 text-gray-400 dark:text-gray-500">→</span>
-                                                    <span x-show="item.quantity > 1" class="ml-1 font-medium text-gray-700 dark:text-gray-300" x-text="(item.unit_price * item.quantity).toFixed(2)"></span>
+                                                    <span x-show="item.quantity > 1" class="ml-1 font-medium text-gray-700 dark:text-gray-300" x-text="(item.unit_price * item.quantity).toFixed(2) + ' €'"></span>
                                                 </div>
                                             </div>
                                             <div class="flex items-center gap-1 ml-3">
@@ -296,7 +296,7 @@
             >
                 {{ __('order.submit') }}
                 <template x-if="cartItemCount > 0">
-                    <span class="ml-2 text-sm opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ')'"></span>
+                    <span class="ml-2 text-sm opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ' €)'"></span>
                 </template>
             </button>
         </div>

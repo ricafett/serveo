@@ -84,7 +84,7 @@
                         </div>
                         <div class="mt-2 flex items-center justify-between">
                             <span class="text-sm text-gray-400 dark:text-gray-500">{{ $group->cover_count ? $group->cover_count . ' ' . __('app.covers') : '' }}</span>
-                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ number_format($group->balance(), 2) }}</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">{{ number_format($group->balance(), 2) }} €</span>
                         </div>
                     </button>
                 @endforeach
