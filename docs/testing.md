@@ -14,9 +14,9 @@ This document describes the testing setup and conventions for the Serveo applica
 
 ### Timeout Warning
 
-**The full test suite requires a large timeout — recommend 20 minutes (1200000 ms).**
+**The full test suite requires a large timeout — recommend 30 minutes (1800000 ms).**
 
-Dusk browser tests with Filament admin pages are slow (~2–10s each) because the single-threaded PHP built-in server serializes asset requests. The full suite (translation check + Pest + Dusk) can easily exceed 10 minutes. Agent tasks and CI pipelines must allow at least 20 minutes or the test runner will be killed mid-Dusk with a false failure.
+Dusk browser tests with Filament admin pages are slow (~2–30s each) because the single-threaded PHP built-in server serializes asset requests. Livewire interactions (print bill, submit order, payment recording) take 10–30s per operation. The full suite (translation check + Pest + Dusk) can easily exceed 15 minutes. Agent tasks and CI pipelines must allow at least 30 minutes or the test runner will be killed mid-Dusk with a false failure.
 
 ### Automated Test Runner (Recommended)
 
