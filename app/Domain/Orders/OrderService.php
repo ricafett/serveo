@@ -242,29 +242,29 @@ class OrderService
             }
 
             // Generate a void slip ticket for this single item.
-            if (in_array($item->fulfillment_route, ['KITCHEN', 'BAR'], true)) {
-                $printer = $this->resolvePrinterForRoute(
-                    $header->billingGroup,
-                    $item->fulfillment_route,
-                    PrinterRoute::DOC_VOID_SLIP,
-                );
-                if ($printer) {
-                    $voidTicket = ProductionTicket::create([
-                        'service_session_id' => $header->billingGroup->service_session_id,
-                        'billing_group_id' => $header->billing_group_id,
-                        'occupied_zone_id' => $header->occupied_zone_id,
-                        'printer_id' => $printer->id,
-                        'ticket_type' => 'VOID',
-                        'ticket_status' => 'PENDING',
-                        'requested_at' => now(),
-                        'is_void_slip' => true,
-                        'is_reprint' => false,
-                        'created_by_user_id' => $actor->id,
-                        'delivery_reference_label' => $item->delivery_reference_label,
-                    ]);
-                    $voidTicket->items()->sync([$item->id]);
-                    $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
-                }
+            // No hardcoded route guard — resolvePrinterForRoute returns null
+            // for any route without an active PrinterRoute, and we skip below.
+            $printer = $this->resolvePrinterForRoute(
+                $header->billingGroup,
+                $item->fulfillment_route,
+                PrinterRoute::DOC_PRODUCTION_TICKET,
+            );
+            if ($printer) {
+                $voidTicket = ProductionTicket::create([
+                    'service_session_id' => $header->billingGroup->service_session_id,
+                    'billing_group_id' => $header->billing_group_id,
+                    'occupied_zone_id' => $header->occupied_zone_id,
+                    'printer_id' => $printer->id,
+                    'ticket_type' => 'VOID',
+                    'ticket_status' => 'PENDING',
+                    'requested_at' => now(),
+                    'is_void_slip' => true,
+                    'is_reprint' => false,
+                    'created_by_user_id' => $actor->id,
+                    'delivery_reference_label' => $item->delivery_reference_label,
+                ]);
+                $voidTicket->items()->sync([$item->id]);
+                $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
             }
 
             Audit::record(

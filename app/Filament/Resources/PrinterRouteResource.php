@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PrinterRouteResource\Pages;
+use App\Models\FulfillmentRoute;
 use App\Models\Printer;
 use App\Models\PrinterRoute;
 use App\Models\Venue;
@@ -57,12 +58,10 @@ class PrinterRouteResource extends BaseResource
             Forms\Components\Select::make('document_type')->options([
                 'PRODUCTION_TICKET' => __('app.document_type_production_ticket'),
                 'BILL' => __('app.document_type_bill'),
-                'VOID_SLIP' => __('app.document_type_void_slip'),
             ])->required(),
-            Forms\Components\Select::make('fulfillment_route')->options([
-                'KITCHEN' => __('app.route_kitchen'),
-                'BAR' => __('app.route_bar'),
-            ])->nullable()->helperText(__('app.helper_text_production_only')),
+            Forms\Components\Select::make('fulfillment_route')->options(
+                FulfillmentRoute::active()->ordered()->pluck('display_name', 'code')
+            )->nullable()->helperText(__('app.helper_text_production_only')),
             Forms\Components\Select::make('printer_id')
                 ->options(Printer::query()->where('is_active', true)->pluck('name', 'id'))
                 ->required(),

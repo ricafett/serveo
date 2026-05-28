@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\ApiController;
+use App\Models\FulfillmentRoute;
 use App\Models\PrinterRoute;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PrinterRouteController extends ApiController
 {
@@ -34,8 +36,8 @@ class PrinterRouteController extends ApiController
     {
         $validated = $request->validate([
             'venueId' => ['required', 'exists:venues,id'],
-            'documentType' => ['required', 'string', 'in:PRODUCTION_TICKET,BILL,VOID_SLIP'],
-            'fulfillmentRoute' => ['nullable', 'string', 'in:KITCHEN,BAR,NONE'],
+            'documentType' => ['required', 'string', 'in:PRODUCTION_TICKET,BILL'],
+            'fulfillmentRoute' => ['nullable', 'string', Rule::in(FulfillmentRoute::active()->pluck('code')->all())],
             'printerId' => ['required', 'exists:printers,id'],
         ]);
 

@@ -16,7 +16,6 @@ class PrinterController extends ApiController
         return $this->success($printers->map(fn ($p) => [
             'printerId' => $p->id,
             'name' => $p->name,
-            'printerType' => $p->printer_type,
             'connectionType' => $p->connection_type,
             'address' => $p->address,
             'port' => $p->port,
@@ -29,7 +28,6 @@ class PrinterController extends ApiController
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'printerType' => ['required', 'string', 'in:KITCHEN,BAR,BILL,GENERIC'],
             'connectionType' => ['required', 'string', 'in:LAN,USB_AGENT,NULL'],
             'address' => ['nullable', 'string', 'max:255'],
             'port' => ['nullable', 'integer'],
@@ -37,7 +35,6 @@ class PrinterController extends ApiController
 
         $printer = Printer::create([
             'name' => $validated['name'],
-            'printer_type' => $validated['printerType'],
             'connection_type' => $validated['connectionType'],
             'address' => $validated['address'] ?? null,
             'port' => $validated['port'] ?? null,
@@ -55,7 +52,6 @@ class PrinterController extends ApiController
     {
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:100'],
-            'printerType' => ['nullable', 'string', 'in:KITCHEN,BAR,BILL,GENERIC'],
             'connectionType' => ['nullable', 'string', 'in:LAN,USB_AGENT,NULL'],
             'address' => ['nullable', 'string', 'max:255'],
             'port' => ['nullable', 'integer'],
@@ -65,9 +61,6 @@ class PrinterController extends ApiController
         $update = [];
         if (array_key_exists('name', $validated)) {
             $update['name'] = $validated['name'];
-        }
-        if (array_key_exists('printerType', $validated)) {
-            $update['printer_type'] = $validated['printerType'];
         }
         if (array_key_exists('connectionType', $validated)) {
             $update['connection_type'] = $validated['connectionType'];

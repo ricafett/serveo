@@ -2,6 +2,7 @@
 
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
+use App\Models\FulfillmentRoute;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Printer;
@@ -108,16 +109,25 @@ function bootScenario(): ServiceSession
         'menu_category_id' => $bar->id, 'unit_price' => 5.00, 'is_active' => true,
     ]);
 
+    FulfillmentRoute::firstOrCreate(
+        ['code' => 'KITCHEN'],
+        ['display_name' => 'Cozinha', 'sort_order' => 10, 'is_active' => true]
+    );
+    FulfillmentRoute::firstOrCreate(
+        ['code' => 'BAR'],
+        ['display_name' => 'Bar', 'sort_order' => 20, 'is_active' => true]
+    );
+
     $kPrinter = Printer::firstOrCreate(['name' => 'Cozinha LAN'], [
-        'printer_type' => 'KITCHEN', 'connection_type' => 'NULL',
+        'connection_type' => 'NULL',
         'address' => '127.0.0.1', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN',
     ]);
     $bPrinter = Printer::firstOrCreate(['name' => 'Bar LAN'], [
-        'printer_type' => 'BAR', 'connection_type' => 'NULL',
+        'connection_type' => 'NULL',
         'address' => '127.0.0.1', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN',
     ]);
     $cPrinter = Printer::firstOrCreate(['name' => 'Caixa 1'], [
-        'printer_type' => 'BILL', 'connection_type' => 'NULL',
+        'connection_type' => 'NULL',
         'address' => '127.0.0.1', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN',
     ]);
 
@@ -127,12 +137,7 @@ function bootScenario(): ServiceSession
     PrinterRoute::firstOrCreate([
         'venue_id' => $venue->id, 'document_type' => 'PRODUCTION_TICKET', 'fulfillment_route' => 'BAR',
     ], ['printer_id' => $bPrinter->id, 'is_active' => true]);
-    PrinterRoute::firstOrCreate([
-        'venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'KITCHEN',
-    ], ['printer_id' => $kPrinter->id, 'is_active' => true]);
-    PrinterRoute::firstOrCreate([
-        'venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'BAR',
-    ], ['printer_id' => $bPrinter->id, 'is_active' => true]);
+    // Void slips reuse PRODUCTION_TICKET routes — no separate VOID_SLIP routes needed.
 
     return ServiceSession::firstOrCreate(
         ['venue_id' => $venue->id, 'session_label' => 'Test session'],

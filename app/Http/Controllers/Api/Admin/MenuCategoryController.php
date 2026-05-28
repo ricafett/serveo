@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\ApiController;
+use App\Models\FulfillmentRoute;
 use App\Models\MenuCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MenuCategoryController extends ApiController
 {
@@ -29,7 +31,7 @@ class MenuCategoryController extends ApiController
         $validated = $request->validate([
             'code' => ['required', 'string', 'max:50', 'unique:menu_categories,code'],
             'displayName' => ['required', 'string', 'max:100'],
-            'routeType' => ['required', 'string', 'in:KITCHEN,BAR,NONE'],
+            'routeType' => ['required', 'string', Rule::in(FulfillmentRoute::active()->pluck('code')->push('NONE')->all())],
             'sortOrder' => ['nullable', 'integer'],
         ]);
 

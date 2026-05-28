@@ -215,11 +215,7 @@ class BillingService
             ->where('user_id', $cashier->id)
             ->where('is_active', true)
             ->first();
-        if ($assignment?->printer) {
-            return $assignment->printer;
-        }
 
-        // fallback: any active BILL printer
-        return Printer::where('printer_type', Printer::TYPE_BILL)->where('is_active', true)->first();
+        return $assignment?->printer;
     }
 }

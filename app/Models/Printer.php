@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Printer extends Model
 {
     protected $fillable = [
-        'name', 'printer_type', 'connection_type',
+        'name', 'connection_type',
         'address', 'port', 'agent_endpoint', 'agent_printer_id',
         'is_active', 'health_status', 'last_seen_at', 'last_error',
         'print_char_width', 'print_begin_space', 'print_end_space',
@@ -22,12 +22,6 @@ class Printer extends Model
         'print_end_space' => 'integer',
     ];
 
-    public const TYPE_KITCHEN = 'KITCHEN';
-
-    public const TYPE_BAR = 'BAR';
-
-    public const TYPE_BILL = 'BILL';
-
     public const CONN_LAN = 'LAN';
 
     public const CONN_USB_AGENT = 'USB_AGENT';
@@ -37,5 +31,10 @@ class Printer extends Model
     public function printJobs(): HasMany
     {
         return $this->hasMany(PrintJob::class);
+    }
+
+    public function printerRoutes(): HasMany
+    {
+        return $this->hasMany(PrinterRoute::class);
     }
 }

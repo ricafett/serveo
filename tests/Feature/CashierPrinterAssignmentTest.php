@@ -16,7 +16,6 @@ function createBillPrinter(string $name = 'Test Bill Printer'): Printer
     return Printer::firstOrCreate(
         ['name' => $name],
         [
-            'printer_type' => Printer::TYPE_BILL,
             'connection_type' => 'NULL',
             'address' => '127.0.0.1',
             'port' => 9100,

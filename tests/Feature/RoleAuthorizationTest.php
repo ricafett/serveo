@@ -4,7 +4,9 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuItem;
+use App\Models\Printer;
 use App\Models\Row;
 use Illuminate\Auth\Access\AuthorizationException;
 use Spatie\Permission\Models\Role;
@@ -15,6 +17,18 @@ beforeEach(function () {
     $this->admin = makeUser('ADMIN');
     $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
+
+    // Assign bill printer to admin and cashier (required — no fallback).
+    $billPrinter = Printer::where('is_active', true)->first();
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->admin->id, 'printer_id' => $billPrinter->id],
+        ['is_active' => true]
+    );
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->cashier->id, 'printer_id' => $billPrinter->id],
+        ['is_active' => true]
+    );
+
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server

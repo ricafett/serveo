@@ -7,7 +7,9 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\AuditEvent;
 use App\Models\BillingStatus;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuItem;
+use App\Models\Printer;
 use App\Models\Row;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,6 +18,13 @@ beforeEach(function () {
     $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
     $this->admin = makeUser('ADMIN');
+
+    // Assign bill printer to cashier (required — no fallback).
+    $billPrinter = Printer::where('is_active', true)->first();
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->cashier->id, 'printer_id' => $billPrinter->id],
+        ['is_active' => true]
+    );
 });
 
 /* ──────────────────────────────────────────────────────────────────

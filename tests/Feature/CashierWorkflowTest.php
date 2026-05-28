@@ -57,11 +57,10 @@ beforeEach(function () {
     $this->cashier->givePermissionTo('production_ticket.reprint');
 
     // Assign a bill printer to the cashier
-    $billPrinter = Printer::where('printer_type', 'BILL')->first();
+    $billPrinter = Printer::where('is_active', true)->first();
     if (! $billPrinter) {
         $billPrinter = Printer::create([
             'name' => 'Test Bill Printer',
-            'printer_type' => 'BILL',
             'connection_type' => 'LAN',
             'address' => '192.168.1.99',
             'port' => 9100,

@@ -45,7 +45,7 @@ beforeEach(function () {
     );
 
     // Assign bill printer to cashier
-    $billPrinter = Printer::where('printer_type', 'BILL')->first();
+    $billPrinter = Printer::where('is_active', true)->first();
     CashierPrinterAssignment::firstOrCreate(
         ['user_id' => $this->cashier->id, 'printer_id' => $billPrinter->id],
         ['is_active' => true],

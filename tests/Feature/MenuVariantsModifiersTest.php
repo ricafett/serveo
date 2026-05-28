@@ -221,6 +221,11 @@ it('production ticket includes variant and modifier on line', function () {
 it('bill includes variant and modifier on line', function () {
     $this->group->update(['is_closed' => false]);
     $cashier = makeUser('CASHIER');
+    $billPrinter = \App\Models\Printer::where('is_active', true)->first();
+    \App\Models\CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $cashier->id, 'printer_id' => $billPrinter->id],
+        ['is_active' => true]
+    );
 
     // Submit order
     app(OrderService::class)->submit($this->group, $this->server, [

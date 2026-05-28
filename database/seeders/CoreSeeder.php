@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
 use App\Models\CashierPrinterAssignment;
+use App\Models\FulfillmentRoute;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\MenuItemVariant;
@@ -238,15 +239,25 @@ class CoreSeeder extends Seeder
         // ---- Printers ----
         $kitchenPrinter = Printer::firstOrCreate(
             ['name' => 'Cozinha LAN'],
-            ['printer_type' => 'KITCHEN', 'connection_type' => 'LAN', 'address' => '192.168.1.50', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
+            ['connection_type' => 'LAN', 'address' => '192.168.1.50', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
         );
         $barPrinter = Printer::firstOrCreate(
             ['name' => 'Bar LAN'],
-            ['printer_type' => 'BAR', 'connection_type' => 'LAN', 'address' => '192.168.1.51', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
+            ['connection_type' => 'LAN', 'address' => '192.168.1.51', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
         );
         $billPrinter = Printer::firstOrCreate(
             ['name' => 'Caixa 1'],
-            ['printer_type' => 'BILL', 'connection_type' => 'LAN', 'address' => '192.168.1.60', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
+            ['connection_type' => 'LAN', 'address' => '192.168.1.60', 'port' => 9100, 'is_active' => true, 'health_status' => 'UNKNOWN']
+        );
+
+        // ---- Fulfillment routes ----
+        FulfillmentRoute::firstOrCreate(
+            ['code' => 'KITCHEN'],
+            ['display_name' => 'Cozinha', 'sort_order' => 10, 'is_active' => true]
+        );
+        FulfillmentRoute::firstOrCreate(
+            ['code' => 'BAR'],
+            ['display_name' => 'Bar', 'sort_order' => 20, 'is_active' => true]
         );
 
         // ---- Printer routes ----
@@ -258,14 +269,7 @@ class CoreSeeder extends Seeder
             ['venue_id' => $venue->id, 'document_type' => 'PRODUCTION_TICKET', 'fulfillment_route' => 'BAR'],
             ['printer_id' => $barPrinter->id, 'is_active' => true]
         );
-        PrinterRoute::firstOrCreate(
-            ['venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'KITCHEN'],
-            ['printer_id' => $kitchenPrinter->id, 'is_active' => true]
-        );
-        PrinterRoute::firstOrCreate(
-            ['venue_id' => $venue->id, 'document_type' => 'VOID_SLIP', 'fulfillment_route' => 'BAR'],
-            ['printer_id' => $barPrinter->id, 'is_active' => true]
-        );
+        // Void slips reuse the PRODUCTION_TICKET route — no separate VOID_SLIP routes needed.
 
         // ---- Cashier printer assignment ----
         CashierPrinterAssignment::firstOrCreate(
@@ -395,6 +399,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'navigation_label_accounting_exports', 'Exportações contabilísticas'],
             ['pt-PT', 'app', 'model_label_accounting_export', 'Exportação'],
             ['pt-PT', 'app', 'navigation_label_printer_routes', 'Rotas de impressão'],
+            ['pt-PT', 'app', 'navigation_label_fulfillment_routes', 'Rotas de cumprimento'],
             ['pt-PT', 'app', 'navigation_label_print_jobs', 'Fila de impressão'],
             ['pt-PT', 'app', 'navigation_label_service_sessions', 'Sessões de serviço'],
             ['pt-PT', 'app', 'printer_type_generic', 'Genérica'],
@@ -443,6 +448,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'theme_system', 'Sistema'],
             ['pt-PT', 'app', 'route_kitchen', 'Cozinha'],
             ['pt-PT', 'app', 'route_bar', 'Bar'],
+            ['pt-PT', 'app', 'route_none', 'Sem rota'],
             ['pt-PT', 'app', 'type_session_summary', 'Resumo de sessão'],
             ['pt-PT', 'app', 'type_full_ledger', 'Livro completo'],
             ['pt-PT', 'app', 'assign_server', 'Atribuir servidor'],
@@ -528,6 +534,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'navigation_label_accounting_exports', 'Accounting Exports'],
             ['en-US', 'app', 'model_label_accounting_export', 'Export'],
             ['en-US', 'app', 'navigation_label_printer_routes', 'Printer Routes'],
+            ['en-US', 'app', 'navigation_label_fulfillment_routes', 'Fulfillment Routes'],
             ['en-US', 'app', 'navigation_label_print_jobs', 'Print Queue'],
             ['en-US', 'app', 'navigation_label_service_sessions', 'Service Sessions'],
             ['en-US', 'app', 'printer_type_generic', 'Generic'],
@@ -576,6 +583,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'theme_system', 'System'],
             ['en-US', 'app', 'route_kitchen', 'Kitchen'],
             ['en-US', 'app', 'route_bar', 'Bar'],
+            ['en-US', 'app', 'route_none', 'No route'],
             ['en-US', 'app', 'type_session_summary', 'Session Summary'],
             ['en-US', 'app', 'type_full_ledger', 'Full Ledger'],
             ['en-US', 'app', 'assign_server', 'Assign Server'],

@@ -84,8 +84,7 @@ class UserResource extends BaseResource
             Forms\Components\Select::make('cashier_printer_id')
                 ->label(__('app.cashier_printer'))
                 ->options(
-                    Printer::where('printer_type', Printer::TYPE_BILL)
-                        ->where('is_active', true)
+                    Printer::where('is_active', true)
                         ->pluck('name', 'id')
                 )
                 ->visible(fn (Forms\Get $get) => collect($get('roles'))->contains('CASHIER'))

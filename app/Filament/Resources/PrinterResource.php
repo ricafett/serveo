@@ -53,12 +53,6 @@ class PrinterResource extends BaseResource
     {
         return $schema->schema([
             Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\Select::make('printer_type')->options([
-                'KITCHEN' => __('app.printer_type_kitchen'),
-                'BAR' => __('app.printer_type_bar'),
-                'BILL' => __('app.printer_type_bill'),
-                'GENERIC' => __('app.printer_type_generic'),
-            ])->required(),
             Forms\Components\Select::make('connection_type')->options([
                 'LAN' => __('app.connection_type_lan'),
                 'USB_AGENT' => __('app.connection_type_usb_agent'),
@@ -105,7 +99,6 @@ class PrinterResource extends BaseResource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('printer_type')->badge(),
                 Tables\Columns\TextColumn::make('connection_type')->badge(),
                 Tables\Columns\TextColumn::make('address'),
                 Tables\Columns\TextColumn::make('health_status')->badge()->colors([

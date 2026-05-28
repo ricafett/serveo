@@ -27,7 +27,7 @@ it('command is registered in the application', function () {
 it('sets health_status to OK when adapter probe succeeds', function () {
     $printer = Printer::create([
         'name' => 'Test Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.168.1.1',
         'port' => 9100,
@@ -66,7 +66,7 @@ it('sets health_status to REACHABLE when probe fails but TCP ping succeeds', fun
 
     $printer = Printer::create([
         'name' => 'Test Printer Reachable',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '127.0.0.1',
         'port' => $port,
@@ -103,7 +103,7 @@ it('sets health_status to REACHABLE when probe fails but TCP ping succeeds', fun
 it('sets health_status to UNREACHABLE when both probe and ping fail', function () {
     $printer = Printer::create([
         'name' => 'Dead Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.0.2.1', // TEST-NET-1, unreachable
         'port' => 9100,
@@ -132,7 +132,7 @@ it('sets health_status to UNREACHABLE when both probe and ping fail', function (
 it('skips inactive printers', function () {
     $activePrinter = Printer::create([
         'name' => 'Active Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.168.1.1',
         'port' => 9100,
@@ -142,7 +142,7 @@ it('skips inactive printers', function () {
 
     $inactivePrinter = Printer::create([
         'name' => 'Inactive Printer',
-        'printer_type' => Printer::TYPE_BAR,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.168.1.2',
         'port' => 9100,
@@ -176,7 +176,7 @@ it('skips inactive printers', function () {
 it('handles adapter exception gracefully and falls back to ping', function () {
     $printer = Printer::create([
         'name' => 'Buggy Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.0.2.1', // unreachable for ping too
         'port' => 9100,
@@ -206,7 +206,7 @@ it('handles adapter exception gracefully and falls back to ping', function () {
 it('outputs summary after probing', function () {
     $printer = Printer::create([
         'name' => 'Test Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.0.2.1',
         'port' => 9100,
@@ -249,7 +249,7 @@ it('skips run when mutex cache key exists', function () {
 
     $printer = Printer::create([
         'name' => 'Test Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.168.1.1',
         'port' => 9100,
@@ -285,7 +285,7 @@ it('--force bypasses the mutex even when cache key exists', function () {
 
     $printer = Printer::create([
         'name' => 'Test Printer',
-        'printer_type' => Printer::TYPE_KITCHEN,
+
         'connection_type' => Printer::CONN_LAN,
         'address' => '192.168.1.1',
         'port' => 9100,

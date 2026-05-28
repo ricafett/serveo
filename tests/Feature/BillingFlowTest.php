@@ -6,7 +6,9 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Models\BillingDocument;
 use App\Models\BillingStatus;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuItem;
+use App\Models\Printer;
 use App\Models\PrintJob;
 use App\Models\Row;
 
@@ -14,6 +16,14 @@ beforeEach(function () {
     $this->session = bootScenario();
     $this->server = makeUser('SERVER');
     $this->cashier = makeUser('CASHIER');
+
+    // Assign bill printer to cashier (required — no fallback).
+    $billPrinter = Printer::where('is_active', true)->first();
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->cashier->id, 'printer_id' => $billPrinter->id],
+        ['is_active' => true]
+    );
+
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     $this->zone = app(OccupancyService::class)->assignZone(
         $this->group, Row::first(), 1, 2, $this->server
