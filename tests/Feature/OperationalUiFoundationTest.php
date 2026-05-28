@@ -138,11 +138,11 @@ it('allows cashier to access checkout', function () {
     $response->assertSee('Checkout');
 });
 
-it('allows cashier to access reprint panel', function () {
+it('allows cashier to access reprint panel via group route', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
 
-    $response = $this->actingAs($user)->get('/reprint');
+    $response = $this->actingAs($user)->get('/reprint/1');
     $response->assertOk();
     $response->assertSee('Reprint & Documents');
 });
