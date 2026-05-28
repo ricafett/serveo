@@ -164,7 +164,7 @@ class BillingService
 
             Audit::record(
                 'PAYMENT_RECORDED',
-                "Pagamento {$label} de {$amount} EUR registado para {$group->display_code}",
+                "Pagamento {$label} de {$amount} € registado para {$group->display_code}",
                 ['amount' => $amount, 'label' => $label],
                 [
                     'billing_group_id' => $group->id,

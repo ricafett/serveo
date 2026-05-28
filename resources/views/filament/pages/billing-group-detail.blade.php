@@ -6,13 +6,13 @@
         </div>
         <div class="rounded-lg border bg-white p-4 dark:bg-gray-900">
             <div class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.total_to_pay') }}</div>
-            <div class="text-lg font-semibold">{{ number_format($charges, 2, ',', ' ') }} EUR</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.paid') }}: {{ number_format($paid, 2, ',', ' ') }} EUR</div>
+            <div class="text-lg font-semibold">{{ number_format($charges, 2, ',', ' ') }} €</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.paid') }}: {{ number_format($paid, 2, ',', ' ') }} €</div>
         </div>
         <div class="rounded-lg border bg-white p-4 dark:bg-gray-900">
             <div class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.open_balance') }}</div>
             <div class="text-2xl font-bold {{ $balance > 0 ? 'text-warning-600' : 'text-success-600' }}">
-                {{ number_format($balance, 2, ',', ' ') }} EUR
+                {{ number_format($balance, 2, ',', ' ') }} €
             </div>
         </div>
     </div>
@@ -74,7 +74,7 @@
                                     <td class="py-1">{{ $item->quantity }}</td>
                                     <td class="py-1">{{ $item->fulfillment_route }}</td>
                                     <td class="py-1">{{ $item->delivery_reference_label }}</td>
-                                    <td class="py-1 text-right">{{ number_format((float)$item->line_subtotal, 2, ',', ' ') }} EUR</td>
+                                    <td class="py-1 text-right">{{ number_format((float)$item->line_subtotal, 2, ',', ' ') }} €</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -92,7 +92,7 @@
                 @forelse ($group->billingDocuments as $doc)
                     <div class="text-base">
                         {{ $doc->document_number }} · {{ $doc->document_type }} ·
-                        {{ number_format((float)$doc->total_amount, 2, ',', ' ') }} EUR
+                        {{ number_format((float)$doc->total_amount, 2, ',', ' ') }} €
                         @if ($doc->is_reprint) <em>({{ __('billing.reprint') }})</em> @endif
                     </div>
                 @empty
@@ -103,7 +103,7 @@
                 <div class="mb-1 text-sm uppercase text-gray-500 dark:text-gray-400">{{ __('billing.payments') }}</div>
                 @forelse ($group->paymentRecords as $p)
                     <div class="text-base {{ $p->is_voided ? 'line-through text-gray-400 dark:text-gray-500' : '' }}">
-                        {{ $p->payment_label }} · {{ number_format((float)$p->amount, 2, ',', ' ') }} EUR ·
+                        {{ $p->payment_label }} · {{ number_format((float)$p->amount, 2, ',', ' ') }} € ·
                         {{ $p->recorded_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
                     </div>
                 @empty

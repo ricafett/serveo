@@ -11,7 +11,7 @@
                         <button type="button" wire:click="addItem({{ $item->id }})"
                             class="rounded border border-primary-300 bg-primary-50 px-3 py-2 text-left text-base hover:bg-primary-100 dark:border-primary-700 dark:bg-primary-900 dark:hover:bg-primary-800">
                             <div class="font-medium">{{ $item->display_name }}</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">{{ number_format((float)$item->unit_price, 2, ',', ' ') }} EUR</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">{{ number_format((float)$item->unit_price, 2, ',', ' ') }} €</div>
                         </button>
                     @endforeach
                 </div>
@@ -31,14 +31,14 @@
                                 <tr class="border-b last:border-0 dark:border-gray-700">
                                     <td class="py-1">
                                         <div class="font-medium">{{ $line['name'] }}</div>
-                                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($line['price'], 2, ',', ' ') }} EUR</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($line['price'], 2, ',', ' ') }} €</div>
                                     </td>
                                     <td class="py-1 text-center">
                                         <button class="px-1" wire:click="changeQty({{ $line['index'] }}, -1)">−</button>
                                         <span class="px-1">{{ $line['qty'] }}</span>
                                         <button class="px-1" wire:click="changeQty({{ $line['index'] }}, 1)">+</button>
                                     </td>
-                                    <td class="py-1 text-right">{{ number_format($line['subtotal'], 2, ',', ' ') }} EUR</td>
+                                    <td class="py-1 text-right">{{ number_format($line['subtotal'], 2, ',', ' ') }} €</td>
                                     <td class="py-1 pl-2">
                                         <button wire:click="removeItem({{ $line['index'] }})"
                                             class="text-sm text-danger-600 dark:text-danger-400">{{ __('order.remove') }}</button>
@@ -50,7 +50,7 @@
                             <tr class="font-semibold">
                                 <td class="pt-2">{{ __('app.total') }}</td>
                                 <td></td>
-                                <td class="pt-2 text-right">{{ number_format($total, 2, ',', ' ') }} EUR</td>
+                                <td class="pt-2 text-right">{{ number_format($total, 2, ',', ' ') }} €</td>
                                 <td></td>
                             </tr>
                         </tfoot>

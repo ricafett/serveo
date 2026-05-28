@@ -33,7 +33,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 1;
+    private const SEED_VERSION = 2;
 
     public function run(): void
     {
@@ -853,7 +853,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'cashier', 'reopen_confirm', 'Reabrir grupo'],
             ['pt-PT', 'cashier', 'record_payment', 'Registar pagamento'],
             ['pt-PT', 'cashier', 'payment_group', 'Grupo'],
-            ['pt-PT', 'cashier', 'payment_amount', 'Valor (EUR)'],
+            ['pt-PT', 'cashier', 'payment_amount', 'Valor (€)'],
             ['pt-PT', 'cashier', 'payment_label', 'Forma de pagamento'],
             ['pt-PT', 'cashier', 'payment_default', 'Numerário'],
             ['pt-PT', 'cashier', 'payment_recorded', 'Pagamento registado'],
@@ -893,7 +893,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashier', 'reopen_confirm', 'Reopen group'],
             ['en-US', 'cashier', 'record_payment', 'Record Payment'],
             ['en-US', 'cashier', 'payment_group', 'Group'],
-            ['en-US', 'cashier', 'payment_amount', 'Amount (EUR)'],
+            ['en-US', 'cashier', 'payment_amount', 'Amount (€)'],
             ['en-US', 'cashier', 'payment_label', 'Payment Method'],
             ['en-US', 'cashier', 'payment_default', 'Cash'],
             ['en-US', 'cashier', 'payment_recorded', 'Payment recorded'],

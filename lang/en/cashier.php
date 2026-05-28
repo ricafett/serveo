@@ -16,7 +16,7 @@ return [
     'reopen_confirm' => 'Reopen group',
     'record_payment' => 'Record Payment',
     'payment_group' => 'Group',
-    'payment_amount' => 'Amount (EUR)',
+    'payment_amount' => 'Amount (€)',
     'payment_label' => 'Payment Method',
     'payment_default' => 'Cash',
     'payment_recorded' => 'Payment recorded',
