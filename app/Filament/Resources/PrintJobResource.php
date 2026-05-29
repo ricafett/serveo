@@ -11,7 +11,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkAction;
+use Filament\Actions\BulkAction;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
