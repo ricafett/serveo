@@ -18,6 +18,7 @@ return [
     'order_failed' => 'Failed to submit order',
     'group_level' => 'Group level',
     'center' => 'Center',
+    'unspecified' => 'Unspecified',
     'order_entry' => 'Order Entry',
     'unauthorized' => 'Unauthorized',
     'menu_tab' => 'Menu',

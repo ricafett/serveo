@@ -48,11 +48,8 @@ class TicketRenderer
         $zones = $ticket->billingGroup?->occupiedZones ?? collect();
         if ($zones->isNotEmpty()) {
             $lines[] = __('ticket.zones').': '.$zones->map->rangeLabel()->join(', ');
-            $deliveryLabels = $zones->map->defaultDeliveryLabel()->filter()->values();
-            if ($deliveryLabels->isNotEmpty()) {
-                $lines[] = __('ticket.delivery').': '.$deliveryLabels->join(', ');
-            }
-        } elseif ($ticket->delivery_reference_label) {
+        }
+        if ($ticket->delivery_reference_label) {
             $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;
         }
 

@@ -132,8 +132,6 @@ class OrderService
                 if ($deliveryPairId) {
                     $pair = SeatPair::find($deliveryPairId);
                     $deliveryLabel = $pair ? "Pair {$pair->pair_sequence}" : null;
-                } elseif ($zone) {
-                    $deliveryLabel = $zone->defaultDeliveryLabel();
                 }
 
                 $item = OrderItem::create([
@@ -171,7 +169,7 @@ class OrderService
                     'printer_id' => $printer->id,
                     'ticket_type' => $route,
                     'ticket_status' => 'PENDING',
-                    'delivery_reference_label' => $zone?->defaultDeliveryLabel(),
+                    'delivery_reference_label' => $deliveryLabel ?? null,
                     'requested_at' => now(),
                     'is_void_slip' => false,
                     'is_reprint' => false,

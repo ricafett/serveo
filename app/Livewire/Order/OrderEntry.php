@@ -44,11 +44,6 @@ class OrderEntry extends Component
         $this->billingGroupId = $billingGroupId;
         $this->idempotencyKey = (string) Str::uuid();
 
-        $zones = $this->group?->occupiedZones ?? collect();
-        if ($zones->count() === 1) {
-            $this->selectedZoneId = $zones->first()->id;
-        }
-
         $this->defaultCategoryId = MenuCategory::where('is_active', true)->orderBy('sort_order')->value('id');
 
         $this->menuCategoriesData = MenuCategory::where('is_active', true)
