@@ -93,7 +93,7 @@ class CoreSeeder extends Seeder
         );
 
         $session = ServiceSession::updateOrCreate(
-            ['venue_id' => $venue->id, 'session_label' => now()->toDateString().' DINNER'],
+            ['venue_id' => $venue->id, 'session_label' => 'DEFAULT'],
             [
                 'session_type' => 'DINNER',
                 'starts_at' => now()->setTime(19, 0),
@@ -467,6 +467,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'closed_at', 'Fechado em'],
             ['pt-PT', 'app', 'range', 'Intervalo'],
             ['pt-PT', 'app', 'session_already_open', 'Já existe uma sessão aberta neste espaço de evento. Feche-a antes de abrir uma nova.'],
+            ['pt-PT', 'app', 'session_has_open_groups', 'Não é possível fechar a sessão. Existem contas abertas nesta sessão. Feche-as ou reatribua-as primeiro.'],
             ['pt-PT', 'app', 'model_label_fulfillment_route', 'Rota de produção'],
             ['pt-PT', 'app', 'plural_model_label_fulfillment_routes', 'Rotas de produção'],
             ['pt-PT', 'app', 'display_name', 'Nome a exibir'],
@@ -609,6 +610,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'closed_at', 'Closed at'],
             ['en-US', 'app', 'range', 'Range'],
             ['en-US', 'app', 'session_already_open', 'There is already an open session in this venue. Please close it before opening a new one.'],
+            ['en-US', 'app', 'session_has_open_groups', 'Cannot close session. There are open billing groups in this session. Close or reassign them first.'],
             ['en-US', 'app', 'display_name', 'Display Name'],
             ['en-US', 'app', 'sort_order', 'Sort Order'],
             ['en-US', 'app', 'is_active', 'Active'],

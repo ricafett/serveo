@@ -31,6 +31,16 @@ class EditServiceSession extends EditRecord
             }
         }
 
+        if (($data['status'] ?? null) !== 'OPEN' && $this->record->status === 'OPEN') {
+            $hasOpenGroups = $this->record->billingGroups()->where('is_closed', false)->exists();
+
+            if ($hasOpenGroups) {
+                throw new \RuntimeException(
+                    __('app.session_has_open_groups')
+                );
+            }
+        }
+
         return $data;
     }
 }

@@ -327,3 +327,42 @@ it('allows order submission when session is open', function () {
 
     expect($header->id)->not->toBeNull();
 });
+
+// ------------------------------------------------------------------
+// ServiceSession — cannot close when open billing groups exist
+// ------------------------------------------------------------------
+
+it('rejects session close when open billing groups exist', function () {
+    $session = ServiceSession::where('status', 'OPEN')->first();
+    $server = makeUser('SERVER');
+    createBillingGroup($session, $server);
+
+    $session->status = 'CLOSED';
+
+    expect(fn () => $session->save())
+        ->toThrow(RuntimeException::class, __('app.session_has_open_groups'));
+});
+
+it('allows session close when all billing groups are closed', function () {
+    $session = ServiceSession::where('status', 'OPEN')->first();
+    $session->billingGroups()->update(['is_closed' => true]);
+
+    $session->status = 'CLOSED';
+    $session->save();
+
+    expect($session->fresh()->status)->toBe('CLOSED');
+});
+
+it('does not block status transition for newly created non-open session', function () {
+    $venue = Venue::first();
+    $session = ServiceSession::create([
+        'venue_id' => $venue->id,
+        'session_type' => 'DINNER',
+        'session_label' => 'Planned session',
+        'starts_at' => now()->addDay(),
+        'status' => 'PLANNED',
+    ]);
+
+    expect($session->id)->not->toBeNull();
+    expect($session->status)->toBe('PLANNED');
+});

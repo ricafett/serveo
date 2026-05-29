@@ -137,6 +137,7 @@ return [
     'closed' => 'Closed',
     'details' => 'Details',
     'session_already_open' => 'There is already an open session in this venue. Please close it before opening a new one.',
+    'session_has_open_groups' => 'Cannot close session. There are open billing groups in this session. Close or reassign them first.',
     'opened_at' => 'Opened at',
     'closed_at' => 'Closed at',
     'range' => 'Range',

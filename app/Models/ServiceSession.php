@@ -18,6 +18,28 @@ class ServiceSession extends Model
         'ends_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $session) {
+            if (! $session->exists) {
+                return;
+            }
+
+            $originalStatus = $session->getOriginal('status');
+            $newStatus = $session->status;
+
+            if ($originalStatus === 'OPEN' && $newStatus !== 'OPEN') {
+                $hasOpenGroups = $session->billingGroups()->where('is_closed', false)->exists();
+
+                if ($hasOpenGroups) {
+                    throw new \RuntimeException(
+                        __('app.session_has_open_groups')
+                    );
+                }
+            }
+        });
+    }
+
     public function venue(): BelongsTo
     {
         return $this->belongsTo(Venue::class);
