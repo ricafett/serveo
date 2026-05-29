@@ -42,10 +42,11 @@ class TicketRenderer
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
         $lines[] = str_repeat('=', $this->width());
-        $lines[] = __('ticket.group').': '.($ticket->billingGroup?->display_code ?? '-');
+        $groupLabel = $ticket->billingGroup?->display_code ?? '-';
         if ($ticket->billingGroup?->name) {
-            $lines[] = __('ticket.name').':  '.$ticket->billingGroup->name;
+            $groupLabel .= ' '.$ticket->billingGroup->name;
         }
+        $lines[] = __('ticket.group').': '.$groupLabel;
 
         $zones = $ticket->billingGroup?->occupiedZones ?? collect();
         if ($zones->isNotEmpty()) {
@@ -119,7 +120,7 @@ class TicketRenderer
 
     public function renderBill(BillingDocument $bill): string
     {
-        $bill->loadMissing(['billingGroup.orderHeaders.items.menuItem', 'billingGroup.paymentRecords']);
+        $bill->loadMissing(['billingGroup.orderHeaders.items.menuItem', 'billingGroup.paymentRecords', 'billingGroup.occupiedZones.row.section', 'createdBy']);
 
         $lines = [];
         $lines[] = $this->center(__('ticket.internal_bill'));
@@ -127,9 +128,24 @@ class TicketRenderer
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
         $lines[] = str_repeat('=', $this->width());
-        $lines[] = __('ticket.group').':    '.$bill->billingGroup?->display_code;
+        $groupLabel = $bill->billingGroup?->display_code ?? '-';
+        if ($bill->billingGroup?->name) {
+            $groupLabel .= ' '.$bill->billingGroup->name;
+        }
+        $lines[] = __('ticket.group').': '.$groupLabel;
+
+        $zones = $bill->billingGroup?->occupiedZones ?? collect();
+        if ($zones->isNotEmpty()) {
+            $lines[] = __('ticket.zones').': '.$zones->map->rangeLabel()->join(', ');
+        }
+
         $lines[] = __('ticket.document').': '.($bill->document_number ?: '#'.$bill->id);
         $lines[] = __('ticket.time').':      '.$this->localTime($bill->requested_at);
+
+        if ($bill->createdBy) {
+            $lines[] = __('ticket.server').': '.$bill->createdBy->name;
+        }
+
         $lines[] = str_repeat('-', $this->width());
 
         $items = collect();

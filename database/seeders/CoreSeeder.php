@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 4;
+    private const SEED_VERSION = 5;
 
     public function run(): void
     {
@@ -713,7 +713,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'ticket', 'delivery', 'Entrega'],
             ['pt-PT', 'ticket', 'time', 'Hora'],
             ['pt-PT', 'ticket', 'ticket_num', 'Ticket'],
-            ['pt-PT', 'ticket', 'internal_bill', 'CONTA INTERNA'],
+            ['pt-PT', 'ticket', 'internal_bill', 'CONTA'],
             ['pt-PT', 'ticket', 'document', 'Documento'],
             ['pt-PT', 'ticket', 'subtotal', 'SUBTOTAL'],
             ['pt-PT', 'ticket', 'total', 'TOTAL'],
