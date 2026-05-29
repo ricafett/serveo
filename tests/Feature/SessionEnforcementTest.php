@@ -15,6 +15,7 @@ use App\Models\ServiceSession;
 use App\Models\Venue;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -22,6 +23,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+    $this->seed(DemoTransactionSeeder::class);
 });
 
 // ------------------------------------------------------------------

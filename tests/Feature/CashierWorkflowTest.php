@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Models\Venue;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -29,6 +30,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+    $this->seed(DemoTransactionSeeder::class);
 
     // Close CoreSeeder session so tests only see their own session
     ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);

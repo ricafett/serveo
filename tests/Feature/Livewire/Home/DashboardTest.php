@@ -4,6 +4,7 @@ use App\Models\ServiceSession;
 use App\Models\User;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -11,7 +12,17 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+    $this->seed(DemoTransactionSeeder::class);
 });
+
+function closeOpenSession(): void
+{
+    $session = ServiceSession::where('status', 'OPEN')->first();
+    if ($session) {
+        $session->billingGroups()->update(['is_closed' => true]);
+        $session->update(['status' => 'CLOSED']);
+    }
+}
 
 // ------------------------------------------------------------------
 // Landing behavior
@@ -60,7 +71,7 @@ it('shows floor tile for server', function () {
 });
 
 it('hides operational tiles for server when no session is open', function () {
-    ServiceSession::query()->delete();
+    closeOpenSession();
 
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('SERVER');
@@ -73,7 +84,7 @@ it('hides operational tiles for server when no session is open', function () {
 });
 
 it('hides operational tiles for cashier when no session is open', function () {
-    ServiceSession::query()->delete();
+    closeOpenSession();
 
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
@@ -84,7 +95,7 @@ it('hides operational tiles for cashier when no session is open', function () {
 });
 
 it('shows admin panel tile even when no session is open', function () {
-    ServiceSession::query()->delete();
+    closeOpenSession();
 
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('ADMIN');
@@ -123,7 +134,7 @@ it('shows all tiles for admin', function () {
 // ------------------------------------------------------------------
 
 it('shows active session name when one exists', function () {
-    ServiceSession::query()->delete();
+    closeOpenSession();
     $session = ServiceSession::create([
         'venue_id' => 1,
         'session_label' => 'Test Session',
@@ -141,7 +152,7 @@ it('shows active session name when one exists', function () {
 });
 
 it('shows no session warning when none is open', function () {
-    ServiceSession::query()->delete();
+    closeOpenSession();
 
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('SERVER');

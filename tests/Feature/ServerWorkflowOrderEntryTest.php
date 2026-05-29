@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\Venue;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -32,6 +33,7 @@ function cartItem(int $menuItemId, int $quantity = 1): array
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+    $this->seed(DemoTransactionSeeder::class);
 
     $this->venue = Venue::first();
     $this->session = ServiceSession::create([

@@ -3,6 +3,7 @@
 use App\Models\User;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -11,6 +12,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+    $this->seed(DemoTransactionSeeder::class);
 });
 
 // ------------------------------------------------------------------
