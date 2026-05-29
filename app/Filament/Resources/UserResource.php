@@ -81,6 +81,7 @@ class UserResource extends BaseResource
                 ->relationship('roles', 'name')
                 ->options(Role::pluck('name', 'name'))
                 ->preload()
+                ->live()
                 ->required(),
             Forms\Components\Select::make('cashier_printer_id')
                 ->label(__('app.cashier_printer'))
@@ -88,7 +89,11 @@ class UserResource extends BaseResource
                     Printer::where('is_active', true)
                         ->pluck('name', 'id')
                 )
-                ->visible(fn (Get $get) => collect($get('roles'))->contains('CASHIER'))
+                ->visible(function (Get $get) {
+                    return collect($get('roles'))
+                        ->map(fn ($id) => (int) $id)
+                        ->contains(Role::where('name', 'CASHIER')->value('id'));
+                })
                 ->helperText(__('app.cashier_printer_help'))
                 ->nullable(),
         ]);
