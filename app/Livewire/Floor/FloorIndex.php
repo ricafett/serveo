@@ -100,7 +100,10 @@ class FloorIndex extends Component
         return Section::with([
             'rows' => fn ($q) => $q->orderBy('sort_order')->where('is_active', true),
             'rows.seatPairs' => fn ($q) => $q->orderBy('pair_sequence')->where('is_active', true),
-            'rows.occupiedZones' => fn ($q) => $q->where('is_open', true)->with(['billingGroup.status', 'server']),
+            'rows.occupiedZones' => fn ($q) => $q
+                ->where('is_open', true)
+                ->whereHas('billingGroup', fn ($q) => $q->where('service_session_id', $this->serviceSessionId))
+                ->with(['billingGroup.status', 'server']),
         ])
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -140,6 +143,7 @@ class FloorIndex extends Component
         }
 
         return BillingGroup::whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user->id))
+            ->where('service_session_id', $this->serviceSessionId)
             ->where('is_closed', false)
             ->pluck('id')
             ->toArray();

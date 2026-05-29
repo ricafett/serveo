@@ -67,10 +67,16 @@
                                             @endif
                                         {{-- Occupied range: two-line layout --}}
                                         @elseif(!$favoritesOnly || ($item['group'] && in_array($item['group']->id, $this->favoriteGroupIds)))
+                                            @php
+                                                $isClosed = $item['group']->is_closed ?? false;
+                                                $zoneClasses = $isClosed
+                                                    ? 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                                                    : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30';
+                                            @endphp
                                             <button
                                                 type="button"
                                                 wire:click="openExistingGroup({{ $item['group']->id ?? 0 }})"
-                                                class="rounded-lg px-3 py-2 text-base font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors min-h-[44px] flex flex-col items-center justify-center"
+                                                class="rounded-lg px-3 py-2 text-base font-medium {{ $zoneClasses }} transition-colors min-h-[44px] flex flex-col items-center justify-center"
                                                 title="{{ $item['group']->name ?? $item['group']->display_code ?? '' }} — {{ $item['group']->status?->display_name ?? $item['group']->status?->code ?? '' }}"
                                             >
                                                 @php

@@ -90,7 +90,7 @@
                             @endif
                         </div>
                     </div>
-                        @if($zone->is_open && ! $group?->is_closed)
+                        @if($zone->is_open)
                             @can('floor.release_zone')
                                 <button type="button" wire:click="releaseZone({{ $zone->id }})" wire:confirm="{{ __('billing.release_confirm') }}" wire:target="releaseZone" wire:loading.attr="disabled" class="text-base text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed">
                                     {{ __('billing.release_zone') }}
