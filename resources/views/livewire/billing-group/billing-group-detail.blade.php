@@ -146,7 +146,15 @@
                             @foreach($order->items as $item)
                                 <div class="flex items-center justify-between text-base">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-gray-900 dark:text-gray-100 {{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : '' }}">{{ $item->quantity }}× {{ $item->menuItem?->display_name }}</span>
+                                        <span class="{{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-gray-100' }}">
+                                            {{ $item->quantity }}× {{ $item->menuItem?->display_name }}
+                                            @if($item->variant_name)
+                                                <span class="text-primary-500 dark:text-primary-400">{{ $item->variant_name }}</span>
+                                            @endif
+                                            @if($item->modifier_name)
+                                                <span class="text-gray-400 dark:text-gray-500"> ({{ $item->modifier_name }})</span>
+                                            @endif
+                                        </span>
                                         @if($item->voided_at)
                                             <span class="text-sm text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
                                         @endif

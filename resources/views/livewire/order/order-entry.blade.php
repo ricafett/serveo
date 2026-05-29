@@ -581,7 +581,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                 }
             }
 
-            var cartKey = this.modalItem.id + '_' + (variantName || '');
+            var cartKey = this.modalItem.id + '|' + (variantName || '') + '|' + (modifierName || '');
             var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
@@ -602,12 +602,13 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         },
 
         addToCartSimple(menuItem) {
-            var existing = this.cart.find(function (i) { return i.menu_item_id === menuItem.id && !i.variant_name; });
+            var cartKey = menuItem.id + '||';
+            var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
             } else {
                 this.cart.push({
-                    cart_key: menuItem.id + '_',
+                    cart_key: cartKey,
                     menu_item_id: menuItem.id,
                     display_name: menuItem.display_name,
                     unit_price: menuItem.unit_price,

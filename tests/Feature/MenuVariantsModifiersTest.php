@@ -345,3 +345,42 @@ it('menuItemsData excludes inactive modifier items', function () {
     expect($variantItem['modifier_set']['items'])->toHaveCount(1);
     expect($variantItem['modifier_set']['items'][0]['display_name'])->toBe('Fresca');
 });
+
+// ------------------------------------------------------------------
+// Distinct order item rows by modifier
+// ------------------------------------------------------------------
+
+it('modifier selection creates distinct order item rows', function () {
+    $header = app(OrderService::class)->submit($this->group, $this->server, [
+        cartItemVm($this->variantItem->id, 1, 'Casa', 'Fresca'),
+        cartItemVm($this->variantItem->id, 2, 'Casa', 'Natural'),
+    ], $this->zone);
+
+    expect($header->items)->toHaveCount(2);
+
+    $frescaItem = $header->items->firstWhere('modifier_name', 'Fresca');
+    $naturalItem = $header->items->firstWhere('modifier_name', 'Natural');
+
+    expect($frescaItem)->not->toBeNull()
+        ->and($frescaItem->quantity)->toBe(1)
+        ->and($naturalItem)->not->toBeNull()
+        ->and($naturalItem->quantity)->toBe(2);
+});
+
+// ------------------------------------------------------------------
+// Billing group detail display
+// ------------------------------------------------------------------
+
+it('billing group detail shows variant and modifier on order items', function () {
+    $this->group->update(['is_closed' => false]);
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        cartItemVm($this->variantItem->id, 2, 'Casa', 'Fresca'),
+    ], $this->zone);
+
+    $response = $this->actingAs($this->server)->get("/billing-groups/{$this->group->id}");
+    $response->assertOk();
+    $response->assertSee($this->variantItem->display_name);
+    $response->assertSee('Casa');
+    $response->assertSee('Fresca');
+});
