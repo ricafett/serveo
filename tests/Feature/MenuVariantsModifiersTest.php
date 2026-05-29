@@ -384,3 +384,79 @@ it('billing group detail shows variant and modifier on order items', function ()
     $response->assertSee('Casa');
     $response->assertSee('Fresca');
 });
+
+// ------------------------------------------------------------------
+// Assume default / is_default tests
+// ------------------------------------------------------------------
+
+it('modifierSetItem is_default enforces at most one default per set', function () {
+    $this->modFresca->update(['is_default' => true]);
+
+    // Fresca should now be the only default in this set
+    expect($this->modFresca->fresh()->is_default)->toBeTrue();
+    expect($this->modNatural->fresh()->is_default)->toBeFalse();
+
+    // Setting Natural as default should clear Fresca
+    $this->modNatural->update(['is_default' => true]);
+
+    expect($this->modFresca->fresh()->is_default)->toBeFalse();
+    expect($this->modNatural->fresh()->is_default)->toBeTrue();
+});
+
+it('modifierSetItem unsetting is_default leaves no default', function () {
+    $this->modFresca->update(['is_default' => true]);
+
+    $this->modFresca->update(['is_default' => false]);
+
+    expect($this->modFresca->fresh()->is_default)->toBeFalse();
+    expect($this->modNatural->fresh()->is_default)->toBeFalse();
+    expect(
+        ModifierSetItem::where('modifier_set_id', $this->modSet->id)
+            ->where('is_default', true)
+            ->count()
+    )->toBe(0);
+});
+
+it('modifierSet stores and reads assume_default', function () {
+    expect($this->modSet->fresh()->assume_default)->toBeFalse();
+
+    $this->modSet->update(['assume_default' => true]);
+
+    expect($this->modSet->fresh()->assume_default)->toBeTrue();
+});
+
+it('menuItemsData includes assume_default and is_default', function () {
+    $this->modSet->update(['assume_default' => true]);
+    $this->modFresca->update(['is_default' => true]);
+
+    $this->actingAs($this->server);
+    $component = Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id]);
+
+    $items = $component->get('menuItemsData');
+    $variantItem = collect($items)->firstWhere('id', $this->variantItem->id);
+
+    expect($variantItem['modifier_set'])->not->toBeNull();
+    expect($variantItem['modifier_set']['assume_default'])->toBeTrue();
+
+    // Fresca should be marked as default, Natural should not
+    $fresca = collect($variantItem['modifier_set']['items'])->firstWhere('display_name', 'Fresca');
+    $natural = collect($variantItem['modifier_set']['items'])->firstWhere('display_name', 'Natural');
+
+    expect($fresca['is_default'])->toBeTrue();
+    expect($natural['is_default'])->toBeFalse();
+});
+
+it('menuItemsData has assume_default false by default', function () {
+    $this->actingAs($this->server);
+    $component = Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id]);
+
+    $items = $component->get('menuItemsData');
+    $variantItem = collect($items)->firstWhere('id', $this->variantItem->id);
+
+    expect($variantItem['modifier_set']['assume_default'])->toBeFalse();
+
+    $allItems = $variantItem['modifier_set']['items'];
+    foreach ($allItems as $item) {
+        expect($item['is_default'])->toBeFalse();
+    }
+});

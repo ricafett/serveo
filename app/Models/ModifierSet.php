@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ModifierSet extends Model
 {
-    protected $fillable = ['display_name', 'selection_mode', 'sort_order', 'is_active'];
+    protected $fillable = ['display_name', 'selection_mode', 'sort_order', 'is_active', 'assume_default'];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = ['is_active' => 'boolean', 'assume_default' => 'boolean'];
 
     public function items(): HasMany
     {

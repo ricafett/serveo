@@ -74,9 +74,11 @@ class OrderEntry extends Component
                     'id' => $item->modifierSet->id,
                     'display_name' => $item->modifierSet->display_name,
                     'selection_mode' => $item->modifierSet->selection_mode,
+                    'assume_default' => (bool) $item->modifierSet->assume_default,
                     'items' => $item->modifierSet->items->map(fn ($mi) => [
                         'id' => $mi->id,
                         'display_name' => $mi->display_name,
+                        'is_default' => (bool) $mi->is_default,
                     ])->values()->all(),
                 ] : null,
             ])

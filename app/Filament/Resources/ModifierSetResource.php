@@ -63,12 +63,18 @@ class ModifierSetResource extends BaseResource
                 ->required(),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Toggle::make('assume_default')
+                ->default(false)
+                ->helperText(__('app.assume_default_help')),
             Forms\Components\Repeater::make('items')
                 ->relationship('items')
                 ->schema([
                     Forms\Components\TextInput::make('display_name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
                     Forms\Components\Toggle::make('is_active')->default(true),
+                    Forms\Components\Toggle::make('is_default')
+                        ->default(false)
+                        ->helperText(__('app.is_default_help')),
                 ])
                 ->orderColumn('sort_order')
                 ->defaultItems(0)

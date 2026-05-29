@@ -543,6 +543,15 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         },
 
         handleItemTap(menuItem) {
+            // If assume_default with a default modifier and no variants, add directly
+            if (!menuItem.has_variants && menuItem.modifier_set && menuItem.modifier_set.assume_default) {
+                var defaultItem = this.getDefaultModifier(menuItem);
+                if (defaultItem) {
+                    this.addToCartWithModifier(menuItem, defaultItem);
+                    return;
+                }
+            }
+
             if (menuItem.has_variants || menuItem.modifier_set) {
                 this.openModal(menuItem);
             } else {
@@ -555,6 +564,19 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             this.modalSelectedVariant = '';
             this.modalSelectedModifierSingle = '';
             this.modalSelectedModifiers = [];
+
+            // Pre-select default modifier when assume_default is true
+            if (menuItem.modifier_set && menuItem.modifier_set.assume_default) {
+                var defaultMod = this.getDefaultModifier(menuItem);
+                if (defaultMod) {
+                    if (menuItem.modifier_set.selection_mode === 'single') {
+                        this.modalSelectedModifierSingle = defaultMod.display_name;
+                    } else {
+                        this.modalSelectedModifiers = [defaultMod.display_name];
+                    }
+                }
+            }
+
             this.showModal = true;
         },
 
@@ -599,6 +621,35 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             }
 
             this.closeModal();
+        },
+
+        getDefaultModifier(menuItem) {
+            if (!menuItem.modifier_set) return null;
+            var items = menuItem.modifier_set.items || [];
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].is_default) return items[i];
+            }
+            return null;
+        },
+
+        addToCartWithModifier(menuItem, modifierItem) {
+            var modifierName = modifierItem.display_name;
+            var cartKey = menuItem.id + '||' + modifierName;
+            var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
+            if (existing) {
+                existing.quantity++;
+            } else {
+                this.cart.push({
+                    cart_key: cartKey,
+                    menu_item_id: menuItem.id,
+                    display_name: menuItem.display_name,
+                    unit_price: menuItem.unit_price,
+                    quantity: 1,
+                    route_type: menuItem.route_type,
+                    variant_name: null,
+                    modifier_name: modifierName,
+                });
+            }
         },
 
         addToCartSimple(menuItem) {
