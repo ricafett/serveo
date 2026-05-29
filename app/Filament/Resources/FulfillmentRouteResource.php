@@ -23,6 +23,10 @@ class FulfillmentRouteResource extends BaseResource
 
     protected static ?string $navigationLabel = 'app.navigation_label_fulfillment_routes';
 
+    protected static ?string $modelLabel = 'app.model_label_fulfillment_route';
+
+    protected static ?string $pluralModelLabel = 'app.plural_model_label_fulfillment_routes';
+
     protected static ?int $navigationSort = 42;
 
     public static function canViewAny(): bool
@@ -48,10 +52,10 @@ class FulfillmentRouteResource extends BaseResource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\TextInput::make('code')->required()->unique(ignoreRecord: true)->maxLength(32),
-            Forms\Components\TextInput::make('display_name')->required(),
-            Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
-            Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\TextInput::make('code')->label(__('app.code'))->required()->unique(ignoreRecord: true)->maxLength(32),
+            Forms\Components\TextInput::make('display_name')->label(__('app.display_name'))->required(),
+            Forms\Components\TextInput::make('sort_order')->label(__('app.sort_order'))->numeric()->default(0),
+            Forms\Components\Toggle::make('is_active')->label(__('app.is_active'))->default(true),
         ]);
     }
 
@@ -59,10 +63,10 @@ class FulfillmentRouteResource extends BaseResource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('sort_order')->sortable(),
-                Tables\Columns\TextColumn::make('code')->badge(),
-                Tables\Columns\TextColumn::make('display_name')->searchable(),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
+                Tables\Columns\TextColumn::make('sort_order')->label(__('app.sort_order'))->sortable(),
+                Tables\Columns\TextColumn::make('code')->label(__('app.code'))->badge(),
+                Tables\Columns\TextColumn::make('display_name')->label(__('app.display_name'))->searchable(),
+                Tables\Columns\IconColumn::make('is_active')->label(__('app.is_active'))->boolean(),
             ])
             ->defaultSort('sort_order')
             ->actions([Actions\EditAction::make()])
