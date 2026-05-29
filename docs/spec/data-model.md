@@ -315,7 +315,22 @@ Recommended uniqueness:
 DocumentType examples:
 - PRODUCTION_TICKET
 - BILL
-- VOID_SLIP
+
+### DocumentPrintConfig
+Per-document-sub-type rendering configuration. Admin-managed via Filament. Configs for production tickets are auto-created when a FulfillmentRoute is created. The BILL config is lazily created on first bill print.
+
+- DocumentPrintConfigId (PK)
+- DocumentType (string) — PRODUCTION_TICKET or BILL
+- FulfillmentRoute nullable (string) — matches FulfillmentRoute.code; null for BILL
+- GroupItems (boolean, default true) — group identical items with quantity vs. repeat each unit
+- IgnoreVariants (boolean, default false) — strip variant text from printed item names
+- IgnoreModifiers (boolean, default false) — strip modifier text from printed item names
+- IsActive (boolean, default true)
+- CreatedAt
+- UpdatedAt
+
+Recommended uniqueness:
+- Unique(DocumentType, FulfillmentRoute)
 
 ### ProductionTicket
 - ProductionTicketId (PK)

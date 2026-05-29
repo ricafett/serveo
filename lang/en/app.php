@@ -168,4 +168,11 @@ return [
     'retry_batch_result' => ':success retried, :skipped skipped',
     'retry_batch_success' => 'Retried',
     'retry_batch_none' => 'Nothing retried',
+    // Document Print Configs
+    'navigation_label_document_print_configs' => 'Document Print Configs',
+    'model_label_document_print_config' => 'Document Print Config',
+    'plural_model_label_document_print_configs' => 'Document Print Configs',
+    'helper_text_group_items' => 'Group identical items and display quantity (e.g. "3x Pizza"). When off, each unit prints on its own line.',
+    'helper_text_ignore_variants' => 'Do not print variant names (e.g. "Casa", "Reserva") on this document type.',
+    'helper_text_ignore_modifiers' => 'Do not print modifier names (e.g. "sem cebola") on this document type.',
 ];

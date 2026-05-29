@@ -6,9 +6,11 @@ use App\Domain\Localization\DatabaseTranslationLoader;
 use App\Models\AuditEvent;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
+use App\Models\FulfillmentRoute;
 use App\Models\OrderHeader;
 use App\Models\PaymentRecord;
 use App\Models\Printer;
+use App\Observers\FulfillmentRouteObserver;
 use App\Policies\AuditEventPolicy;
 use App\Policies\BillingDocumentPolicy;
 use App\Policies\BillingGroupPolicy;
@@ -46,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(OrderHeader::class, OrderPolicy::class);
         Gate::policy(PaymentRecord::class, PaymentRecordPolicy::class);
         Gate::policy(Printer::class, PrinterPolicy::class);
+
+        FulfillmentRoute::observe(FulfillmentRouteObserver::class);
 
         $locale = $this->resolveLocale();
         app()->setLocale($locale);

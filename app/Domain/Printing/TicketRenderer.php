@@ -3,6 +3,7 @@
 namespace App\Domain\Printing;
 
 use App\Models\BillingDocument;
+use App\Models\DocumentPrintConfig;
 use App\Models\OrderItem;
 use App\Models\ProductionTicket;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,7 @@ class TicketRenderer
         private readonly int $charWidth = 48,
         private readonly int $beginSpace = 0,
         private readonly int $endSpace = 3,
+        private readonly ?DocumentPrintConfig $documentConfig = null,
     ) {}
 
     private function width(): int
@@ -68,18 +70,21 @@ class TicketRenderer
 
         $lines[] = str_repeat('-', $this->width());
 
+        $shouldGroup = $this->documentConfig?->group_items ?? true;
+
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
-            $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);
-            if ($item->variant_name) {
-                $name .= ' - '.$item->variant_name;
+            $name = $this->buildItemName($item);
+            if ($shouldGroup) {
+                $qty = $item->quantity;
+                $left = sprintf('%2dx %s', $qty, $name);
+                $lines[] = mb_strimwidth($left, 0, $this->width());
+            } else {
+                for ($i = 0; $i < $item->quantity; $i++) {
+                    $left = sprintf(' 1x %s', $name);
+                    $lines[] = mb_strimwidth($left, 0, $this->width());
+                }
             }
-            if ($item->modifier_name) {
-                $name .= ' ('.$item->modifier_name.')';
-            }
-            $qty = $item->quantity;
-            $left = sprintf('%2dx %s', $qty, $name);
-            $lines[] = mb_strimwidth($left, 0, $this->width());
         }
 
         $orderNotes = $ticket->items
@@ -137,17 +142,37 @@ class TicketRenderer
             }
         }
 
-        foreach ($items as $item) {
-            $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);
-            if ($item->variant_name) {
-                $name .= ' - '.$item->variant_name;
+        $shouldGroup = $this->documentConfig?->group_items ?? false;
+
+        if ($shouldGroup) {
+            $grouped = [];
+            foreach ($items as $item) {
+                $key = (string) $item->menu_item_id;
+                if (! ($this->documentConfig?->ignore_variants ?? false) && $item->variant_name) {
+                    $key .= '|v:'.$item->variant_name;
+                }
+                if (! ($this->documentConfig?->ignore_modifiers ?? false) && $item->modifier_name) {
+                    $key .= '|m:'.$item->modifier_name;
+                }
+
+                $grouped[$key] ??= ['qty' => 0, 'subtotal' => 0.0, 'item' => $item];
+                $grouped[$key]['qty'] += $item->quantity;
+                $grouped[$key]['subtotal'] += (float) $item->line_subtotal;
             }
-            if ($item->modifier_name) {
-                $name .= ' ('.$item->modifier_name.')';
+
+            foreach ($grouped as $group) {
+                $name = $this->buildItemName($group['item']);
+                $left = sprintf('%2dx %s', $group['qty'], mb_strimwidth($name, 0, 28));
+                $right = number_format($group['subtotal'], 2, ',', ' ').' '.__('ticket.currency');
+                $lines[] = $this->row($left, $right);
             }
-            $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
-            $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
-            $lines[] = $this->row($left, $right);
+        } else {
+            foreach ($items as $item) {
+                $name = $this->buildItemName($item);
+                $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
+                $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
+                $lines[] = $this->row($left, $right);
+            }
         }
 
         $lines[] = str_repeat('-', $this->width());
@@ -164,6 +189,27 @@ class TicketRenderer
         $lines[] = $this->center(__('ticket.no_fiscal'));
 
         return $this->wrap(implode("\n", $lines)."\n");
+    }
+
+    /**
+     * Build the display name for an order item, respecting
+     * DocumentPrintConfig ignore_variants / ignore_modifiers settings.
+     */
+    private function buildItemName(OrderItem $item): string
+    {
+        $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);
+
+        $showVariant = ! ($this->documentConfig?->ignore_variants ?? false);
+        $showModifier = ! ($this->documentConfig?->ignore_modifiers ?? false);
+
+        if ($showVariant && $item->variant_name) {
+            $name .= ' - '.$item->variant_name;
+        }
+        if ($showModifier && $item->modifier_name) {
+            $name .= ' ('.$item->modifier_name.')';
+        }
+
+        return $name;
     }
 
     private function wrap(string $payload): string

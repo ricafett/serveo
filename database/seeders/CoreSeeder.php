@@ -33,7 +33,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 3;
+    private const SEED_VERSION = 4;
 
     public function run(): void
     {
@@ -473,6 +473,12 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'display_name', 'Nome a exibir'],
             ['pt-PT', 'app', 'sort_order', 'Ordem'],
             ['pt-PT', 'app', 'is_active', 'Ativo'],
+            ['pt-PT', 'app', 'navigation_label_document_print_configs', 'Configuração de impressão'],
+            ['pt-PT', 'app', 'model_label_document_print_config', 'Configuração de impressão'],
+            ['pt-PT', 'app', 'plural_model_label_document_print_configs', 'Configurações de impressão'],
+            ['pt-PT', 'app', 'helper_text_group_items', 'Agrupar itens iguais e mostrar quantidade (ex: "3x Pizza"). Desligado: cada unidade numa linha própria.'],
+            ['pt-PT', 'app', 'helper_text_ignore_variants', 'Não imprimir nomes de variantes (ex: "Casa", "Reserva") neste tipo de documento.'],
+            ['pt-PT', 'app', 'helper_text_ignore_modifiers', 'Não imprimir nomes de modificadores (ex: "sem cebola") neste tipo de documento.'],
 
             ['en-US', 'app', 'name', 'Serveo'],
             ['en-US', 'app', 'cancel', 'Cancel'],
@@ -614,6 +620,12 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'display_name', 'Display Name'],
             ['en-US', 'app', 'sort_order', 'Sort Order'],
             ['en-US', 'app', 'is_active', 'Active'],
+            ['en-US', 'app', 'navigation_label_document_print_configs', 'Document Print Configs'],
+            ['en-US', 'app', 'model_label_document_print_config', 'Document Print Config'],
+            ['en-US', 'app', 'plural_model_label_document_print_configs', 'Document Print Configs'],
+            ['en-US', 'app', 'helper_text_group_items', 'Group identical items and show quantity (e.g. "3x Pizza"). When off, each unit prints on its own line.'],
+            ['en-US', 'app', 'helper_text_ignore_variants', 'Do not print variant names (e.g. "Casa", "Reserva") on this document type.'],
+            ['en-US', 'app', 'helper_text_ignore_modifiers', 'Do not print modifier names (e.g. "without onion") on this document type.'],
 
             // ---------- auth ----------
             ['pt-PT', 'auth', 'sign_in', 'Iniciar sessão'],

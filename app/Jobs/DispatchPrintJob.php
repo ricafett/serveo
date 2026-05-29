@@ -6,7 +6,9 @@ use App\Domain\Audit\Audit;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Domain\Printing\TicketRenderer;
 use App\Models\BillingDocument;
+use App\Models\DocumentPrintConfig;
 use App\Models\PrintJob;
+use App\Models\PrinterRoute;
 use App\Models\ProductionTicket;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -113,6 +115,7 @@ class DispatchPrintJob implements ShouldQueue
             charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
             endSpace: $printer->print_end_space ?? 3,
+            documentConfig: $this->resolveDocumentConfig($printable),
         );
 
         try {
@@ -217,5 +220,33 @@ class DispatchPrintJob implements ShouldQueue
     private function calculateBackoff(int $attempt): int
     {
         return min(3 * (int) pow(2, $attempt - 1), 10);
+    }
+
+    /**
+     * Resolve the DocumentPrintConfig for a given printable, matching
+     * by document type and (for production tickets) fulfillment route.
+     *
+     * Void slips inherit the route from the original item so they use
+     * the same config as the original production ticket.
+     *
+     * BILL configs are lazily created on first print with safe defaults.
+     */
+    private function resolveDocumentConfig($printable): ?DocumentPrintConfig
+    {
+        if ($printable instanceof ProductionTicket) {
+            return DocumentPrintConfig::where('document_type', PrinterRoute::DOC_PRODUCTION_TICKET)
+                ->where('fulfillment_route', $printable->effectiveFulfillmentRoute())
+                ->where('is_active', true)
+                ->first();
+        }
+
+        if ($printable instanceof BillingDocument) {
+            return DocumentPrintConfig::firstOrCreate(
+                ['document_type' => PrinterRoute::DOC_BILL, 'fulfillment_route' => null],
+                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false],
+            );
+        }
+
+        return null;
     }
 }

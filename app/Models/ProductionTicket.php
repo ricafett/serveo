@@ -53,4 +53,19 @@ class ProductionTicket extends Model
     {
         return $this->morphMany(PrintJob::class, 'printable');
     }
+
+    /**
+     * Returns the effective fulfillment route for document print config lookup.
+     *
+     * Void slips inherit the route from the original item so they match
+     * the same DocumentPrintConfig as the original production ticket.
+     */
+    public function effectiveFulfillmentRoute(): ?string
+    {
+        if ($this->is_void_slip) {
+            return $this->items()->first()?->fulfillment_route;
+        }
+
+        return $this->ticket_type;
+    }
 }
