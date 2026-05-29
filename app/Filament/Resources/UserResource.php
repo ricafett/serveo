@@ -79,7 +79,7 @@ class UserResource extends BaseResource
             Forms\Components\Select::make('roles')
                 ->multiple()
                 ->relationship('roles', 'name')
-                ->options(Role::pluck('name', 'name'))
+                ->options(Role::pluck('name', 'id'))
                 ->preload()
                 ->live()
                 ->required(),
