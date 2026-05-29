@@ -596,7 +596,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'billing', 'zone_release_error', 'Failed to release zone'],
 
             // ---------- cashier ----------
-            ['pt-PT', 'cashier', 'title', 'Caixa'],
+            ['pt-PT', 'cashier', 'title', 'Contas'],
             ['pt-PT', 'cashier', 'no_session', 'Não existe sessão de serviço aberta.'],
             ['pt-PT', 'cashier', 'no_groups', 'Nenhum grupo a apresentar.'],
             ['pt-PT', 'cashier', 'group', 'Conta'],
