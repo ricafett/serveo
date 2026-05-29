@@ -33,7 +33,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 2;
+    private const SEED_VERSION = 3;
 
     public function run(): void
     {
@@ -973,6 +973,12 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'ticket', 'due', 'Em dívida'],
             ['pt-PT', 'ticket', 'no_fiscal', 'Documento interno - sem valor fiscal'],
             ['pt-PT', 'ticket', 'currency', '€'],
+            ['pt-PT', 'ticket', 'name', 'Nome'],
+            ['pt-PT', 'ticket', 'zones', 'Zonas'],
+            ['pt-PT', 'ticket', 'server', 'Servidor'],
+            ['pt-PT', 'ticket', 'assigned', 'Atribuídos'],
+            ['pt-PT', 'ticket', 'order_num', 'Pedido'],
+            ['pt-PT', 'ticket', 'notes', 'Notas'],
             ['pt-PT', 'ticket', 'unknown_item', 'Item #:id'],
             ['pt-PT', 'ticket', 'delivery_arrow', '   -> :label'],
 
@@ -991,6 +997,12 @@ class CoreSeeder extends Seeder
             ['en-US', 'ticket', 'due', 'Due'],
             ['en-US', 'ticket', 'no_fiscal', 'Internal document - no fiscal value'],
             ['en-US', 'ticket', 'currency', '€'],
+            ['en-US', 'ticket', 'name', 'Name'],
+            ['en-US', 'ticket', 'zones', 'Zones'],
+            ['en-US', 'ticket', 'server', 'Server'],
+            ['en-US', 'ticket', 'assigned', 'Assigned'],
+            ['en-US', 'ticket', 'order_num', 'Order'],
+            ['en-US', 'ticket', 'notes', 'Notes'],
             ['en-US', 'ticket', 'unknown_item', 'Item #:id'],
             ['en-US', 'ticket', 'delivery_arrow', '   -> :label'],
 

@@ -15,7 +15,12 @@ return [
     'paid' => 'Paid',
     'due' => 'Due',
     'no_fiscal' => 'Internal document - no fiscal value',
+    'name' => 'Name',
+    'zones' => 'Zones',
+    'server' => 'Server',
+    'assigned' => 'Assigned',
+    'order_num' => 'Order',
+    'notes' => 'Notes',
     'currency' => '€',
     'unknown_item' => 'Item #:id',
-    'delivery_arrow' => '   -> :label',
 ];

@@ -39,6 +39,11 @@ class ProductionTicket extends Model
         return $this->belongsTo(Printer::class);
     }
 
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(OrderItem::class, 'production_ticket_items');

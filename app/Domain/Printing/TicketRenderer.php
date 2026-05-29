@@ -26,7 +26,13 @@ class TicketRenderer
 
     public function renderProductionTicket(ProductionTicket $ticket): string
     {
-        $ticket->loadMissing(['billingGroup.status', 'occupiedZone.row.section', 'items.menuItem']);
+        $ticket->loadMissing([
+            'billingGroup.occupiedZones.row.section',
+            'billingGroup.occupiedZones.server',
+            'items.menuItem',
+            'items.header',
+            'createdBy',
+        ]);
 
         $lines = [];
         $lines[] = $this->center($ticket->is_void_slip ? '*** '.__('ticket.void').' ***' : strtoupper($ticket->ticket_type));
@@ -35,14 +41,34 @@ class TicketRenderer
         }
         $lines[] = str_repeat('=', $this->width());
         $lines[] = __('ticket.group').': '.($ticket->billingGroup?->display_code ?? '-');
-        if ($ticket->occupiedZone) {
-            $z = $ticket->occupiedZone;
-            $lines[] = __('ticket.zone').':  '.$z->rangeLabel();
+        if ($ticket->billingGroup?->name) {
+            $lines[] = __('ticket.name').':  '.$ticket->billingGroup->name;
         }
-        if ($ticket->delivery_reference_label) {
+
+        $zones = $ticket->billingGroup?->occupiedZones ?? collect();
+        if ($zones->isNotEmpty()) {
+            $lines[] = __('ticket.zones').': '.$zones->map->rangeLabel()->join(', ');
+            $deliveryLabels = $zones->map->defaultDeliveryLabel()->filter()->values();
+            if ($deliveryLabels->isNotEmpty()) {
+                $lines[] = __('ticket.delivery').': '.$deliveryLabels->join(', ');
+            }
+        } elseif ($ticket->delivery_reference_label) {
             $lines[] = __('ticket.delivery').': '.$ticket->delivery_reference_label;
         }
+
         $lines[] = __('ticket.time').':  '.$this->localTime($ticket->requested_at);
+
+        if ($ticket->createdBy) {
+            $lines[] = __('ticket.server').': '.$ticket->createdBy->name;
+        }
+
+        $assigned = $ticket->billingGroup?->assignedServers() ?? collect();
+        $creatorId = $ticket->created_by_user_id;
+        $assignedOthers = $assigned->where('id', '!=', $creatorId);
+        if ($assignedOthers->isNotEmpty()) {
+            $lines[] = __('ticket.assigned').': '.$assignedOthers->pluck('name')->join(', ');
+        }
+
         $lines[] = str_repeat('-', $this->width());
 
         /** @var OrderItem $item */
@@ -57,13 +83,34 @@ class TicketRenderer
             $qty = $item->quantity;
             $left = sprintf('%2dx %s', $qty, $name);
             $lines[] = mb_strimwidth($left, 0, $this->width());
-            if ($item->delivery_reference_label) {
-                $lines[] = __('ticket.delivery_arrow', ['label' => $item->delivery_reference_label]);
+        }
+
+        $orderNotes = $ticket->items
+            ->map(fn ($item) => $item->header?->notes)
+            ->filter()
+            ->unique()
+            ->values();
+        if ($orderNotes->isNotEmpty()) {
+            $lines[] = str_repeat('-', $this->width());
+            $lines[] = $this->center(strtoupper(__('ticket.notes')));
+            foreach ($orderNotes as $note) {
+                $lines[] = $note;
             }
         }
 
         $lines[] = str_repeat('=', $this->width());
-        $lines[] = __('ticket.ticket_num').' #'.$ticket->id;
+
+        $orderIds = $ticket->items
+            ->map(fn ($item) => $item->header?->id)
+            ->filter()
+            ->unique()
+            ->values();
+        $footerParts = [];
+        $footerParts[] = __('ticket.ticket_num').' #'.$ticket->id;
+        if ($orderIds->isNotEmpty()) {
+            $footerParts[] = __('ticket.order_num').' #'.$orderIds->join(', ');
+        }
+        $lines[] = implode('  ', $footerParts);
 
         return $this->wrap(implode("\n", $lines)."\n");
     }
