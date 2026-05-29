@@ -52,7 +52,7 @@ class BillingGroupService
 
             Audit::record(
                 'BILLING_GROUP_OPENED',
-                "Grupo {$groupName} aberto por {$actor->name}",
+                "Conta {$groupName} aberta por {$actor->name}",
                 ['cover_count' => $coverCount],
                 ['billing_group_id' => $group->id, 'service_session_id' => $session->id, 'actor_user_id' => $actor->id],
             );
@@ -147,7 +147,7 @@ class BillingGroupService
 
         Audit::record(
             'BILLING_GROUP_CLOSED',
-            "Grupo {$group->display_code} fechado",
+            "Conta {$group->display_code} fechada",
             [],
             ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
         );
@@ -185,7 +185,7 @@ class BillingGroupService
 
         Audit::record(
             'BILLING_GROUP_REOPENED',
-            "Grupo {$group->display_code} reaberto",
+            "Conta {$group->display_code} reaberta",
             [],
             ['billing_group_id' => $group->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
         );

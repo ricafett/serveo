@@ -112,7 +112,7 @@ class DemoTransactionSeeder extends Seeder
             }
 
             if ($targetRow) {
-                $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Grupo fechado de demonstração');
+                $group2 = app(BillingGroupService::class)->open($session, $server, 4, 'Conta fechada de demonstração');
                 $zone2a = app(OccupancyService::class)->assignZone($group2, $targetRow, 1, 2, $server);
 
                 app(OrderService::class)->submit($group2, $server, [
