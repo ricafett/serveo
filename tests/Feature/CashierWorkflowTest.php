@@ -19,6 +19,8 @@ use App\Models\Section;
 use App\Models\ServiceSession;
 use App\Models\User;
 use App\Models\Venue;
+use App\Livewire\Floor\FloorIndex;
+use App\Livewire\Order\OrderEntry;
 use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\DemoTransactionSeeder;
@@ -53,6 +55,9 @@ beforeEach(function () {
 
     $this->server = User::factory()->create(['username' => 'testserver', 'is_active' => true]);
     $this->server->assignRole('SERVER');
+
+    $this->assignedServer = User::factory()->create(['username' => 'assignedserver', 'is_active' => true]);
+    $this->assignedServer->assignRole('SERVER');
 
     $this->cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
     $this->cashier->assignRole('CASHIER');
@@ -228,6 +233,49 @@ it('reprints ticket from reprint panel', function () {
 it('prevents server from accessing cashier lookup', function () {
     $response = $this->actingAs($this->server)->get('/lookup');
     $response->assertForbidden();
+});
+
+it('allows cashier to access floor', function () {
+    $response = $this->actingAs($this->cashier)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('Floor');
+});
+
+it('allows cashier to access order entry', function () {
+    $response = $this->actingAs($this->cashier)->get("/orders/new/{$this->group->id}");
+    $response->assertOk();
+    $response->assertSee('Order Entry');
+});
+
+it('cashier can create billing group from floor with assigned server', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(FloorIndex::class)
+        ->set('name', 'Cashier Floor Group')
+        ->set('statusCode', 'ACTIVE')
+        ->set('zoneRowId', $this->row->id)
+        ->set('zoneStartSeq', 6)
+        ->set('zoneEndSeq', 7)
+        ->set('zoneSeatCount', 2)
+        ->set('assignedServerId', $this->assignedServer->id)
+        ->call('createBillingGroup');
+
+    $group = BillingGroup::latest('id')->first();
+    $zone = $group->occupiedZones()->first();
+
+    expect($group->opened_by_user_id)->toBe($this->cashier->id)
+        ->and($zone->server_id)->toBe($this->assignedServer->id);
+});
+
+it('cashier can submit an order from order entry', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('submitOrder', [['menu_item_id' => MenuItem::first()->id, 'quantity' => 1]])
+        ->assertSet('successMessage', 'Order submitted successfully.');
+
+    expect(BillingGroup::find($this->group->id)->orderHeaders()->latest('id')->first()->ordered_by_user_id)
+        ->toBe($this->cashier->id);
 });
 
 it('prevents server from accessing checkout', function () {

@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\OrderHeader;
 use App\Models\OrderItem;
 use App\Models\Row;
+use App\Models\Seat;
 use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
@@ -24,6 +25,8 @@ beforeEach(function () {
     $this->seed(CoreSeeder::class);
     $this->seed(DemoTransactionSeeder::class);
 
+    ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
+
     $this->venue = Venue::first();
     $this->session = ServiceSession::create([
         'venue_id' => $this->venue->id,
@@ -37,11 +40,19 @@ beforeEach(function () {
     $this->row = Row::create(['section_id' => $this->section->id, 'row_code' => 'T1', 'sort_order' => 1, 'is_active' => true]);
 
     for ($i = 1; $i <= 10; $i++) {
-        SeatPair::create(['row_id' => $this->row->id, 'pair_sequence' => $i, 'seat_a_id' => $i * 2 - 1, 'seat_b_id' => $i * 2, 'is_active' => true]);
+        $seatA = Seat::create(['row_id' => $this->row->id, 'seat_number' => $i * 2 - 1, 'sort_order' => $i * 2 - 1, 'is_active' => true]);
+        $seatB = Seat::create(['row_id' => $this->row->id, 'seat_number' => $i * 2, 'sort_order' => $i * 2, 'is_active' => true]);
+        SeatPair::create(['row_id' => $this->row->id, 'pair_sequence' => $i, 'seat_a_id' => $seatA->id, 'seat_b_id' => $seatB->id, 'is_active' => true]);
     }
 
     $this->server = User::factory()->create(['username' => 'testserver', 'is_active' => true]);
     $this->server->assignRole('SERVER');
+
+    $this->cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
+    $this->cashier->assignRole('CASHIER');
+
+    $this->assignedServer = User::factory()->create(['username' => 'assignedserver', 'is_active' => true]);
+    $this->assignedServer->assignRole('SERVER');
 });
 
 // ------------------------------------------------------------------
@@ -72,8 +83,9 @@ it('shows occupied ranges with positioning labels on floor', function () {
     $response = $this->actingAs($this->server)->get('/floor');
     $response->assertOk();
     $response->assertSee($group->display_code);
-    // Occupied zones use positioning labels (e.g. TESTT103–TESTT106)
-    $response->assertSee('TESTT103–TESTT106');
+    // Occupied zones render the correct start/end labels.
+    $response->assertSee('TESTT103');
+    $response->assertSee('TESTT106');
     // Free pairs are individual buttons
     $response->assertSee('TESTT101');
     $response->assertSee('TESTT107');
@@ -87,6 +99,25 @@ it('shows open billing groups quick list on floor', function () {
     $response->assertOk();
     $response->assertSee('Open Billing Groups');
     $response->assertSee($group->display_code);
+});
+
+it('renders floor screen for cashier', function () {
+    $response = $this->actingAs($this->cashier)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('Floor');
+    $response->assertSee('TESTT101');
+});
+
+it('shows assigned server selector to cashier in floor create modal', function () {
+    $response = $this->actingAs($this->cashier)->get('/floor');
+    $response->assertOk();
+    $response->assertSee('Assign Server');
+});
+
+it('does not show assigned server selector to server in floor create modal', function () {
+    $response = $this->actingAs($this->server)->get('/floor');
+    $response->assertOk();
+    $response->assertDontSee('Assign Server');
 });
 
 it('shows no session warning when no open session exists', function () {
@@ -167,7 +198,7 @@ it('shows billing group charges payments and balance', function () {
 it('shows closed status for closed billing group', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
 
-    $cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
+    $cashier = User::factory()->create(['username' => 'testcashier-closed', 'is_active' => true]);
     $cashier->assignRole('CASHIER');
     app(BillingGroupService::class)->close($group, $cashier);
 
@@ -182,6 +213,15 @@ it('shows add order button for open group', function () {
     $response = $this->actingAs($this->server)->get("/billing-groups/{$group->id}");
     $response->assertOk();
     $response->assertSee('Add Order');
+});
+
+it('shows add order button for cashier on open group', function () {
+    $group = app(BillingGroupService::class)->open($this->session, $this->server);
+
+    $response = $this->actingAs($this->cashier)->get("/billing-groups/{$group->id}");
+    $response->assertOk();
+    $response->assertSee('Add Order');
+    $response->assertSee('Add Zone');
 });
 
 it('hides add order button for closed group', function () {

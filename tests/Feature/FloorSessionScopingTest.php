@@ -4,6 +4,7 @@ use App\Domain\Floor\OccupancyService;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\Row;
+use App\Models\Seat;
 use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
@@ -17,6 +18,8 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->seed(CoreSeeder::class);
+
+    ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
 
     // Create a fresh row that CoreSeeder doesn't touch,
     // so our zone counts are predictable.
@@ -35,16 +38,34 @@ beforeEach(function () {
         'is_active' => true,
     ]);
     for ($i = 1; $i <= 10; $i++) {
+        $seatA = Seat::create([
+            'row_id' => $this->row->id,
+            'seat_number' => $i * 2 - 1,
+            'sort_order' => $i * 2 - 1,
+            'is_active' => true,
+        ]);
+        $seatB = Seat::create([
+            'row_id' => $this->row->id,
+            'seat_number' => $i * 2,
+            'sort_order' => $i * 2,
+            'is_active' => true,
+        ]);
         SeatPair::create([
             'row_id' => $this->row->id,
             'pair_sequence' => $i,
-            'seat_a_id' => $i * 2 - 1,
-            'seat_b_id' => $i * 2,
+            'seat_a_id' => $seatA->id,
+            'seat_b_id' => $seatB->id,
             'is_active' => true,
         ]);
     }
 
-    $this->currentSession = ServiceSession::where('status', 'OPEN')->first();
+    $this->currentSession = ServiceSession::create([
+        'venue_id' => $this->venue->id,
+        'session_type' => 'DINNER',
+        'session_label' => 'Current Session',
+        'starts_at' => now()->subHour(),
+        'status' => 'OPEN',
+    ]);
 });
 
 // ------------------------------------------------------------------
