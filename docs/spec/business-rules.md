@@ -218,7 +218,13 @@ Interactive users in MVP are SERVER, CASHIER, and ADMIN.
 Servers may create billing groups, assign zones, update permitted statuses, create orders, trigger production tickets through ordering, and reopen groups if allowed.
 
 ### BR-058 — Cashier capabilities
-Cashiers may search billing groups, view bill details, print bills, record partial payments, reprint bills, and reopen groups if allowed.
+Cashiers may search billing groups, view floor occupancy, open billing groups, assign zones, create orders, view bill details, print bills, record partial payments, reprint bills, and reopen groups if allowed.
+
+### BR-058A — Zone-only server assignment
+Assigned server ownership is tracked only through occupied zones. Billing groups do not carry assigned-server ownership.
+
+### BR-058B — Cashier zone assignment behavior
+When a cashier opens a billing group or adds an occupied zone, the workflow must let the cashier choose the assigned server for that zone. The authenticated cashier remains the actor for audit purposes.
 
 ### BR-059 — Admin capabilities
 Admins may configure venue structure, printers, routing, users, roles, statuses, translations, exports, and audit inspection.

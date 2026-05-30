@@ -155,14 +155,14 @@ Legend:
 | Switch UI language | Allow | Allow | Allow | Deny | Deny |
 | View current session context | Allow | Allow | Allow | Deny | Deny |
 | View floor occupancy | Allow | Allow | Allow | Deny | Deny |
-| Open billing group | Allow | Deny | Allow | Deny | Deny |
+| Open billing group | Allow | Allow | Allow | Deny | Deny |
 | Edit billing-group notes | Allow | Conditional | Allow | Deny | Deny |
 | Change billing-group status | Allow | Conditional | Allow | Deny | Deny |
-| Assign occupied zones | Allow | Deny | Allow | Deny | Deny |
+| Assign occupied zones | Allow | Allow | Allow | Deny | Deny |
 | Release occupied zones | Conditional | Allow | Allow | Deny | Deny |
 | View billing-group detail | Allow | Allow | Allow | Deny | Deny |
 | Search billing groups | Conditional | Allow | Allow | Deny | Deny |
-| Create orders | Allow | Deny | Allow | Deny | Deny |
+| Create orders | Allow | Allow | Allow | Deny | Deny |
 | Void/correct submitted items | Conditional | Deny | Allow | Deny | Deny |
 | Trigger production print via order submit | Allow | Deny | Allow | Deny | Deny |
 | View production ticket history | Conditional | Conditional | Allow | Deny | Deny |
@@ -201,6 +201,9 @@ Server and cashier reopen permissions are conditional. The implementation should
 
 ### RP-006 — Limited cashier history access
 Cashiers may access only the billing-history and print-history context necessary to resolve checkout and dispute questions. Full event-log access remains admin-only.
+
+### RP-007 — Cashier zone server selection
+When a cashier opens a billing group or adds an occupied zone, the workflow must let the cashier choose the assigned server for that zone. The assigned server is stored on the occupied zone only; billing groups do not gain assigned-server ownership.
 
 ## Detailed permissions by area
 
@@ -243,11 +246,11 @@ Denied:
 
 ### CASHIER
 Allowed:
+- View floor occupancy.
 - View occupancy context attached to a billing group.
-
-Denied:
-- Opening billing groups.
-- Assigning or editing occupied zones.
+- Open billing groups.
+- Assign occupied zones.
+- Choose the assigned server for new zones created through cashier workflows.
 
 ### ADMIN
 Allowed:
@@ -270,6 +273,7 @@ Denied:
 ### CASHIER
 Allowed:
 - View billing-group state.
+- Create billing groups.
 - Move a group through checkout-related statuses where allowed.
 - Reopen if allowed.
 - Mark group toward closure through billing workflow.
@@ -293,9 +297,10 @@ Denied:
 - Printer test-print functions.
 
 ### CASHIER
-Denied by default:
-- Create orders.
-- Submit production tickets.
+Allowed:
+- Create orders at billing-group or zone level.
+- Apply delivery defaults or seat-pair overrides.
+- Submit orders that trigger kitchen/bar ticket generation.
 
 ### ADMIN
 Allowed:
@@ -399,9 +404,9 @@ This section maps roles to the MVP screens defined elsewhere.
 |---|---|---|---|
 | Login / session entry | Allow | Allow | Allow |
 | Floor | Allow | Conditional | Allow |
-| Create/Edit Billing Group | Allow | Deny | Allow |
+| Create/Edit Billing Group | Allow | Allow | Allow |
 | Billing Group Detail | Allow | Allow | Allow |
-| Order Entry | Allow | Deny | Allow |
+| Order Entry | Allow | Allow | Allow |
 | Billing Group Lookup | Conditional | Allow | Allow |
 | Checkout | Deny | Allow | Allow |
 | Reprint / document actions | Deny | Allow | Allow |

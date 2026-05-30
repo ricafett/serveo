@@ -73,7 +73,7 @@ The MVP screen set should contain at least these screens:
 
 ### 2. Floor screen
 
-**Users:** server.[cite:152]
+**Users:** server, cashier.[cite:152]
 
 **Purpose:** show live occupancy and act as the main operating surface for seating and service.
 
@@ -99,7 +99,7 @@ The MVP screen set should contain at least these screens:
 
 ### 3. Create/Edit Billing Group screen or panel
 
-**Users:** server.[cite:152]
+**Users:** server, cashier.[cite:152]
 
 **Purpose:** create a new billing group or edit the occupancy and status of an existing one.
 
@@ -107,6 +107,7 @@ The MVP screen set should contain at least these screens:
 - Billing-group identifier.
 - Current status.
 - Assigned occupied zones.
+- Assigned server per newly created zone when the actor is a cashier.
 - Optional notes.
 
 **Key actions:**
@@ -142,6 +143,9 @@ The MVP screen set should contain at least these screens:
 - Request bill print.
 
 **Key actions for cashier:**
+- Open billing groups from the floor.
+- Add order.
+- Add occupied zones.
 - Review charges.
 - Print internal bill.
 - Register partial payment.
@@ -155,7 +159,7 @@ The MVP screen set should contain at least these screens:
 
 ### 5. Order Entry screen or drawer
 
-**Users:** server.[cite:152]
+**Users:** server, cashier.[cite:152]
 
 **Purpose:** add order items quickly from phone or tablet while standing on the floor.
 

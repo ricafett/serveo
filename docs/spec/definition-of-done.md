@@ -52,7 +52,8 @@ A floor and seating feature is done only when:
 
 - The UI can display sections, rows, and seat-pair occupancy clearly.
 - Free and occupied ranges are visually distinguishable.
-- A server can create a billing group and assign one or more valid seat ranges.
+- A server or cashier can create a billing group and assign one or more valid seat ranges.
+- Cashier-created zones require explicit assigned-server selection.
 - Overlapping occupied zones are prevented.
 - Occupancy changes do not rename physical layout elements.
 - Released ranges become available again without damaging historical references.
@@ -73,7 +74,7 @@ A billing-group lifecycle feature is done only when:
 
 An order-entry feature is done only when:
 
-- A server can create an order for a billing group.
+- A server or cashier can create an order for a billing group.
 - Orders can optionally target a valid occupied zone within the billing group.
 - Default delivery targeting uses the zone center when no override is supplied.
 - Specific seat-pair overrides are accepted only when valid.
@@ -138,6 +139,7 @@ Server-facing work is done only when:
 Cashier-facing work is done only when:
 
 - Cashiers can search, inspect, bill, partially settle, and reprint according to scope.
+- Cashiers can complete the approved floor, zone-assignment, and order-entry workflows according to scope.
 - Bills print to the cashier’s assigned printer.
 - Cashiers cannot access admin-only configuration functions.
 

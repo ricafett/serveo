@@ -23,9 +23,12 @@ The following assumptions apply to all acceptance criteria in this document:[cit
 
 Related story: US-001.[cite:152]
 
-- Given a server is authenticated and has permission to manage floor seating,
-- When the server creates a new billing group and selects one or more free seat ranges,
+- Given an authorized server or cashier is authenticated and has permission to manage floor seating,
+- When that user creates a new billing group and selects one or more free seat ranges,
 - Then the system shall create the billing group and associate it with the selected occupied zones.
+- Given the authenticated actor is a cashier,
+- When the cashier creates the billing group,
+- Then the workflow shall require selecting the assigned server for the newly created occupied zone.
 - Given at least one selected seat range overlaps an already occupied range,
 - When the server attempts to save the billing group,
 - Then the system shall block the action and identify the conflicting range.
@@ -54,8 +57,8 @@ Related story: US-002.[cite:152]
 
 Related story: US-003.[cite:152]
 
-- Given a server is creating or editing a billing group,
-- When the server selects a valid status,
+- Given an authorized server or cashier is creating or editing a billing group,
+- When that user selects a valid status,
 - Then the billing group shall save with that status.
 - Given a billing group has a saved status,
 - When other authorized users view that billing group,
@@ -70,11 +73,11 @@ Related story: US-003.[cite:152]
 
 Related story: US-004.[cite:152]
 
-- Given a server opens an active billing group,
-- When the server adds one or more order items without choosing a specific zone,
+- Given an authorized server or cashier opens an active billing group,
+- When that user adds one or more order items without choosing a specific zone,
 - Then the order shall be attached to the billing group.
 - Given a billing group has multiple occupied zones,
-- When the server chooses a specific zone while adding items,
+- When that user chooses a specific zone while adding items,
 - Then the order shall be attached to both the billing group and that occupied zone.
 - Given the target billing group is closed,
 - When the server attempts to add items,
@@ -87,8 +90,8 @@ Related story: US-004.[cite:152]
 
 Related story: US-005.[cite:152]
 
-- Given a server is entering an order for a billing group with multiple occupied zones,
-- When the server selects a zone,
+- Given an authorized server or cashier is entering an order for a billing group with multiple occupied zones,
+- When that user selects a zone,
 - Then the order shall retain that zone reference.
 - Given a zone-linked order exists,
 - When the order appears in cashier context, ticket printing, or event history,
