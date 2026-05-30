@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 5;
+    private const SEED_VERSION = 6;
 
     public function run(): void
     {
@@ -822,6 +822,27 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'retry_batch_result', ':success retried, :skipped skipped'],
             ['en-US', 'app', 'retry_batch_success', 'Retried'],
             ['en-US', 'app', 'retry_batch_none', 'Nothing retried'],
+
+            // ---------- menu ----------
+            ['pt-PT', 'menu', 'title', 'Menu'],
+            ['pt-PT', 'menu', 'subtitle', 'Consultar o catálogo completo de items disponíveis.'],
+            ['pt-PT', 'menu', 'no_categories', 'Sem categorias de menu disponíveis.'],
+            ['pt-PT', 'menu', 'no_items', 'Sem items nesta categoria.'],
+            ['pt-PT', 'menu', 'variants', 'Variantes'],
+            ['pt-PT', 'menu', 'modifiers', 'Modificadores'],
+            ['pt-PT', 'menu', 'default', 'padrão'],
+            ['pt-PT', 'menu', 'route_kitchen', 'Cozinha'],
+            ['pt-PT', 'menu', 'route_bar', 'Bar'],
+
+            ['en-US', 'menu', 'title', 'Menu'],
+            ['en-US', 'menu', 'subtitle', 'Browse the full catalog of available items.'],
+            ['en-US', 'menu', 'no_categories', 'No menu categories available.'],
+            ['en-US', 'menu', 'no_items', 'No items in this category.'],
+            ['en-US', 'menu', 'variants', 'Variants'],
+            ['en-US', 'menu', 'modifiers', 'Modifiers'],
+            ['en-US', 'menu', 'default', 'default'],
+            ['en-US', 'menu', 'route_kitchen', 'Kitchen'],
+            ['en-US', 'menu', 'route_bar', 'Bar'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],

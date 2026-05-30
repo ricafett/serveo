@@ -58,6 +58,7 @@ Main responsibilities:
 - Trigger production tickets indirectly through ordering.
 - Trigger void/correction slips where business rules allow.
 - Reopen billing groups if permitted.
+- Browse the full menu catalog.
 
 Restrictions:
 
@@ -78,6 +79,7 @@ Main responsibilities:
 - Print internal customer bills.
 - Reprint bills.
 - Record partial payments.
+- Browse the full menu catalog.
 - Reopen billing groups if permitted.
 - Review limited history when needed for checkout investigation.
 
@@ -403,6 +405,7 @@ This section maps roles to the MVP screens defined elsewhere.
 | Billing Group Lookup | Conditional | Allow | Allow |
 | Checkout | Deny | Allow | Allow |
 | Reprint / document actions | Deny | Allow | Allow |
+| Menu catalog | Allow | Allow | Allow |
 | Venue Setup | Deny | Deny | Allow |
 | Printer Setup | Deny | Deny | Allow |
 | User and Role Management | Deny | Deny | Allow |

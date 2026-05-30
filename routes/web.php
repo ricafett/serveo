@@ -7,6 +7,7 @@ use App\Livewire\Cashier\Checkout;
 use App\Livewire\Cashier\ReprintPanel;
 use App\Livewire\Floor\FloorIndex;
 use App\Livewire\Home\Dashboard;
+use App\Livewire\Menu\MenuIndex;
 use App\Livewire\Order\OrderEntry;
 use App\Models\AccountingExport;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,11 @@ Route::middleware('auth')->group(function () {
     // Shared billing-group detail (server + cashier + admin)
     Route::middleware('role:SERVER,CASHIER,ADMIN')->group(function () {
         Route::get('/billing-groups/{id}', BillingGroupDetail::class)->name('billing-groups.detail');
+    });
+
+    // Read-only menu catalog (all interactive roles)
+    Route::middleware('role:SERVER,CASHIER,ADMIN')->group(function () {
+        Route::get('/menu', MenuIndex::class)->name('menu');
     });
 
     // Cashier routes

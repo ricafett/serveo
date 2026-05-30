@@ -25,8 +25,8 @@ Recommended top-level navigation by role:
 
 | Role | Primary screens |
 |---|---|
-| Server | Floor, Billing Group Detail, Order Entry, Bill Preview/Request, Reopen if permitted |
-| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Reprint, Reopen |
+| Server | Floor, Billing Group Detail, Order Entry, Bill Preview/Request, Menu, Reopen if permitted |
+| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Reprint, Menu, Reopen |
 | Admin | Venue Setup, Printer Setup, User/Roles, Status Setup, Event Log, Export |
 
 On small screens, the app should behave like a task-first PWA, with the current screen optimized for one main job at a time. On larger screens, related panels may be shown side by side, but the flow logic should remain the same.[cite:152]
@@ -43,13 +43,14 @@ The MVP screen set should contain at least these screens:
 6. Billing Group Lookup screen.
 7. Checkout screen.
 8. Reprint / document actions panel.
-9. Venue Setup screen.
-10. Printer Setup screen.
-11. User and Role Management screen.
-12. Billing Status Configuration screen.
-13. Event Log screen.
-14. Accounting Export screen.
-15. Settings / language switch area.[cite:152]
+9. Menu catalog screen.
+10. Venue Setup screen.
+11. Printer Setup screen.
+12. User and Role Management screen.
+13. Billing Status Configuration screen.
+14. Event Log screen.
+15. Accounting Export screen.
+16. Settings / language switch area.[cite:152]
 
 ## Screen definitions
 
@@ -243,7 +244,28 @@ The MVP screen set should contain at least these screens:
 **Flow rules:**
 - Reprints and void outputs must be clearly marked and logged.[cite:152]
 
-### 9. Venue Setup screen
+### 9. Menu catalog screen
+
+**Users:** server, cashier, admin.[cite:152]
+
+**Purpose:** browse the full menu catalog outside of the order entry flow.
+
+**Key content:**
+- Active menu categories with their display names and route types.
+- Active menu items grouped by category, showing display names, prices, and SKUs.
+- Active variants for each item where applicable.
+- Active modifier sets and modifiers for each item where applicable, including default modifier indicators.
+
+**Key actions:**
+- View and scroll through the menu catalog.
+- No order submission, cart, or management actions are available.
+
+**Flow rules:**
+- This screen is read-only and does not allow order creation or menu editing.
+- All interactive roles may access it.
+- Kitchen and bar output roles do not have interactive access to this screen in MVP.
+
+### 10. Venue Setup screen
 
 **Users:** admin.[cite:152]
 
@@ -263,7 +285,7 @@ The MVP screen set should contain at least these screens:
 **Flow rules:**
 - This screen is configuration-oriented and not expected to be used during live service except by administrators.
 
-### 10. Printer Setup screen
+### 11. Printer Setup screen
 
 **Users:** admin.[cite:152]
 
@@ -284,7 +306,7 @@ The MVP screen set should contain at least these screens:
 **Flow rules:**
 - Printer auto-discovery is out of scope, so the screen should assume manual configuration.[cite:152]
 
-### 11. User and Role Management screen
+### 12. User and Role Management screen
 
 **Users:** admin.[cite:152]
 
@@ -304,7 +326,7 @@ The MVP screen set should contain at least these screens:
 **Flow rules:**
 - Kitchen/bar may be represented as non-login operational roles in MVP if useful for configuration, but they do not need interactive UI access in service mode.[cite:152]
 
-### 12. Billing Status Configuration screen
+### 13. Billing Status Configuration screen
 
 **Users:** admin.[cite:152]
 
@@ -320,7 +342,7 @@ The MVP screen set should contain at least these screens:
 - Edit status.
 - Disable status.
 
-### 13. Event Log screen
+### 14. Event Log screen
 
 **Users:** admin, optionally cashier for investigation.[cite:152]
 
@@ -342,7 +364,7 @@ The MVP screen set should contain at least these screens:
 **Flow rules:**
 - This screen should support operational investigation and post-event auditing.
 
-### 14. Accounting Export screen
+### 15. Accounting Export screen
 
 **Users:** admin.[cite:152]
 
@@ -359,7 +381,7 @@ The MVP screen set should contain at least these screens:
 - Generate export.
 - Download export.
 
-### 15. Settings / language switch area
+### 16. Settings / language switch area
 
 **Users:** all interactive app users.[cite:152]
 
