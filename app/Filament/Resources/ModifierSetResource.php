@@ -66,15 +66,18 @@ class ModifierSetResource extends BaseResource
             Forms\Components\Toggle::make('assume_default')
                 ->default(false)
                 ->helperText(__('app.assume_default_help')),
+            Forms\Components\Select::make('default_modifier_set_item_id')
+                ->label(__('app.default_modifier_item'))
+                ->relationship('items', 'display_name', fn ($q) => $q->where('is_active', true))
+                ->nullable()
+                ->placeholder(__('app.none'))
+                ->helperText(__('app.is_default_help')),
             Forms\Components\Repeater::make('items')
                 ->relationship('items')
                 ->schema([
                     Forms\Components\TextInput::make('display_name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
                     Forms\Components\Toggle::make('is_active')->default(true),
-                    Forms\Components\Toggle::make('is_default')
-                        ->default(false)
-                        ->helperText(__('app.is_default_help')),
                 ])
                 ->orderColumn('sort_order')
                 ->defaultItems(0)

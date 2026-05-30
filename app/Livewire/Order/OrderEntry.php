@@ -55,7 +55,7 @@ class OrderEntry extends Component
             ])
             ->all();
 
-        $this->menuItemsData = MenuItem::with(['category', 'activeVariants', 'modifierSet.items' => fn ($q) => $q->where('is_active', true)])
+        $this->menuItemsData = MenuItem::with(['category', 'activeVariants', 'modifierSet.defaultItem', 'modifierSet.items' => fn ($q) => $q->where('is_active', true)])
             ->where('is_active', true)
             ->orderBy('display_name')
             ->get()
@@ -75,10 +75,10 @@ class OrderEntry extends Component
                     'display_name' => $item->modifierSet->display_name,
                     'selection_mode' => $item->modifierSet->selection_mode,
                     'assume_default' => (bool) $item->modifierSet->assume_default,
+                    'default_modifier_display_name' => $item->modifierSet->defaultItem?->display_name,
                     'items' => $item->modifierSet->items->map(fn ($mi) => [
                         'id' => $mi->id,
                         'display_name' => $mi->display_name,
-                        'is_default' => (bool) $mi->is_default,
                     ])->values()->all(),
                 ] : null,
             ])
