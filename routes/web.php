@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', Dashboard::class)->name('home');
 
     // Server routes
-    Route::middleware('role:SERVER,ADMIN')->group(function () {
+    Route::middleware('role:SERVER,CASHIER,ADMIN')->group(function () {
         Route::get('/floor', FloorIndex::class)->name('floor');
         Route::get('/orders/new/{billingGroupId}', OrderEntry::class)->name('orders.new');
     });

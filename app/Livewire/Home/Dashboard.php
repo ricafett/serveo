@@ -27,7 +27,7 @@ class Dashboard extends Component
         $hasSession = $this->activeSession !== null;
         $tiles = [];
 
-        if ($hasSession && ($user?->hasRole('SERVER') || $user?->hasRole('ADMIN'))) {
+        if ($hasSession && ($user?->hasRole('SERVER') || $user?->hasRole('CASHIER') || $user?->hasRole('ADMIN'))) {
             $tiles[] = [
                 'route' => 'floor',
                 'label' => __('dashboard.floor_tile'),

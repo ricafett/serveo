@@ -44,12 +44,15 @@ test('server cannot access cashier routes', function () {
     });
 });
 
-test('cashier cannot access server routes', function () {
+test('cashier can access floor and order routes', function () {
     $this->scenario();
 
     $cashier = makeUser('CASHIER');
+    $server = makeUser('SERVER');
 
-    $this->browse(function (Browser $browser) use ($cashier) {
+    $group = app(\App\Domain\Floor\BillingGroupService::class)->open($this->scenario(), $server);
+
+    $this->browse(function (Browser $browser) use ($cashier, $group) {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
@@ -57,13 +60,14 @@ test('cashier cannot access server routes', function () {
             ->type('username', $cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+            ->waitForText('Billing Groups', 5)
+            ->assertSee('Floor');
 
         $browser->visit('/floor')
-            ->waitForText('403', 5);
+            ->waitForText('Floor', 5);
 
-        $browser->visit('/orders/new/1')
-            ->waitForText('403', 5);
+        $browser->visit("/orders/new/{$group->id}")
+            ->waitForText('Order Entry', 5);
     });
 });
 
@@ -86,7 +90,7 @@ test('navigation shows correct items per role', function () {
             ->assertSee('Floor')
             ->assertDontSee('Lookup');
 
-        // Cashier sees Lookup nav
+        // Cashier sees Floor + Lookup nav
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/login')
             ->waitForText('Sign In', 5)
@@ -95,7 +99,7 @@ test('navigation shows correct items per role', function () {
             ->press('Sign In')
             ->waitForText('Billing Groups', 5)
             ->assertSee('Checkout')
-            ->assertDontSee('Floor');
+            ->assertSee('Floor');
 
         // Admin sees all tiles on dashboard
         $browser->driver->manage()->deleteAllCookies();

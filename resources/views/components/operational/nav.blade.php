@@ -22,8 +22,8 @@ if ($user->hasAnyRole(['SERVER', 'CASHIER', 'ADMIN'])) {
     ];
 }
 
-// Server nav items
-if ($user->hasRole('SERVER')) {
+// Floor nav item
+if ($user->hasAnyRole(['SERVER', 'CASHIER'])) {
     $navItems[] = [
         'route' => 'floor',
         'label' => __('floor.title'),
