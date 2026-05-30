@@ -77,6 +77,8 @@ Route::prefix('v1')->group(function () {
             ->middleware('permission:order.create');
         Route::post('orders/{orderHeader}/void-items', [OrderController::class, 'voidItems'])
             ->middleware('permission:order.void_item');
+        Route::post('orders/{orderHeader}/void', [OrderController::class, 'voidOrder'])
+            ->middleware('permission:order.void_item');
 
         // Production Tickets
         Route::get('production-tickets/{productionTicket}', [ProductionTicketController::class, 'show'])

@@ -91,6 +91,8 @@ class OrderController extends ApiController
         $tickets = [];
 
         try {
+            $this->authorize('voidItem', $orderHeader);
+
             DB::transaction(function () use ($request, $orderHeader, $validated, &$affected, &$tickets) {
                 foreach ($validated['items'] as $itemData) {
                     $item = OrderItem::where('order_header_id', $orderHeader->id)
@@ -113,6 +115,8 @@ class OrderController extends ApiController
             });
         } catch (AuthorizationException $e) {
             return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
+        } catch (\RuntimeException $e) {
+            return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
         }
 
         return $this->success([
@@ -121,6 +125,52 @@ class OrderController extends ApiController
                 'voidedAt' => $item->voided_at?->toIso8601String(),
                 'voidReason' => $item->void_reason,
             ])->all(),
+            'voidTickets' => $tickets->map(fn ($t) => [
+                'productionTicketId' => $t->id,
+                'ticketType' => $t->ticket_type,
+                'isVoidSlip' => $t->is_void_slip,
+            ])->all(),
+        ]);
+    }
+
+    public function voidOrder(Request $request, OrderHeader $orderHeader): JsonResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        if ($orderHeader->billingGroup->is_closed) {
+            return $this->error('GROUP_CLOSED', 'Cannot void orders on a closed billing group.', status: 409);
+        }
+
+        try {
+            $this->authorize('voidOrder', $orderHeader);
+
+            $header = $this->orderService->voidOrder($orderHeader, $request->user(), $validated['reason']);
+        } catch (AuthorizationException $e) {
+            return $this->error('FORBIDDEN', $e->getMessage(), status: 403);
+        } catch (\RuntimeException $e) {
+            return $this->error('VALIDATION_ERROR', $e->getMessage(), status: 400);
+        }
+
+        $header->load('items.menuItem');
+        $tickets = $header->billingGroup->productionTickets()
+            ->where('is_void_slip', true)
+            ->where('created_at', '>=', now()->subSeconds(5))
+            ->get();
+
+        return $this->success([
+            'orderHeaderId' => $header->id,
+            'submissionStatus' => $header->submission_status,
+            'affectedItems' => $header->items
+                ->filter(fn ($item) => $item->voided_at !== null)
+                ->map(fn ($item) => [
+                    'orderItemId' => $item->id,
+                    'voidedAt' => $item->voided_at?->toIso8601String(),
+                    'voidReason' => $item->void_reason,
+                ])
+                ->values()
+                ->all(),
             'voidTickets' => $tickets->map(fn ($t) => [
                 'productionTicketId' => $t->id,
                 'ticketType' => $t->ticket_type,

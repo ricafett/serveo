@@ -91,6 +91,67 @@ it('voids order items via api', function () {
         ->assertJsonCount(1, 'data.affectedItems');
 });
 
+it('voids an order via api', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $barItem = MenuItem::where('display_name', 'Vinho copo')->first();
+    $header = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [
+            ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+            ['menu_item_id' => $barItem->id, 'quantity' => 1],
+        ],
+        $this->zone
+    );
+
+    $response = $this->actingAs($this->server)->postJson("/api/v1/orders/{$header->id}/void", [
+        'reason' => 'Guest cancelled everything',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.orderHeaderId', $header->id)
+        ->assertJsonPath('data.submissionStatus', 'VOIDED')
+        ->assertJsonCount(2, 'data.affectedItems');
+});
+
+it('prevents a different server from voiding another server order via api', function () {
+    $otherServer = makeUser('SERVER');
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $header = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+
+    $this->actingAs($otherServer)
+        ->postJson("/api/v1/orders/{$header->id}/void", [
+            'reason' => 'Unauthorized attempt',
+        ])
+        ->assertStatus(403)
+        ->assertJsonPath('error.code', 'FORBIDDEN');
+});
+
+it('allows cashier to void another server order via api', function () {
+    $cashier = makeUser('CASHIER');
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $header = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+
+    $this->actingAs($cashier)
+        ->postJson("/api/v1/orders/{$header->id}/void", [
+            'reason' => 'Cashier correction',
+        ])
+        ->assertStatus(200)
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.submissionStatus', 'VOIDED');
+});
+
 it('allows cashier to create orders through the api', function () {
     $cashier = makeUser('CASHIER');
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
