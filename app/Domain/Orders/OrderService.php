@@ -15,6 +15,7 @@ use App\Models\PrinterRoute;
 use App\Models\ProductionTicket;
 use App\Models\SeatPair;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -215,7 +216,11 @@ class OrderService
 
     public function voidItem(OrderItem $item, User $actor, ?string $reason = null): void
     {
-        $this->ensureCan($actor, 'order.void_item');
+        $this->assertCanVoidOrder($actor, $item->header);
+
+        if ($item->header->billingGroup?->is_closed) {
+            throw new RuntimeException('Cannot void items on a closed billing group.');
+        }
 
         if (! $item->header->billingGroup?->serviceSession?->isOpen()) {
             throw new RuntimeException('No open service session. Operations require an active session.');
@@ -226,60 +231,128 @@ class OrderService
         }
 
         DB::transaction(function () use ($item, $actor, $reason) {
-            $item->update([
-                'voided_at' => now(),
-                'voided_by_user_id' => $actor->id,
-                'void_reason' => $reason,
-            ]);
+            $this->voidSingleItem($item->fresh(['header.billingGroup']), $actor, $reason);
+        });
+    }
 
-            $header = $item->header;
-            // Update header status if all items voided.
-            $remaining = $header->items()->whereNull('voided_at')->count();
-            if ($remaining === 0) {
-                $header->update(['submission_status' => 'VOIDED']);
-            } else {
-                $header->update(['submission_status' => 'PARTIALLY_VOIDED']);
+    public function voidOrder(OrderHeader $header, User $actor, ?string $reason = null): OrderHeader
+    {
+        $this->assertCanVoidOrder($actor, $header);
+
+        if ($header->billingGroup?->is_closed) {
+            throw new RuntimeException('Cannot void orders on a closed billing group.');
+        }
+
+        if (! $header->billingGroup?->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
+        return DB::transaction(function () use ($header, $actor, $reason) {
+            $header = $header->fresh(['items', 'billingGroup']);
+            $itemsToVoid = $header->items->filter(fn (OrderItem $item) => ! $item->isVoided())->values();
+
+            if ($itemsToVoid->isEmpty()) {
+                return $header->refresh();
             }
 
-            // Generate a void slip ticket for this single item.
-            // No hardcoded route guard — resolvePrinterForRoute returns null
-            // for any route without an active PrinterRoute, and we skip below.
-            $printer = $this->resolvePrinterForRoute(
-                $header->billingGroup,
-                $item->fulfillment_route,
-                PrinterRoute::DOC_PRODUCTION_TICKET,
-            );
-            if ($printer) {
-                $voidTicket = ProductionTicket::create([
-                    'service_session_id' => $header->billingGroup->service_session_id,
-                    'billing_group_id' => $header->billing_group_id,
-                    'occupied_zone_id' => $header->occupied_zone_id,
-                    'printer_id' => $printer->id,
-                    'ticket_type' => 'VOID',
-                    'ticket_status' => 'PENDING',
-                    'requested_at' => now(),
-                    'is_void_slip' => true,
-                    'is_reprint' => false,
-                    'created_by_user_id' => $actor->id,
-                    'delivery_reference_label' => $item->delivery_reference_label,
-                ]);
-                $voidTicket->items()->sync([$item->id]);
-                $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
+            foreach ($itemsToVoid as $item) {
+                $this->voidSingleItem($item->fresh(['header.billingGroup']), $actor, $reason);
             }
 
             Audit::record(
-                'ORDER_ITEM_VOIDED',
-                "Linha #{$item->id} anulada",
-                ['reason' => $reason],
+                'ORDER_VOIDED',
+                "Pedido #{$header->id} anulado",
+                [
+                    'reason' => $reason,
+                    'item_count' => $itemsToVoid->count(),
+                ],
                 [
                     'billing_group_id' => $header->billing_group_id,
                     'order_header_id' => $header->id,
-                    'order_item_id' => $item->id,
                     'service_session_id' => $header->billingGroup?->service_session_id,
                     'actor_user_id' => $actor->id,
                 ],
             );
+
+            return $header->refresh();
         });
+    }
+
+    private function assertCanVoidOrder(User $actor, OrderHeader $header): void
+    {
+        $this->ensureCan($actor, 'order.void_item');
+
+        if ($actor->hasRole('ADMIN') || $actor->hasRole('CASHIER')) {
+            return;
+        }
+
+        if ($actor->hasRole('SERVER') && $header->ordered_by_user_id === $actor->id) {
+            return;
+        }
+
+        throw new AuthorizationException('Unauthorized to void this order.');
+    }
+
+    private function voidSingleItem(OrderItem $item, User $actor, ?string $reason = null): void
+    {
+        if ($item->voided_at) {
+            return;
+        }
+
+        $item->update([
+            'voided_at' => now(),
+            'voided_by_user_id' => $actor->id,
+            'void_reason' => $reason,
+        ]);
+
+        $header = $item->header;
+        $remaining = $header->items()->whereNull('voided_at')->count();
+        $header->update([
+            'submission_status' => $remaining === 0 ? 'VOIDED' : 'PARTIALLY_VOIDED',
+        ]);
+
+        $printer = $this->resolvePrinterForRoute(
+            $header->billingGroup,
+            $item->fulfillment_route,
+            PrinterRoute::DOC_PRODUCTION_TICKET,
+        );
+
+        $voidTicket = null;
+
+        if ($printer) {
+            $voidTicket = ProductionTicket::create([
+                'service_session_id' => $header->billingGroup->service_session_id,
+                'billing_group_id' => $header->billing_group_id,
+                'occupied_zone_id' => $header->occupied_zone_id,
+                'printer_id' => $printer->id,
+                'ticket_type' => 'VOID',
+                'ticket_status' => 'PENDING',
+                'requested_at' => now(),
+                'is_void_slip' => true,
+                'is_reprint' => false,
+                'created_by_user_id' => $actor->id,
+                'delivery_reference_label' => $item->delivery_reference_label,
+            ]);
+            $voidTicket->items()->sync([$item->id]);
+            $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
+        }
+
+        Audit::record(
+            'ORDER_ITEM_VOIDED',
+            "Linha #{$item->id} anulada",
+            [
+                'reason' => $reason,
+                'void_slip_skipped' => $voidTicket === null,
+            ],
+            [
+                'billing_group_id' => $header->billing_group_id,
+                'order_header_id' => $header->id,
+                'order_item_id' => $item->id,
+                'service_session_id' => $header->billingGroup?->service_session_id,
+                'actor_user_id' => $actor->id,
+                'production_ticket_id' => $voidTicket?->id,
+            ],
+        );
     }
 
     private function validateDeliveryPair(int $pairId, OccupiedZone $zone): void

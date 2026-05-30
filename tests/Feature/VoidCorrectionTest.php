@@ -88,3 +88,13 @@ it('creates an audit event for void', function () {
 
     expect(AuditEvent::where('event_type', 'ORDER_ITEM_VOIDED')->count())->toBe(1);
 });
+
+it('voids an entire order and records order-level audit event', function () {
+    app(OrderService::class)->voidOrder($this->header->fresh(['items']), $this->server, 'Guest cancelled');
+
+    $header = $this->header->refresh()->load('items');
+
+    expect($header->submission_status)->toBe('VOIDED')
+        ->and($header->items->every(fn ($item) => $item->voided_at !== null))->toBeTrue()
+        ->and(AuditEvent::where('event_type', 'ORDER_VOIDED')->count())->toBe(1);
+});
