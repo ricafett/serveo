@@ -77,6 +77,9 @@ beforeEach(function () {
     $this->cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
     $this->cashier->assignRole('CASHIER');
 
+    $this->server2 = User::factory()->create(['username' => 'assignedserver', 'is_active' => true]);
+    $this->server2->assignRole('SERVER');
+
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     $this->zone = app(OccupancyService::class)->assignZone($this->group, $this->row, 1, 5, $this->server);
 
@@ -154,4 +157,38 @@ it('displays multiple order notes from different orders', function () {
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
         ->assertSee('First order note')
         ->assertSee('Second order note');
+});
+
+it('requires assigned server when cashier adds a zone', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('zoneRowId', $this->row->id)
+        ->set('zoneStartSeq', 6)
+        ->set('zoneEndSeq', 7)
+        ->set('assignedServerId', null)
+        ->call('addZone')
+        ->assertHasErrors(['assignedServerId']);
+});
+
+it('cashier can add a zone with an explicitly assigned server', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('zoneRowId', $this->row->id)
+        ->set('zoneStartSeq', 6)
+        ->set('zoneEndSeq', 7)
+        ->set('assignedServerId', $this->server2->id)
+        ->call('addZone')
+        ->assertSet('showAddZoneModal', false);
+
+    $zone = BillingGroup::find($this->group->id)
+        ->occupiedZones()
+        ->where('start_seat_pair_sequence', 6)
+        ->where('end_seat_pair_sequence', 7)
+        ->first();
+
+    expect($zone)->not->toBeNull()
+        ->and($zone->server_id)->toBe($this->server2->id)
+        ->and($zone->created_by_user_id)->toBe($this->cashier->id);
 });

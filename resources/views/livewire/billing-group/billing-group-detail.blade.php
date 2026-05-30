@@ -239,6 +239,19 @@
                 @endif
 
                 <form wire:submit.prevent="addZone" class="space-y-4">
+                    @if($this->shouldSelectAssignedServer())
+                        <div>
+                            <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.assign_server') }}</label>
+                            <select id="zone-assigned-server-id" wire:model="assignedServerId" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3">
+                                <option value="">{{ __('app.select') }}</option>
+                                @foreach($this->availableServers as $server)
+                                    <option value="{{ $server->id }}">{{ $server->name ?: $server->username }}</option>
+                                @endforeach
+                            </select>
+                            @error('assignedServerId') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
                     <div>
                         <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('floor.row') }}</label>
                         <select wire:model="zoneRowId" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3">

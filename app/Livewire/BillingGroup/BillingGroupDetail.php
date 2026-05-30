@@ -9,6 +9,7 @@ use App\Domain\Floor\ZoneOverlapException;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\Row;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -28,6 +29,8 @@ class BillingGroupDetail extends Component
     public ?int $zoneEndSeq = null;
 
     public ?string $deliveryLabel = null;
+
+    public ?int $assignedServerId = null;
 
     public ?string $errorMessage = null;
 
@@ -70,6 +73,39 @@ class BillingGroupDetail extends Component
         return $this->group?->balance() ?? 0;
     }
 
+    public function getAvailableServersProperty()
+    {
+        return User::role('SERVER')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->orderBy('username')
+            ->get();
+    }
+
+    public function shouldSelectAssignedServer(): bool
+    {
+        return Auth::user()?->hasRole('CASHIER') ?? false;
+    }
+
+    private function resolveAssignedServer(): ?User
+    {
+        if (! $this->shouldSelectAssignedServer()) {
+            return null;
+        }
+
+        if (! $this->assignedServerId) {
+            throw new \RuntimeException(__('floor.assigned_server_required'));
+        }
+
+        $assignedServer = User::findOrFail($this->assignedServerId);
+
+        if (! $assignedServer->hasRole('SERVER') || ! $assignedServer->is_active) {
+            throw new \RuntimeException(__('floor.assigned_server_invalid'));
+        }
+
+        return $assignedServer;
+    }
+
     public function openAddZoneModal(): void
     {
         $this->showAddZoneModal = true;
@@ -78,12 +114,14 @@ class BillingGroupDetail extends Component
         $this->zoneStartSeq = null;
         $this->zoneEndSeq = null;
         $this->deliveryLabel = null;
+        $this->assignedServerId = null;
     }
 
     public function closeAddZoneModal(): void
     {
         $this->showAddZoneModal = false;
         $this->errorMessage = null;
+        $this->assignedServerId = null;
     }
 
     public function addZone(): void
@@ -106,16 +144,24 @@ class BillingGroupDetail extends Component
             return;
         }
 
-        $this->validate([
-            'zoneRowId' => 'required|integer|exists:rows,id',
-            'zoneStartSeq' => 'required|integer|min:1',
-            'zoneEndSeq' => 'required|integer|min:1|gte:zoneStartSeq',
-        ]);
+        $this->validate(
+            [
+                'zoneRowId' => 'required|integer|exists:rows,id',
+                'zoneStartSeq' => 'required|integer|min:1',
+                'zoneEndSeq' => 'required|integer|min:1|gte:zoneStartSeq',
+                'assignedServerId' => $this->shouldSelectAssignedServer() ? 'required|integer|exists:users,id' : 'nullable|integer|exists:users,id',
+            ],
+            [
+                'assignedServerId.required' => __('floor.assigned_server_required'),
+            ],
+        );
 
         $row = Row::findOrFail($this->zoneRowId);
 
         try {
             $this->isSubmitting = true;
+
+            $assignedServer = $this->resolveAssignedServer();
 
             app(OccupancyService::class)->assignZone(
                 $this->group,
@@ -124,6 +170,7 @@ class BillingGroupDetail extends Component
                 (int) $this->zoneEndSeq,
                 Auth::user(),
                 $this->deliveryLabel,
+                $assignedServer,
             );
 
             $this->showAddZoneModal = false;
