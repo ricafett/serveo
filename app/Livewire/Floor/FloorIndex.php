@@ -11,6 +11,7 @@ use App\Models\Row;
 use App\Models\Section;
 use App\Models\ServiceSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -469,30 +470,32 @@ class FloorIndex extends Component
         try {
             $this->isSubmitting = true;
 
-            $service = app(BillingGroupService::class);
-            $group = $service->open(
-                $session,
-                Auth::user(),
-                $this->coverCount,
-                $this->notes,
-                $this->statusCode,
-                $this->name,
-            );
+            DB::transaction(function () use ($session, $row) {
+                $service = app(BillingGroupService::class);
+                $group = $service->open(
+                    $session,
+                    Auth::user(),
+                    $this->coverCount,
+                    $this->notes,
+                    $this->statusCode,
+                    $this->name,
+                );
 
-            app(OccupancyService::class)->assignZone(
-                $group,
-                $row,
-                (int) $this->zoneStartSeq,
-                (int) $this->zoneEndSeq,
-                Auth::user(),
-                $this->deliveryLabel,
-            );
+                app(OccupancyService::class)->assignZone(
+                    $group,
+                    $row,
+                    (int) $this->zoneStartSeq,
+                    (int) $this->zoneEndSeq,
+                    Auth::user(),
+                    $this->deliveryLabel,
+                );
 
-            $this->showCreateModal = false;
-            $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
-            $this->statusCode = BillingStatus::ACTIVE;
+                $this->showCreateModal = false;
+                $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
+                $this->statusCode = BillingStatus::ACTIVE;
 
-            $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
+                $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
+            });
         } catch (ZoneOverlapException $e) {
             $this->errorMessage = __('Zone overlap: ').$e->getMessage();
         } catch (\Throwable $e) {
