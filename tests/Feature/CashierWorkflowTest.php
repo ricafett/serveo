@@ -196,6 +196,34 @@ it('reprints bill from checkout', function () {
     expect($reprints)->toHaveCount(1);
 });
 
+it('cashier can void another server order from checkout', function () {
+    $this->actingAs($this->cashier);
+
+    $order = $this->group->orderHeaders()->latest('id')->first();
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->call('openVoidOrderModal', $order->id)
+        ->set('voidReason', 'Cashier approved cancellation')
+        ->call('confirmVoidOrder')
+        ->assertSet('successMessage', __('billing.order_voided'));
+
+    expect($order->refresh()->submission_status)->toBe('VOIDED');
+});
+
+it('cashier can void another server item from checkout', function () {
+    $this->actingAs($this->cashier);
+
+    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->call('openVoidItemModal', $item->id)
+        ->set('voidReason', 'Cashier item correction')
+        ->call('confirmVoidItem')
+        ->assertSet('successMessage', __('billing.item_voided'));
+
+    expect($item->refresh()->voided_at)->not->toBeNull();
+});
+
 // ------------------------------------------------------------------
 // Reprint Panel
 // ------------------------------------------------------------------
@@ -351,6 +379,36 @@ it('prevents double-click on reprintBill in checkout', function () {
     // No reprint document should have been created.
     $reprints = BillingDocument::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
     expect($reprints)->toHaveCount(0);
+});
+
+it('prevents double-click on confirmVoidItem in checkout', function () {
+    $this->actingAs($this->cashier);
+
+    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('voidItemId', $item->id)
+        ->set('voidReason', 'Duplicate click')
+        ->set('isSubmitting', true)
+        ->call('confirmVoidItem')
+        ->assertSet('successMessage', null);
+
+    expect($item->refresh()->voided_at)->toBeNull();
+});
+
+it('prevents double-click on confirmVoidOrder in checkout', function () {
+    $this->actingAs($this->cashier);
+
+    $order = $this->group->orderHeaders()->latest('id')->first();
+
+    Livewire::test(Checkout::class, ['id' => $this->group->id])
+        ->set('voidOrderId', $order->id)
+        ->set('voidReason', 'Duplicate click')
+        ->set('isSubmitting', true)
+        ->call('confirmVoidOrder')
+        ->assertSet('successMessage', null);
+
+    expect($order->refresh()->submission_status)->toBe('SUBMITTED');
 });
 
 it('prevents double-click on reprintTicket in reprint panel', function () {

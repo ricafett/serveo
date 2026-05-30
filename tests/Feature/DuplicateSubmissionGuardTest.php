@@ -4,8 +4,10 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Livewire\BillingGroup\BillingGroupDetail;
 use App\Livewire\Floor\FloorIndex;
+use App\Domain\Orders\OrderService;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
+use App\Models\MenuItem;
 use App\Models\OccupiedZone;
 use App\Models\Row;
 use App\Models\SeatPair;
@@ -173,4 +175,41 @@ it('prevents double-click on reopenGroup in billing group detail', function () {
 
     $group = BillingGroup::find($this->group->id);
     expect($group->is_closed)->toBeTrue();
+});
+
+it('prevents double-click on confirmVoidItem in billing group detail', function () {
+    $this->actingAs($this->server);
+
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => MenuItem::first()->id, 'quantity' => 1]],
+    );
+    $item = $order->items()->first();
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('voidItemId', $item->id)
+        ->set('voidReason', 'Duplicate click')
+        ->set('isSubmitting', true)
+        ->call('confirmVoidItem');
+
+    expect($item->refresh()->voided_at)->toBeNull();
+});
+
+it('prevents double-click on confirmVoidOrder in billing group detail', function () {
+    $this->actingAs($this->server);
+
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => MenuItem::first()->id, 'quantity' => 1]],
+    );
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('voidOrderId', $order->id)
+        ->set('voidReason', 'Duplicate click')
+        ->set('isSubmitting', true)
+        ->call('confirmVoidOrder');
+
+    expect($order->refresh()->submission_status)->toBe('SUBMITTED');
 });
