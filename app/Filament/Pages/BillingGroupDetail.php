@@ -9,6 +9,7 @@ use App\Domain\Floor\ZoneOverlapException;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\Row;
+use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms;
@@ -88,13 +89,23 @@ class BillingGroupDetail extends Page
                     Forms\Components\TextInput::make('start')->label(__('billing.start_pair'))->numeric()->required()->minValue(1),
                     Forms\Components\TextInput::make('end')->label(__('billing.end_pair'))->numeric()->required()->minValue(1),
                     Forms\Components\TextInput::make('delivery_label')->label(__('billing.delivery_label'))->maxLength(100),
+                    Forms\Components\Select::make('assigned_server_id')
+                        ->label(__('app.assign_server'))
+                        ->options(fn () => User::role('SERVER')->where('is_active', true)->orderBy('name')->orderBy('username')->get()->mapWithKeys(fn (User $user) => [$user->id => $user->name ?: $user->username])->all())
+                        ->visible(fn () => Auth::user()?->hasRole('CASHIER'))
+                        ->required(fn () => Auth::user()?->hasRole('CASHIER')),
                 ])
                 ->action(function (array $data) {
                     $row = Row::findOrFail($data['row_id']);
                     try {
+                        $assignedServer = null;
+                        if (Auth::user()?->hasRole('CASHIER')) {
+                            $assignedServer = User::findOrFail($data['assigned_server_id']);
+                        }
+
                         app(OccupancyService::class)->assignZone(
                             $this->group, $row, (int) $data['start'], (int) $data['end'],
-                            Auth::user(), $data['delivery_label'] ?? null,
+                            Auth::user(), $data['delivery_label'] ?? null, $assignedServer,
                         );
                         Notification::make()->title(__('billing.zone_assigned'))->success()->send();
                     } catch (ZoneOverlapException $e) {
