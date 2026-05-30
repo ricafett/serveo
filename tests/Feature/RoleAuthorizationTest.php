@@ -84,6 +84,30 @@ it('allows cashier from opening a billing group', function () {
         ->and($group->opened_by_user_id)->toBe($this->cashier->id);
 });
 
+it('prevents a different server from voiding another server order item', function () {
+    $otherServer = makeUser('SERVER');
+    $item = $this->group->orderHeaders()->first()->items()->first();
+
+    expect(fn () => app(OrderService::class)->voidItem($item, $otherServer, 'Not my order'))
+        ->toThrow(AuthorizationException::class, 'Unauthorized to void this order.');
+});
+
+it('prevents a different server from voiding another server order', function () {
+    $otherServer = makeUser('SERVER');
+    $header = $this->group->orderHeaders()->first();
+
+    expect(fn () => app(OrderService::class)->voidOrder($header, $otherServer, 'Not my order'))
+        ->toThrow(AuthorizationException::class, 'Unauthorized to void this order.');
+});
+
+it('allows cashier to void another server order', function () {
+    $header = $this->group->orderHeaders()->first();
+
+    app(OrderService::class)->voidOrder($header, $this->cashier, 'Cashier approved cancellation');
+
+    expect($header->refresh()->submission_status)->toBe('VOIDED');
+});
+
 it('prevents server from releasing a zone', function () {
     $serverWithoutRelease = makeUser('SERVER');
     Role::findByName('SERVER')->revokePermissionTo('floor.release_zone');
