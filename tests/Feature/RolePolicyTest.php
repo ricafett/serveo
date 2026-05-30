@@ -27,9 +27,9 @@ it('inactive users cannot access the panel even with role', function () {
     expect($admin->refresh()->canAccessPanel(Filament::getPanel('admin')))->toBeFalse();
 });
 
-it('servers have order.create permission and cashiers do not', function () {
+it('servers and cashiers have order.create permission', function () {
     expect(makeUser('SERVER')->hasPermissionTo('order.create'))->toBeTrue();
-    expect(makeUser('CASHIER')->hasPermissionTo('order.create'))->toBeFalse();
+    expect(makeUser('CASHIER')->hasPermissionTo('order.create'))->toBeTrue();
 });
 
 it('cashiers have payment.record permission and servers do not', function () {

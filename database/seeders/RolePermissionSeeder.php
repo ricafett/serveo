@@ -90,9 +90,13 @@ class RolePermissionSeeder extends Seeder
 
         $cashier = Role::findOrCreate('CASHIER');
         $cashier->syncPermissions([
+            'floor.view',
+            'floor.open_billing_group',
+            'floor.assign_zone',
             'billing_group.view',
             'billing_group.set_status',
             'billing_group.reopen',
+            'order.create',
             'billing_document.create',
             'billing_document.reprint',
             'floor.release_zone',
