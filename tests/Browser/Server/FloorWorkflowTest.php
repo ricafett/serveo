@@ -89,6 +89,7 @@ test('server can create billing group and see it as occupied', function () {
                 ->waitForText('Open Billing Group', 3)
                 ->type('#name', 'Test Group')
                 ->type('#cover-count', 4)
+                ->assertMissing('#floor-assigned-server-id')
                 ->press('Open Billing Group')
                 ->waitForText('Occupied Zones', 5);
         });

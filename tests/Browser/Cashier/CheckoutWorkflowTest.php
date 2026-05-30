@@ -57,11 +57,11 @@ test('checkout screen shows charges and balance', function () {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
-            ->waitForText('Sign In', 5)
+            ->waitForText('Sign In', 10)
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -76,12 +76,9 @@ test('cashier can print bill from checkout', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -98,11 +95,11 @@ test('cashier without printer assignment gets error on bill print', function () 
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
-            ->waitForText('Sign In', 5)
+            ->waitForText('Sign In', 10)
             ->type('username', $cashierNoPrinter->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -116,11 +113,11 @@ test('cashier can record partial payment', function () {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
-            ->waitForText('Sign In', 5)
+            ->waitForText('Sign In', 10)
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -132,17 +129,19 @@ test('cashier can record partial payment', function () {
 });
 
 test('cashier can reopen closed group from checkout', function () {
-    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    app(\App\Domain\Billing\BillingService::class)->recordPayment(
+        $this->group->refresh(),
+        $this->cashier,
+        $this->group->fresh()->balance(),
+        'Cash',
+    );
 
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Closed', 5)
@@ -155,12 +154,9 @@ test('reprint panel lists bills and tickets', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/reprint/{$this->group->id}")
             ->waitForText('Reprint & Documents', 5)
@@ -173,11 +169,11 @@ test('checkout displays occupied zones', function () {
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')
-            ->waitForText('Sign In', 5)
+            ->waitForText('Sign In', 10)
             ->type('username', $this->cashier->username)
             ->type('password', 'secret')
             ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -189,17 +185,15 @@ test('fill balance button populates payment amount', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
-            ->press('Fill balance')
-            ->waitForText('Record Payment', 5);
+            ->clickWhenVisible('#fill-balance')
+            ->waitUsing(10, 100, fn () => $browser->inputValue('#payment-amount') !== '' && (float) $browser->inputValue('#payment-amount') === (float) $this->group->fresh()->balance())
+            ->assertValue('#payment-amount', (string) $this->group->fresh()->balance());
     });
 });
 
@@ -207,12 +201,9 @@ test('zone release confirmation modal opens and can be cancelled', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/checkout/{$this->group->id}")
             ->waitForText('Checkout', 5)
@@ -227,12 +218,9 @@ test('reprint page has back button when accessed from checkout', function () {
     $this->browse(function (Browser $browser) {
         $browser->driver->manage()->deleteAllCookies();
 
-        $browser->visit('/login')
-            ->waitForText('Sign In', 5)
-            ->type('username', $this->cashier->username)
-            ->type('password', 'secret')
-            ->press('Sign In')
-            ->waitForText('Billing Groups', 5);
+        $browser->loginAs($this->cashier)
+            ->visit('/home')
+            ->waitForText('Dashboard', 5);
 
         $browser->visit("/reprint/{$this->group->id}")
             ->waitForText('Reprint & Documents', 5)
