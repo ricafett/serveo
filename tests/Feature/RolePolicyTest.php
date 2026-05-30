@@ -36,3 +36,8 @@ it('cashiers have payment.record permission and servers do not', function () {
     expect(makeUser('CASHIER')->hasPermissionTo('payment.record'))->toBeTrue();
     expect(makeUser('SERVER')->hasPermissionTo('payment.record'))->toBeFalse();
 });
+
+it('servers and cashiers have order.void_item permission', function () {
+    expect(makeUser('SERVER')->hasPermissionTo('order.void_item'))->toBeTrue();
+    expect(makeUser('CASHIER')->hasPermissionTo('order.void_item'))->toBeTrue();
+});
