@@ -81,6 +81,7 @@ An order-entry feature is done only when:
 - Submitted items retain route and pricing history.
 - Post-submission corrections follow void/correction behavior rather than silent overwrite.
 - Order creation writes the expected audit events.
+- Cancellation rules enforce server-own / cashier-any access correctly and require reopen before cancelling on closed groups.
 
 ## 4. Production tickets and printing
 
@@ -170,6 +171,7 @@ At minimum, automated tests should cover:
 - Delivery override validation.
 - Mixed kitchen/bar routing.
 - Void/correction generation.
+- Order-level and item-level cancellation authorization and reopen prerequisites.
 - Bill generation and bill reprint.
 - Partial payment and reopen.
 - Role-based authorization checks.

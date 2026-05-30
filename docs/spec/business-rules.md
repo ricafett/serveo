@@ -133,6 +133,15 @@ A specific seat-pair delivery override should not be accepted unless the system 
 ### BR-032 — Order immutability after submission
 Once an order item has been submitted to production, it shall not be silently edited in place. Changes after submission must be represented through voids, corrections, or additional order items.
 
+### BR-032A — Order cancellation ownership
+Servers may cancel only orders and order items they originally created. Cashiers and admins may cancel any eligible order or order item.
+
+### BR-032B — Order-level cancellation semantics
+Cancelling an order shall void all remaining non-voided items in that order. Order cancellation does not delete the order header or overwrite existing history.
+
+### BR-032C — Closed-group cancellation prerequisite
+Order or item cancellation shall be rejected for closed billing groups unless an authorized user reopens the billing group first.
+
 ### BR-033 — Pricing snapshot
 Unit price and routing-relevant values shall be copied onto the order item at creation time so later menu changes do not rewrite history.
 

@@ -156,6 +156,23 @@ Related story: US-009.[cite:152]
 - When the action completes,
 - Then the event log shall capture the original item, the change type, the user, and the timestamp.
 
+### AC-009A — Cancel an order or item with role-aware authority
+
+- Given a submitted order or order item belongs to a server,
+- When that same server cancels the order or item,
+- Then the system shall allow the cancellation, record the change, and generate the required void slip output.
+- Given a submitted order or order item belongs to one server,
+- When a different server attempts to cancel it,
+- Then the system shall reject the action.
+- Given a cashier cancels an eligible submitted order or item,
+- Then the system shall allow the action regardless of which server created the original order.
+- Given a billing group is closed,
+- When a user attempts to cancel an order or item in that group,
+- Then the system shall require a valid reopen before cancellation proceeds.
+- Given a user cancels an order,
+- When the action completes,
+- Then all remaining eligible items in that order shall be voided and the resulting void outputs shall be recorded.
+
 ## EPIC-03 Kitchen and bar ticket handling
 
 ### AC-010 — Print tickets for food orders

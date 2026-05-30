@@ -163,7 +163,7 @@ Legend:
 | View billing-group detail | Allow | Allow | Allow | Deny | Deny |
 | Search billing groups | Conditional | Allow | Allow | Deny | Deny |
 | Create orders | Allow | Allow | Allow | Deny | Deny |
-| Void/correct submitted items | Conditional | Deny | Allow | Deny | Deny |
+| Void/correct submitted items | Conditional | Conditional | Allow | Deny | Deny |
 | Trigger production print via order submit | Allow | Deny | Allow | Deny | Deny |
 | View production ticket history | Conditional | Conditional | Allow | Deny | Deny |
 | Print internal bill | Deny | Allow | Allow | Deny | Deny |
@@ -194,7 +194,10 @@ Cashiers may change billing-group status only where that status change is part o
 Servers may release occupied zones only if the related billing-group workflow explicitly allows it and only while preserving auditability. Cashiers may release zones from the checkout page. Admin may always perform corrective release where needed.
 
 ### RP-004 — Server void/correction permissions
-Servers may void or correct submitted items only if the current workflow allows it and the action generates the required void/correction print and audit trail.
+Servers may void or correct submitted items only if the current workflow allows it, the order or item was originally created by that server, and the action generates the required void/correction print and audit trail.
+
+### RP-004A — Cashier void/correction permissions
+Cashiers may void or correct any eligible submitted order or item when the checkout or dispute workflow requires it, provided the action generates the required void/correction print and audit trail.
 
 ### RP-005 — Reopen permissions
 Server and cashier reopen permissions are conditional. The implementation should enforce business rules on eligible states, and admin should retain override authority inside MVP.
@@ -277,6 +280,7 @@ Allowed:
 - Move a group through checkout-related statuses where allowed.
 - Reopen if allowed.
 - Mark group toward closure through billing workflow.
+- Void or correct any eligible submitted order or item within the cashier workflow.
 
 ### ADMIN
 Allowed:
@@ -331,12 +335,13 @@ Allowed:
 ## 6. Reprints, voids, and sensitive actions
 
 ### Server
-- May trigger void/correction slips only through allowed order workflows.
+- May trigger void/correction slips only through allowed order workflows for orders they created.
 - May not reprint customer bills.
 - May not trigger printer test prints.
 
 ### Cashier
 - May reprint internal bills.
+- May trigger void/correction slips for any eligible order or item.
 - May not change printer routes.
 - May not trigger printer test prints.
 
