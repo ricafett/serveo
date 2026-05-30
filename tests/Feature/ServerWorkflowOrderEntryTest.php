@@ -9,6 +9,7 @@ use App\Models\OrderHeader;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use App\Models\Row;
+use App\Models\Seat;
 use App\Models\SeatPair;
 use App\Models\Section;
 use App\Models\ServiceSession;
@@ -35,6 +36,8 @@ beforeEach(function () {
     $this->seed(CoreSeeder::class);
     $this->seed(DemoTransactionSeeder::class);
 
+    ServiceSession::where('status', 'OPEN')->update(['status' => 'CLOSED']);
+
     $this->venue = Venue::first();
     $this->session = ServiceSession::create([
         'venue_id' => $this->venue->id,
@@ -48,11 +51,16 @@ beforeEach(function () {
     $this->row = Row::create(['section_id' => $this->section->id, 'row_code' => 'T1', 'sort_order' => 1, 'is_active' => true]);
 
     for ($i = 1; $i <= 10; $i++) {
-        SeatPair::create(['row_id' => $this->row->id, 'pair_sequence' => $i, 'seat_a_id' => $i * 2 - 1, 'seat_b_id' => $i * 2, 'is_active' => true]);
+        $seatA = Seat::create(['row_id' => $this->row->id, 'seat_number' => $i * 2 - 1, 'sort_order' => $i * 2 - 1, 'is_active' => true]);
+        $seatB = Seat::create(['row_id' => $this->row->id, 'seat_number' => $i * 2, 'sort_order' => $i * 2, 'is_active' => true]);
+        SeatPair::create(['row_id' => $this->row->id, 'pair_sequence' => $i, 'seat_a_id' => $seatA->id, 'seat_b_id' => $seatB->id, 'is_active' => true]);
     }
 
     $this->server = User::factory()->create(['username' => 'testserver', 'is_active' => true]);
     $this->server->assignRole('SERVER');
+
+    $this->cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
+    $this->cashier->assignRole('CASHIER');
 
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     app(OccupancyService::class)->assignZone($this->group, $this->row, 1, 5, $this->server);
@@ -81,6 +89,13 @@ it('renders order entry screen with menu items', function () {
     $response->assertSee('Sopa do dia');
 });
 
+it('renders order entry screen for cashier with menu items', function () {
+    $response = $this->actingAs($this->cashier)->get("/orders/new/{$this->group->id}");
+    $response->assertOk();
+    $response->assertSee('Order Entry');
+    $response->assertSee($this->group->display_code);
+});
+
 it('shows zone selector for billing group with zones', function () {
     $response = $this->actingAs($this->server)->get("/orders/new/{$this->group->id}");
     $response->assertOk();
@@ -89,7 +104,7 @@ it('shows zone selector for billing group with zones', function () {
 });
 
 it('shows closed warning for closed billing group', function () {
-    $cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
+    $cashier = User::factory()->create(['username' => 'testcashier-closed', 'is_active' => true]);
     $cashier->assignRole('CASHIER');
     app(BillingGroupService::class)->close($this->group, $cashier);
 
@@ -294,4 +309,15 @@ it('prevents duplicate orders when submitted with the same idempotency key via L
 
     // Only one order should exist despite two submissions.
     expect(OrderHeader::where('billing_group_id', $this->group->id)->count())->toBe(1);
+});
+
+it('cashier can submit order via livewire', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
+        ->assertSet('successMessage', 'Order submitted successfully.');
+
+    expect(OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first()->ordered_by_user_id)
+        ->toBe($this->cashier->id);
 });

@@ -132,6 +132,8 @@ class OrderService
                 if ($deliveryPairId) {
                     $pair = SeatPair::find($deliveryPairId);
                     $deliveryLabel = $pair ? "Pair {$pair->pair_sequence}" : null;
+                } elseif ($zone) {
+                    $deliveryLabel = $zone->defaultDeliveryLabel();
                 }
 
                 $item = OrderItem::create([
