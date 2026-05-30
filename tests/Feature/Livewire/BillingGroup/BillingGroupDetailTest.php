@@ -192,3 +192,42 @@ it('cashier can add a zone with an explicitly assigned server', function () {
         ->and($zone->server_id)->toBe($this->server2->id)
         ->and($zone->created_by_user_id)->toBe($this->cashier->id);
 });
+
+it('server can void own order from billing group detail', function () {
+    $this->actingAs($this->server);
+
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => $this->menuItem->id, 'quantity' => 1]],
+        $this->zone,
+    );
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->call('openVoidOrderModal', $order->id)
+        ->set('voidReason', 'Guest cancelled')
+        ->call('confirmVoidOrder')
+        ->assertDispatched('notify', message: __('billing.order_voided'));
+
+    expect($order->refresh()->submission_status)->toBe('VOIDED');
+});
+
+it('prevents server from voiding another server order from billing group detail', function () {
+    $otherServer = User::factory()->create(['username' => 'otherserver', 'is_active' => true]);
+    $otherServer->assignRole('SERVER');
+
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [['menu_item_id' => $this->menuItem->id, 'quantity' => 1]],
+        $this->zone,
+    );
+
+    $this->actingAs($otherServer);
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->call('openVoidOrderModal', $order->id)
+        ->assertDispatched('notify', message: __('billing.void_unauthorized'));
+
+    expect($order->refresh()->submission_status)->toBe('SUBMITTED');
+});

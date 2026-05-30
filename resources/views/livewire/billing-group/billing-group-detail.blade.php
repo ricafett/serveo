@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-8" x-data="{ addZoneModal: @entangle('showAddZoneModal') }" wire:poll.10s="refreshData">
+<div class="p-4 sm:p-6 lg:p-8" x-data="{ addZoneModal: @entangle('showAddZoneModal'), voidItemModal: @entangle('showVoidItemModal'), voidOrderModal: @entangle('showVoidOrderModal') }" wire:poll.10s="refreshData">
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
@@ -136,11 +136,18 @@
                                     <span class="text-sm text-gray-400 dark:text-gray-500">{{ $order->occupiedZone->rangeLabel() }}</span>
                                 @endif
                             </div>
-                            <span class="text-sm rounded-full px-2 py-0.5 font-medium
-                                {{ $order->submission_status === 'SUBMITTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                                {{ $order->submission_status === 'PARTIALLY_VOIDED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
-                                {{ $order->submission_status === 'VOIDED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}
-                            ">{{ $order->submission_status }}</span>
+                            <div class="flex items-center gap-2">
+                                @if($this->canVoidOrder($order) && $order->items->whereNull('voided_at')->isNotEmpty())
+                                    <button type="button" wire:click="openVoidOrderModal({{ $order->id }})" wire:target="openVoidOrderModal" wire:loading.attr="disabled" class="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {{ __('billing.void_order') }}
+                                    </button>
+                                @endif
+                                <span class="text-sm rounded-full px-2 py-0.5 font-medium
+                                    {{ $order->submission_status === 'SUBMITTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                    {{ $order->submission_status === 'PARTIALLY_VOIDED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
+                                    {{ $order->submission_status === 'VOIDED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                ">{{ $order->submission_status }}</span>
+                            </div>
                         </div>
                         @if($order->notes)
                             <div class="mb-2 text-sm text-gray-500 dark:text-gray-400 italic">
@@ -162,6 +169,10 @@
                                         </span>
                                         @if($item->voided_at)
                                             <span class="text-sm text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
+                                        @elseif($this->canVoidItem($item))
+                                            <button type="button" wire:click="openVoidItemModal({{ $item->id }})" wire:target="openVoidItemModal" wire:loading.attr="disabled" class="rounded-lg border border-red-300 px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                {{ __('billing.void_item') }}
+                                            </button>
                                         @endif
                                     </div>
                                     <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }} €</span>
@@ -284,6 +295,48 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Void Item Modal --}}
+    <div x-show="voidItemModal" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="display: none;">
+        <div x-show="voidItemModal" class="fixed inset-0 bg-black/50 dark:bg-black/70" @click="voidItemModal = false; $wire.closeVoidModal()"></div>
+        <div x-show="voidItemModal" class="relative w-full sm:w-[28rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_item') }}</h2>
+                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">×</button>
+                </div>
+                <label for="billing-void-item-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason') }}</label>
+                <textarea id="billing-void-item-reason" wire:model="voidReason" rows="3" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
+                @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_print_warning') }}</p>
+                <div class="mt-4 flex gap-3">
+                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">{{ __('app.cancel') }}</button>
+                    <button type="button" wire:click="confirmVoidItem" wire:target="confirmVoidItem" wire:loading.attr="disabled" class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{{ __('billing.confirm_void_item') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Void Order Modal --}}
+    <div x-show="voidOrderModal" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="display: none;">
+        <div x-show="voidOrderModal" class="fixed inset-0 bg-black/50 dark:bg-black/70" @click="voidOrderModal = false; $wire.closeVoidModal()"></div>
+        <div x-show="voidOrderModal" class="relative w-full sm:w-[28rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_order') }}</h2>
+                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">×</button>
+                </div>
+                <label for="billing-void-order-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason') }}</label>
+                <textarea id="billing-void-order-reason" wire:model="voidReason" rows="3" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
+                @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_order_warning') }}</p>
+                <div class="mt-4 flex gap-3">
+                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">{{ __('app.cancel') }}</button>
+                    <button type="button" wire:click="confirmVoidOrder" wire:target="confirmVoidOrder" wire:loading.attr="disabled" class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{{ __('billing.confirm_void_order') }}</button>
+                </div>
             </div>
         </div>
     </div>

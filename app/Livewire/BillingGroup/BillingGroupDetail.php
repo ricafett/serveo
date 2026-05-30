@@ -6,8 +6,11 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
+use App\Domain\Orders\OrderService;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
+use App\Models\OrderHeader;
+use App\Models\OrderItem;
 use App\Models\Row;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +41,16 @@ class BillingGroupDetail extends Component
     public ?string $newStatusCode = null;
 
     public bool $isSubmitting = false;
+
+    public bool $showVoidItemModal = false;
+
+    public bool $showVoidOrderModal = false;
+
+    public ?int $voidItemId = null;
+
+    public ?int $voidOrderId = null;
+
+    public ?string $voidReason = null;
 
     public function mount(int $id): void
     {
@@ -265,6 +278,155 @@ class BillingGroupDetail extends Component
     public function addOrder(): void
     {
         $this->redirect(route('orders.new', ['billingGroupId' => $this->group->id]), navigate: true);
+    }
+
+    public function canVoidOrder(OrderHeader $order): bool
+    {
+        $user = Auth::user();
+
+        if (! $user || $this->group?->is_closed) {
+            return false;
+        }
+
+        return $user->can('voidOrder', $order);
+    }
+
+    public function canVoidItem(OrderItem $item): bool
+    {
+        if ($item->isVoided()) {
+            return false;
+        }
+
+        return $this->canVoidOrder($item->header);
+    }
+
+    public function openVoidItemModal(int $itemId): void
+    {
+        $item = OrderItem::with('header')->findOrFail($itemId);
+
+        if ($item->header->billing_group_id !== $this->group?->id) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        if (! $this->canVoidItem($item)) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        $this->voidItemId = $itemId;
+        $this->voidOrderId = null;
+        $this->voidReason = null;
+        $this->showVoidItemModal = true;
+    }
+
+    public function openVoidOrderModal(int $orderId): void
+    {
+        $order = OrderHeader::with('items')->findOrFail($orderId);
+
+        if ($order->billing_group_id !== $this->group?->id) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        if (! $this->canVoidOrder($order)) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        $this->voidOrderId = $orderId;
+        $this->voidItemId = null;
+        $this->voidReason = null;
+        $this->showVoidOrderModal = true;
+    }
+
+    public function closeVoidModal(): void
+    {
+        $this->showVoidItemModal = false;
+        $this->showVoidOrderModal = false;
+        $this->voidItemId = null;
+        $this->voidOrderId = null;
+        $this->voidReason = null;
+    }
+
+    public function confirmVoidItem(): void
+    {
+        if ($this->isSubmitting || ! $this->voidItemId) {
+            return;
+        }
+
+        $this->validate([
+            'voidReason' => 'required|string|max:500',
+        ]);
+
+        $item = OrderItem::with('header')->findOrFail($this->voidItemId);
+
+        if ($item->header->billing_group_id !== $this->group?->id) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        if (! Auth::user()?->can('voidItem', $item->header)) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            app(OrderService::class)->voidItem($item, Auth::user(), $this->voidReason);
+            $this->closeVoidModal();
+            $this->loadGroup();
+            $this->dispatch('notify', message: __('billing.item_voided'));
+        } catch (\Throwable $e) {
+            $this->dispatch('notify', message: $e->getMessage());
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
+    public function confirmVoidOrder(): void
+    {
+        if ($this->isSubmitting || ! $this->voidOrderId) {
+            return;
+        }
+
+        $this->validate([
+            'voidReason' => 'required|string|max:500',
+        ]);
+
+        $order = OrderHeader::findOrFail($this->voidOrderId);
+
+        if ($order->billing_group_id !== $this->group?->id) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        if (! Auth::user()?->can('voidOrder', $order)) {
+            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            app(OrderService::class)->voidOrder($order, Auth::user(), $this->voidReason);
+            $this->closeVoidModal();
+            $this->loadGroup();
+            $this->dispatch('notify', message: __('billing.order_voided'));
+        } catch (\Throwable $e) {
+            $this->dispatch('notify', message: $e->getMessage());
+        } finally {
+            $this->isSubmitting = false;
+        }
     }
 
     public function toggleFavorite(): void
