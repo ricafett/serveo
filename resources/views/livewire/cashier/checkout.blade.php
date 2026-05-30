@@ -193,7 +193,7 @@
                                 <div class="flex gap-2">
                                     <input id="payment-amount" type="number" wire:model="paymentAmount" step="0.01" min="0.01" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base h-11 px-3">
                                     @if($this->balance > 0)
-                                        <button type="button" wire:click="fillBalance" class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] whitespace-nowrap transition-colors">
+                                        <button id="fill-balance" type="button" wire:click="fillBalance" class="rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 min-h-[44px] whitespace-nowrap transition-colors">
                                             {{ __('cashier.fill_balance') }}
                                         </button>
                                     @endif

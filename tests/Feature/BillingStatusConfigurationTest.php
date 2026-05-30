@@ -48,7 +48,11 @@ it('auto-closes group even when closed status is inactive', function () {
     $closed->update(['is_active' => false]);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
-    $payment = app(BillingService::class)->recordPayment($group, $this->cashier, 999.00, 'Cash');
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit($group, $this->server,
+        [['menu_item_id' => $item->id, 'quantity' => 1]]);
+
+    $payment = app(BillingService::class)->recordPayment($group->refresh(), $this->cashier, $group->fresh()->balance(), 'Cash');
 
     expect($group->fresh()->is_closed)->toBeTrue();
 });
