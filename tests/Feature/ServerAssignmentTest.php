@@ -24,6 +24,14 @@ it('assigns the acting server as zone server when opening a billing group with a
         ->and($zone->server->id)->toBe($this->server->id);
 });
 
+it('allows explicit assigned server different from actor', function () {
+    $group = app(BillingGroupService::class)->open($this->session, $this->admin);
+    $zone = app(OccupancyService::class)->assignZone($group, $this->row, 1, 3, $this->admin, null, $this->server);
+
+    expect($zone->server_id)->toBe($this->server->id)
+        ->and($zone->created_by_user_id)->toBe($this->admin->id);
+});
+
 it('assigns the acting server as zone server when adding a zone to an existing group', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
     // First zone by server
@@ -72,6 +80,16 @@ it('zone server is independent of seat pair default server', function () {
 
     expect($zone->server_id)->toBe($this->server->id)
         ->and($zone->server->id)->toBe($this->server->id);
+});
+
+it('rejects assigning an inactive or non-server user as zone server', function () {
+    $inactiveCashier = makeUser('CASHIER', 'inactive-cashier');
+    $inactiveCashier->update(['is_active' => false]);
+
+    $group = app(BillingGroupService::class)->open($this->session, $this->admin);
+
+    expect(fn () => app(OccupancyService::class)->assignZone($group, $this->row, 1, 3, $this->admin, null, $inactiveCashier))
+        ->toThrow(RuntimeException::class, 'Assigned server must be an active server user.');
 });
 
 it('billing group assignedServers returns unique servers from all open zones', function () {

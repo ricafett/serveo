@@ -27,8 +27,13 @@ class OccupancyService
         int $endSeq,
         User $actor,
         ?string $deliveryCenterLabel = null,
+        ?User $assignedServer = null,
     ): OccupiedZone {
         $this->ensureCan($actor, 'floor.assign_zone');
+
+        if ($assignedServer && (! $assignedServer->hasRole('SERVER') || ! $assignedServer->is_active)) {
+            throw new RuntimeException(__('floor.assigned_server_invalid'));
+        }
 
         if (! $group->serviceSession?->isOpen()) {
             throw new RuntimeException('No open service session. Operations require an active session.');
@@ -38,7 +43,7 @@ class OccupancyService
             throw new RuntimeException('start_seat_pair_sequence must be <= end_seat_pair_sequence');
         }
 
-        return DB::transaction(function () use ($group, $row, $startSeq, $endSeq, $actor, $deliveryCenterLabel) {
+        return DB::transaction(function () use ($group, $row, $startSeq, $endSeq, $actor, $deliveryCenterLabel, $assignedServer) {
             $conflict = OccupiedZone::where('row_id', $row->id)
                 ->where('is_open', true)
                 ->where('start_seat_pair_sequence', '<=', $endSeq)
@@ -52,6 +57,8 @@ class OccupancyService
                 );
             }
 
+            $zoneServer = $assignedServer ?? $actor;
+
             $zone = OccupiedZone::create([
                 'billing_group_id' => $group->id,
                 'row_id' => $row->id,
@@ -62,7 +69,7 @@ class OccupancyService
                 'opened_at' => now(),
                 'is_open' => true,
                 'created_by_user_id' => $actor->id,
-                'server_id' => $actor->id,
+                'server_id' => $zoneServer->id,
             ]);
 
             Audit::record(
@@ -72,12 +79,12 @@ class OccupancyService
                 ['billing_group_id' => $group->id, 'occupied_zone_id' => $zone->id, 'service_session_id' => $group->service_session_id, 'actor_user_id' => $actor->id],
             );
 
-            // Auto-favorite: the server assigning the zone gets the billing group as a favorite.
+            // Auto-favorite: the assigned server gets the billing group as a favorite.
             // is_manual = false means it cannot be unfavorited while assigned.
-            if ($group->favoritedBy()->where('user_id', $actor->id)->exists()) {
-                $group->favoritedBy()->updateExistingPivot($actor->id, ['is_manual' => false]);
+            if ($group->favoritedBy()->where('user_id', $zoneServer->id)->exists()) {
+                $group->favoritedBy()->updateExistingPivot($zoneServer->id, ['is_manual' => false]);
             } else {
-                $group->favoritedBy()->attach($actor->id, ['is_manual' => false]);
+                $group->favoritedBy()->attach($zoneServer->id, ['is_manual' => false]);
             }
 
             return $zone;
