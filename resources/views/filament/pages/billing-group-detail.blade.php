@@ -57,6 +57,9 @@
                     <div class="mb-1 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                         <span>{{ __('order.title') }} #{{ $header->id }} · {{ $header->ordered_at?->timezone(config('app.timezone'))->format('H:i') }} · {{ $header->submission_status }}</span>
                     </div>
+                    @if($header->notes)
+                        <div class="mb-1 text-sm text-gray-500 dark:text-gray-400 italic">{{ $header->notes }}</div>
+                    @endif
                     <table class="w-full text-base">
                         <thead>
                             <tr class="text-left text-sm uppercase text-gray-500 dark:text-gray-400">
