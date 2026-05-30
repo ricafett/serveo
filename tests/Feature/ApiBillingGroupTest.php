@@ -10,6 +10,7 @@ use App\Models\Row;
 beforeEach(function () {
     $this->session = bootScenario();
     $this->server = makeUser('SERVER');
+    $this->server2 = makeUser('SERVER', 'server-2');
     $this->cashier = makeUser('CASHIER');
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     $this->zone = app(OccupancyService::class)->assignZone(
@@ -210,7 +211,7 @@ it('rejects reopen with stale version', function () {
         ->assertJsonPath('error.code', 'VERSION_CONFLICT');
 });
 
-it('enforces role permissions on billing group endpoints', function () {
+it('allows cashier to create billing groups through the api', function () {
     $admin = makeUser('ADMIN');
 
     // Admin can create
@@ -218,8 +219,56 @@ it('enforces role permissions on billing group endpoints', function () {
         'statusCode' => 'ACTIVE',
     ])->assertStatus(201);
 
-    // Cashier cannot create
+    // Cashier can create
     $this->actingAs($this->cashier)->postJson('/api/v1/billing-groups', [
         'statusCode' => 'ACTIVE',
-    ])->assertStatus(403);
+    ])->assertStatus(201);
+});
+
+it('requires assigned server when cashier creates zoned billing groups through the api', function () {
+    $this->actingAs($this->cashier)->postJson('/api/v1/billing-groups', [
+        'statusCode' => 'ACTIVE',
+        'zones' => [
+            [
+                'rowId' => Row::first()->id,
+                'startSeatPairSequence' => 3,
+                'endSeatPairSequence' => 4,
+            ],
+        ],
+    ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['zones.0.assignedServerId']);
+});
+
+it('requires assigned server when cashier adds zones through the api', function () {
+    $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/zones", [
+        'zones' => [
+            [
+                'rowId' => Row::first()->id,
+                'startSeatPairSequence' => 5,
+                'endSeatPairSequence' => 6,
+            ],
+        ],
+    ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['zones.0.assignedServerId']);
+});
+
+it('uses the assigned server when cashier adds zones through the api', function () {
+    $response = $this->actingAs($this->cashier)->postJson("/api/v1/billing-groups/{$this->group->id}/zones", [
+        'zones' => [
+            [
+                'rowId' => Row::first()->id,
+                'startSeatPairSequence' => 5,
+                'endSeatPairSequence' => 6,
+                'assignedServerId' => $this->server2->id,
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('success', true);
+
+    expect($this->group->fresh()->occupiedZones()->where('start_seat_pair_sequence', 5)->first()?->server_id)
+        ->toBe($this->server2->id);
 });

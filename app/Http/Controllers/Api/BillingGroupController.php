@@ -10,6 +10,7 @@ use App\Models\BillingGroup;
 use App\Models\OrderHeader;
 use App\Models\Row;
 use App\Models\ServiceSession;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,10 @@ class BillingGroupController extends ApiController
 
     public function store(Request $request): JsonResponse
     {
+        $zoneAssignedServerRule = ($request->user()?->hasRole('CASHIER') ?? false)
+            ? ['required', 'integer', 'exists:users,id']
+            : ['nullable', 'integer', 'exists:users,id'];
+
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'statusCode' => ['required', 'string', 'exists:billing_statuses,code'],
@@ -35,6 +40,7 @@ class BillingGroupController extends ApiController
             'zones.*.startSeatPairSequence' => ['required', 'integer', 'min:1'],
             'zones.*.endSeatPairSequence' => ['required', 'integer', 'min:1'],
             'zones.*.deliveryMode' => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
+            'zones.*.assignedServerId' => $zoneAssignedServerRule,
         ]);
 
         $session = ServiceSession::where('status', 'OPEN')
@@ -60,6 +66,11 @@ class BillingGroupController extends ApiController
                 if (! empty($validated['zones'])) {
                     foreach ($validated['zones'] as $zoneData) {
                         $row = Row::findOrFail($zoneData['rowId']);
+                        $assignedServer = null;
+                        if (($request->user()?->hasRole('CASHIER') ?? false)) {
+                            $assignedServer = User::findOrFail($zoneData['assignedServerId']);
+                        }
+
                         $this->occupancyService->assignZone(
                             $group,
                             $row,
@@ -67,6 +78,7 @@ class BillingGroupController extends ApiController
                             (int) $zoneData['endSeatPairSequence'],
                             $request->user(),
                             $zoneData['deliveryCenterLabel'] ?? null,
+                            $assignedServer,
                         );
                     }
                     $group->load('occupiedZones');
@@ -156,12 +168,17 @@ class BillingGroupController extends ApiController
 
     public function storeZones(Request $request, BillingGroup $billingGroup): JsonResponse
     {
+        $zoneAssignedServerRule = ($request->user()?->hasRole('CASHIER') ?? false)
+            ? ['required', 'integer', 'exists:users,id']
+            : ['nullable', 'integer', 'exists:users,id'];
+
         $validated = $request->validate([
             'zones' => ['required', 'array', 'min:1'],
             'zones.*.rowId' => ['required', 'exists:rows,id'],
             'zones.*.startSeatPairSequence' => ['required', 'integer', 'min:1'],
             'zones.*.endSeatPairSequence' => ['required', 'integer', 'min:1'],
             'zones.*.deliveryMode' => ['nullable', 'string', 'in:CENTER,SPECIFIC_SEAT_PAIR'],
+            'zones.*.assignedServerId' => $zoneAssignedServerRule,
         ]);
 
         if ($billingGroup->is_closed) {
@@ -172,6 +189,11 @@ class BillingGroupController extends ApiController
             DB::transaction(function () use ($request, $billingGroup, $validated) {
                 foreach ($validated['zones'] as $zoneData) {
                     $row = Row::findOrFail($zoneData['rowId']);
+                    $assignedServer = null;
+                    if (($request->user()?->hasRole('CASHIER') ?? false)) {
+                        $assignedServer = User::findOrFail($zoneData['assignedServerId']);
+                    }
+
                     $this->occupancyService->assignZone(
                         $billingGroup,
                         $row,
@@ -179,6 +201,7 @@ class BillingGroupController extends ApiController
                         (int) $zoneData['endSeatPairSequence'],
                         $request->user(),
                         $zoneData['deliveryCenterLabel'] ?? null,
+                        $assignedServer,
                     );
                 }
             });

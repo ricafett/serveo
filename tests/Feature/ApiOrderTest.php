@@ -91,17 +91,19 @@ it('voids order items via api', function () {
         ->assertJsonCount(1, 'data.affectedItems');
 });
 
-it('enforces role permissions on order endpoints', function () {
+it('allows cashier to create orders through the api', function () {
     $cashier = makeUser('CASHIER');
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
 
-    // Cashier cannot create orders
     $this->actingAs($cashier)->postJson('/api/v1/orders', [
         'billingGroupId' => $this->group->id,
+        'occupiedZoneId' => $this->zone->id,
         'items' => [
             ['menuItemId' => $kitchenItem->id, 'quantity' => 1],
         ],
-    ])->assertStatus(403);
+    ])
+        ->assertStatus(201)
+        ->assertJsonPath('success', true);
 });
 
 it('prevents duplicate orders via api when idempotency key is provided', function () {

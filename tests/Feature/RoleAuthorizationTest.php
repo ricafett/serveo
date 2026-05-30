@@ -49,20 +49,25 @@ it('prevents server from recording a payment', function () {
         ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission payment.record');
 });
 
-it('prevents cashier from creating an order', function () {
+it('allows cashier to create an order', function () {
     $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
 
-    expect(fn () => app(OrderService::class)->submit($this->group, $this->cashier,
-        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone))
-        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission order.create');
+    $header = app(OrderService::class)->submit($this->group, $this->cashier,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]], $this->zone);
+
+    expect($header)->not->toBeNull()
+        ->and($header->ordered_by_user_id)->toBe($this->cashier->id);
 });
 
-it('prevents cashier from assigning a zone', function () {
+it('allows cashier to assign a zone', function () {
     $group = app(BillingGroupService::class)->open($this->session, $this->admin);
 
-    expect(fn () => app(OccupancyService::class)->assignZone(
+    $zone = app(OccupancyService::class)->assignZone(
         $group, Row::first(), 3, 4, $this->cashier
-    ))->toThrow(AuthorizationException::class, 'Unauthorized: missing permission floor.assign_zone');
+    );
+
+    expect($zone)->not->toBeNull()
+        ->and($zone->server_id)->toBe($this->cashier->id);
 });
 
 it('prevents server from reprinting a bill', function () {
@@ -72,9 +77,11 @@ it('prevents server from reprinting a bill', function () {
         ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission billing_document.reprint');
 });
 
-it('prevents cashier from opening a billing group', function () {
-    expect(fn () => app(BillingGroupService::class)->open($this->session, $this->cashier))
-        ->toThrow(AuthorizationException::class, 'Unauthorized: missing permission floor.open_billing_group');
+it('allows cashier from opening a billing group', function () {
+    $group = app(BillingGroupService::class)->open($this->session, $this->cashier);
+
+    expect($group)->not->toBeNull()
+        ->and($group->opened_by_user_id)->toBe($this->cashier->id);
 });
 
 it('prevents server from releasing a zone', function () {
