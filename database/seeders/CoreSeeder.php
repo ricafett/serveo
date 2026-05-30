@@ -413,6 +413,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'floor', 'pairs_count', ':count par|:count pares'],
             ['pt-PT', 'floor', 'invalid_end_pair', 'Identificação de par final inválida.'],
             ['pt-PT', 'floor', 'range_too_large', 'Apenas :max pares de lugares livres disponíveis a partir desta posição.'],
+            ['pt-PT', 'floor', 'assigned_server_required', 'É obrigatório escolher o servidor atribuído.'],
+            ['pt-PT', 'floor', 'assigned_server_invalid', 'O servidor atribuído tem de ser um utilizador ativo com a função SERVER.'],
 
             ['en-US', 'floor', 'title', 'Floor'],
             ['en-US', 'floor', 'open_group', 'Open Billing Group'],
@@ -442,6 +444,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'floor', 'pairs_count', ':count pair|:count pairs'],
             ['en-US', 'floor', 'invalid_end_pair', 'Invalid end pair label.'],
             ['en-US', 'floor', 'range_too_large', 'Only :max free seat pairs available from this position.'],
+            ['en-US', 'floor', 'assigned_server_required', 'Assigned server is required.'],
+            ['en-US', 'floor', 'assigned_server_invalid', 'Assigned server must be an active server user.'],
 
             // ---------- order ----------
             ['pt-PT', 'order', 'title', 'Pedido'],

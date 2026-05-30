@@ -29,4 +29,6 @@ return [
     'pairs_count' => ':count pair|:count pairs',
     'invalid_end_pair' => 'Invalid end pair label.',
     'range_too_large' => 'Only :max free seat pairs available from this position.',
+    'assigned_server_required' => 'Assigned server is required.',
+    'assigned_server_invalid' => 'Assigned server must be an active server user.',
 ];
