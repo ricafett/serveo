@@ -347,6 +347,31 @@ Response includes:
 - affected items
 - generated void/correction tickets
 
+Rules:
+- a SERVER may void only order items from orders created by that same server
+- a CASHIER may void any eligible submitted order item
+- closed billing groups must be reopened before order-item cancellation proceeds
+
+### POST /api/v1/orders/{orderHeaderId}/void
+Void all remaining eligible items in an order and generate the required void output.
+
+Request:
+```json
+{
+  "reason": "Guest changed mind"
+}
+```
+
+Response includes:
+- updated order header status
+- all affected items
+- generated void/correction tickets
+
+Rules:
+- a SERVER may void only orders created by that same server
+- a CASHIER may void any eligible submitted order
+- closed billing groups must be reopened before order cancellation proceeds
+
 ### GET /api/v1/billing-groups/{billingGroupId}/orders
 List orders for one billing group in chronological order.
 
@@ -620,6 +645,7 @@ Not allowed by default:
 Allowed:
 - billing-group lookup
 - view billing-group detail
+- void/correct eligible submitted orders and items
 - generate internal bills
 - reprint bills
 - record partial payment

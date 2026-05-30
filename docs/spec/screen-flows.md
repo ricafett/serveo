@@ -141,6 +141,7 @@ The MVP screen set should contain at least these screens:
 - Inspect zones.
 - Reopen if allowed.
 - Request bill print.
+- Cancel eligible own orders or items.
 
 **Key actions for cashier:**
 - Open billing groups from the floor.
@@ -151,6 +152,7 @@ The MVP screen set should contain at least these screens:
 - Register partial payment.
 - Reopen.
 - Reprint bill.
+- Cancel eligible orders or items regardless of which server created them.
 
 **Primary flows:**
 - Billing Group Detail -> Order Entry.
@@ -176,7 +178,7 @@ The MVP screen set should contain at least these screens:
 - Accept default center delivery target.
 - Override with specific seat pair.
 - Submit order.
-- Void/correct eligible items.
+- Void/correct eligible items, subject to server-own and cashier-any authorization rules.
 
 **Flow rules:**
 - This should open in a lightweight form optimized for quick entry.
@@ -428,6 +430,15 @@ The MVP screen set should contain at least these screens:
 3. Server confirms the action.
 4. System records the change.
 5. System prints the relevant void or correction slip.
+6. Event log records the action.[cite:152]
+
+Cashier variation:
+
+1. Cashier opens the billing group detail or checkout context.
+2. Cashier selects an eligible order or item for cancellation.
+3. Cashier confirms the action and provides the reason if required.
+4. System records the change.
+5. System prints the relevant void or correction slip to the original destination.
 6. Event log records the action.[cite:152]
 
 ### Flow D — Find a group and print a bill
