@@ -10,6 +10,7 @@ use App\Models\BillingStatus;
 use App\Models\Row;
 use App\Models\Section;
 use App\Models\ServiceSession;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Session;
@@ -60,6 +61,8 @@ class FloorIndex extends Component
     public ?string $zoneEndLabel = null;
 
     public ?string $deliveryLabel = null;
+
+    public ?int $assignedServerId = null;
 
     public ?string $errorMessage = null;
 
@@ -133,6 +136,15 @@ class FloorIndex extends Component
         }
 
         return $query->orderBy('opened_at', 'desc')->get();
+    }
+
+    public function getAvailableServersProperty()
+    {
+        return User::role('SERVER')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->orderBy('username')
+            ->get();
     }
 
     /** IDs of billing groups favorited by the current user (used for floor map filtering). */
@@ -263,8 +275,41 @@ class FloorIndex extends Component
         $this->zoneEndSeq = $pairSeq;
         $this->zoneSeatCount = 1;
         $this->zoneEndLabel = $this->locationForRowAndSeq($rowId, $pairSeq);
+        $this->assignedServerId = $this->defaultServerIdForPair($rowId, $pairSeq);
         $this->showCreateModal = true;
         $this->errorMessage = null;
+    }
+
+    private function defaultServerIdForPair(int $rowId, int $pairSeq): ?int
+    {
+        $row = Row::with('seatPairs')->find($rowId);
+
+        return $row?->seatPairs
+            ->firstWhere('pair_sequence', $pairSeq)?->default_server_id;
+    }
+
+    public function shouldSelectAssignedServer(): bool
+    {
+        return Auth::user()?->hasRole('CASHIER') ?? false;
+    }
+
+    private function resolveAssignedServer(): ?User
+    {
+        if (! $this->shouldSelectAssignedServer()) {
+            return null;
+        }
+
+        if (! $this->assignedServerId) {
+            throw new \RuntimeException(__('floor.assigned_server_required'));
+        }
+
+        $assignedServer = User::findOrFail($this->assignedServerId);
+
+        if (! $assignedServer->hasRole('SERVER') || ! $assignedServer->is_active) {
+            throw new \RuntimeException(__('floor.assigned_server_invalid'));
+        }
+
+        return $assignedServer;
     }
 
     public function locationForRowAndSeq(int $rowId, int $seq): string
@@ -449,15 +494,21 @@ class FloorIndex extends Component
             return;
         }
 
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'statusCode' => 'required|string',
-            'coverCount' => 'nullable|integer|min:1',
-            'notes' => 'nullable|string|max:500',
-            'zoneRowId' => 'required|integer|exists:rows,id',
-            'zoneStartSeq' => 'required|integer|min:1',
-            'zoneSeatCount' => 'required|integer|min:1',
-        ]);
+        $this->validate(
+            [
+                'name' => 'required|string|max:255',
+                'statusCode' => 'required|string',
+                'coverCount' => 'nullable|integer|min:1',
+                'notes' => 'nullable|string|max:500',
+                'zoneRowId' => 'required|integer|exists:rows,id',
+                'zoneStartSeq' => 'required|integer|min:1',
+                'zoneSeatCount' => 'required|integer|min:1',
+                'assignedServerId' => $this->shouldSelectAssignedServer() ? 'required|integer|exists:users,id' : 'nullable|integer|exists:users,id',
+            ],
+            [
+                'assignedServerId.required' => __('floor.assigned_server_required'),
+            ],
+        );
 
         $row = Row::findOrFail($this->zoneRowId);
 
@@ -470,7 +521,9 @@ class FloorIndex extends Component
         try {
             $this->isSubmitting = true;
 
-            DB::transaction(function () use ($session, $row) {
+            $assignedServer = $this->resolveAssignedServer();
+
+            DB::transaction(function () use ($session, $row, $assignedServer) {
                 $service = app(BillingGroupService::class);
                 $group = $service->open(
                     $session,
@@ -488,10 +541,11 @@ class FloorIndex extends Component
                     (int) $this->zoneEndSeq,
                     Auth::user(),
                     $this->deliveryLabel,
+                    $assignedServer,
                 );
 
                 $this->showCreateModal = false;
-                $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
+                $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel', 'assignedServerId']);
                 $this->statusCode = BillingStatus::ACTIVE;
 
                 $this->redirect(route('billing-groups.detail', ['id' => $group->id]), navigate: true);
@@ -509,7 +563,7 @@ class FloorIndex extends Component
     {
         $this->showCreateModal = false;
         $this->errorMessage = null;
-        $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel']);
+        $this->reset(['name', 'statusCode', 'coverCount', 'notes', 'selectedRowId', 'selectedStartSeq', 'selectedEndSeq', 'zoneRowId', 'zoneStartSeq', 'zoneEndSeq', 'zoneSeatCount', 'zoneEndLabel', 'deliveryLabel', 'assignedServerId']);
         $this->statusCode = BillingStatus::ACTIVE;
     }
 
