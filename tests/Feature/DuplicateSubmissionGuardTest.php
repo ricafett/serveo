@@ -52,6 +52,9 @@ beforeEach(function () {
     $this->cashier->assignRole('CASHIER');
     $this->cashier->givePermissionTo('billing_document.create');
 
+    $this->assignedServer = User::factory()->create(['username' => 'assignedserver', 'is_active' => true]);
+    $this->assignedServer->assignRole('SERVER');
+
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     app(OccupancyService::class)->assignZone($this->group, $this->row, 1, 3, $this->server);
 });
@@ -73,6 +76,25 @@ it('prevents double-click on createBillingGroup in floor index', function () {
     expect(BillingGroup::count())->toBe($initialCount);
 });
 
+it('prevents double-click on cashier createBillingGroup in floor index', function () {
+    $this->actingAs($this->cashier);
+
+    $initialCount = BillingGroup::count();
+
+    Livewire::test(FloorIndex::class)
+        ->set('name', 'Cashier Group')
+        ->set('statusCode', 'ACTIVE')
+        ->set('zoneRowId', $this->row->id)
+        ->set('zoneStartSeq', 4)
+        ->set('zoneEndSeq', 5)
+        ->set('zoneSeatCount', 2)
+        ->set('assignedServerId', $this->assignedServer->id)
+        ->set('isSubmitting', true)
+        ->call('createBillingGroup');
+
+    expect(BillingGroup::count())->toBe($initialCount);
+});
+
 // ------------------------------------------------------------------
 // BillingGroupDetail — addZone duplicate prevention
 // ------------------------------------------------------------------
@@ -87,6 +109,19 @@ it('prevents double-click on addZone in billing group detail', function () {
         ->call('addZone');
 
     // No new zone should have been created.
+    expect(OccupiedZone::where('billing_group_id', $this->group->id)->count())->toBe($initialZoneCount);
+});
+
+it('prevents double-click on cashier addZone in billing group detail', function () {
+    $this->actingAs($this->cashier);
+
+    $initialZoneCount = OccupiedZone::where('billing_group_id', $this->group->id)->count();
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('assignedServerId', $this->assignedServer->id)
+        ->set('isSubmitting', true)
+        ->call('addZone');
+
     expect(OccupiedZone::where('billing_group_id', $this->group->id)->count())->toBe($initialZoneCount);
 });
 
