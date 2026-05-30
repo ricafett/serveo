@@ -134,6 +134,11 @@ class BillingService
             throw new RuntimeException('Payment amount must be greater than zero.');
         }
 
+        $remainingBalance = $group->balance();
+        if ($amount > $remainingBalance + 0.0001) {
+            throw new RuntimeException('Payment amount exceeds remaining balance.');
+        }
+
         return DB::transaction(function () use ($group, $cashier, $amount, $label, $notes) {
             $payment = PaymentRecord::create([
                 'billing_group_id' => $group->id,

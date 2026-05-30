@@ -68,6 +68,17 @@ it('rejects payment on closed group', function () {
         ->assertJsonPath('error.code', 'GROUP_CLOSED');
 });
 
+it('rejects overpayment exceeding remaining balance', function () {
+    $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
+        'billingGroupId' => $this->group->id,
+        'amount' => '50.00',
+        'paymentLabel' => 'Cash',
+    ]);
+
+    $response->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR');
+});
+
 it('rejects zero or negative payment amount', function () {
     $response = $this->actingAs($this->cashier)->postJson('/api/v1/payments', [
         'billingGroupId' => $this->group->id,

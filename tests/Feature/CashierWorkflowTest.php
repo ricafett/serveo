@@ -95,7 +95,10 @@ it('renders billing group lookup for cashier', function () {
 });
 
 it('filters closed groups by default', function () {
-    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $balance = $this->group->balance();
+    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
+    expect($this->group->fresh()->is_closed)->toBeTrue();
 
     $response = $this->actingAs($this->cashier)->get('/lookup');
     $response->assertOk();
@@ -103,7 +106,10 @@ it('filters closed groups by default', function () {
 });
 
 it('shows closed groups when show closed is enabled', function () {
-    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $balance = $this->group->balance();
+    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
+    expect($this->group->fresh()->is_closed)->toBeTrue();
 
     $response = $this->actingAs($this->cashier)->get('/lookup?showClosed=1');
     $response->assertOk();
@@ -156,7 +162,10 @@ it('records partial payment from checkout', function () {
 });
 
 it('reopens closed group from checkout', function () {
-    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $balance = $this->group->balance();
+    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
+    expect($this->group->fresh()->is_closed)->toBeTrue();
 
     $this->actingAs($this->cashier);
 
@@ -266,7 +275,10 @@ it('prevents double-click on recordPayment in checkout', function () {
 });
 
 it('prevents double-click on reopenGroup in checkout', function () {
-    app(BillingGroupService::class)->close($this->group, $this->cashier);
+    $this->group->refresh();
+    $balance = $this->group->balance();
+    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
+    expect($this->group->fresh()->is_closed)->toBeTrue();
     $this->actingAs($this->cashier);
 
     Livewire::test(Checkout::class, ['id' => $this->group->id])

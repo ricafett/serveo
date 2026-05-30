@@ -218,6 +218,11 @@ it('creates audit event on partial payment', function () {
     Auth::login($this->cashier);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
+    // Add a charge so the group has a balance to pay against
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit($group, $this->server,
+        [['menu_item_id' => $item->id, 'quantity' => 1]]);
+    $group->refresh();
     $payment = app(BillingService::class)->recordPayment($group, $this->cashier, 10.00, 'Cash');
 
     $event = AuditEvent::where('event_type', 'PAYMENT_RECORDED')
@@ -232,6 +237,11 @@ it('creates audit event on payment void', function () {
     Auth::login($this->cashier);
 
     $group = app(BillingGroupService::class)->open($this->session, $this->server);
+    // Add a charge so the group has a balance to pay against
+    $item = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit($group, $this->server,
+        [['menu_item_id' => $item->id, 'quantity' => 1]]);
+    $group->refresh();
     $payment = app(BillingService::class)->recordPayment($group, $this->cashier, 10.00, 'Cash');
     app(BillingService::class)->voidPayment($payment, $this->cashier);
 

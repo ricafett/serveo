@@ -157,8 +157,18 @@ it('returns bill summary for a billing group', function () {
 });
 
 it('reopens a closed billing group', function () {
+    // Add charges so the group has a balance, then pay it exactly.
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]],
+        $this->zone
+    );
+    $this->group->refresh();
+    $balance = $this->group->balance();
+
     app(BillingService::class)->recordPayment(
-        $this->group, $this->cashier, 1000.00, 'Numerário'
+        $this->group, $this->cashier, $balance, 'Numerário'
     );
 
     $this->group->refresh();
@@ -175,8 +185,18 @@ it('reopens a closed billing group', function () {
 });
 
 it('rejects reopen with stale version', function () {
+    // Add charges so the group has a balance, then pay it exactly.
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    app(OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 2]],
+        $this->zone
+    );
+    $this->group->refresh();
+    $balance = $this->group->balance();
+
     app(BillingService::class)->recordPayment(
-        $this->group, $this->cashier, 1000.00, 'Numerário'
+        $this->group, $this->cashier, $balance, 'Numerário'
     );
 
     $this->group->refresh();

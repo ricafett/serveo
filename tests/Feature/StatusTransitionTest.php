@@ -53,10 +53,38 @@ it('rejects invalid transition from CLOSED to ACTIVE via setStatus', function ()
         ->toThrow(RuntimeException::class, 'Invalid status transition');
 });
 
-it('is no-op when reopening non-closed group', function () {
-    $before = $this->group->version_number;
-    app(BillingGroupService::class)->reopen($this->group->refresh(), $this->cashier);
+it('rejects close with non-zero balance', function () {
+    // Add an order to create a balance
+    $kitchenItem = \App\Models\MenuItem::where('display_name', 'Bacalhau')->first();
+    app(\App\Domain\Orders\OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+    $this->group->refresh();
+    expect($this->group->balance())->toBeGreaterThan(0);
 
-    expect($this->group->refresh()->status?->code)->toBe(BillingStatus::ACTIVE)
-        ->and($this->group->version_number)->toBe($before);
+    expect(fn () => app(BillingGroupService::class)->close($this->group, $this->cashier))
+        ->toThrow(RuntimeException::class, 'Cannot close billing group with outstanding balance.');
+});
+
+it('allows close with zero balance after full payment', function () {
+    // Add an order and pay it exactly
+    $kitchenItem = \App\Models\MenuItem::where('display_name', 'Bacalhau')->first();
+    app(\App\Domain\Orders\OrderService::class)->submit(
+        $this->group, $this->server,
+        [['menu_item_id' => $kitchenItem->id, 'quantity' => 1]],
+        $this->zone
+    );
+    $this->group->refresh();
+    $balance = $this->group->balance();
+
+    app(\App\Domain\Billing\BillingService::class)->recordPayment(
+        $this->group, $this->cashier, $balance, 'Cash'
+    );
+    $this->group->refresh();
+
+    expect($this->group->balance())->toBe(0.0);
+    expect($this->group->status?->code)->toBe(BillingStatus::CLOSED);
+    expect($this->group->is_closed)->toBeTrue();
 });

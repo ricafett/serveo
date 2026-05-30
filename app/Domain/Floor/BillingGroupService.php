@@ -96,6 +96,10 @@ class BillingGroupService
             throw new RuntimeException("Invalid status transition from {$previous} to {$statusCode}");
         }
 
+        if ($statusCode === BillingStatus::CLOSED && $group->balance() > 0) {
+            throw new RuntimeException('Cannot close billing group with outstanding balance.');
+        }
+
         $update = [
             'billing_status_id' => $status->id,
             'version_number' => $group->version_number + 1,
@@ -133,6 +137,14 @@ class BillingGroupService
 
         if ($expectedVersion !== null && $group->version_number !== $expectedVersion) {
             throw new RuntimeException('VERSION_CONFLICT');
+        }
+
+        if ($group->is_closed) {
+            return $group;
+        }
+
+        if ($group->balance() > 0) {
+            throw new RuntimeException('Cannot close billing group with outstanding balance.');
         }
 
         DB::transaction(function () use ($group) {
