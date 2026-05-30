@@ -39,7 +39,8 @@ test('dashboard renders for cashier with lookup tile', function () {
             ->waitForText('Dashboard', 5)
             ->assertPathIs('/home')
             ->assertSee('Billing Groups')
-            ->assertDontSee('Floor')
+            ->assertSee('Search and manage billing groups')
+            ->assertSee('Floor')
             ->assertDontSee('Admin Panel');
     });
 });

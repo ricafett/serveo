@@ -112,9 +112,9 @@ it('shows lookup tile for cashier', function () {
     $user->assignRole('CASHIER');
 
     $response = $this->actingAs($user)->get('/home');
+    $response->assertSee('Floor');
     $response->assertSee('Billing Groups');
     $response->assertSee('Search and manage billing groups');
-    $response->assertDontSee('Floor');
     $response->assertDontSee('Admin Panel');
 });
 

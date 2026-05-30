@@ -89,12 +89,13 @@ it('allows admin to access floor', function () {
     $response->assertOk();
 });
 
-it('denies cashier from floor', function () {
+it('allows cashier to access floor', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
 
     $response = $this->actingAs($user)->get('/floor');
-    $response->assertForbidden();
+    $response->assertOk();
+    $response->assertSee('Floor');
 });
 
 it('allows cashier to access lookup', function () {
