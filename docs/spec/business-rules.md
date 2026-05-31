@@ -218,6 +218,24 @@ Even though totals are group-level, zone-level associations must remain visible 
 ### BR-081 — Payment does not release zones
 Recording a payment, including a full payment that brings the balance to zero, shall not automatically release occupied zones. Zone release is a separate, explicit action that must be performed by an authorized user.
 
+### BR-082 — Sales are separate from billing groups
+Cashier voucher sales shall be stored in a dedicated sales domain and shall not reuse billing groups as the primary sales entity.
+
+### BR-083 — Sale creation requires payment completion
+A sale shall only be created when the cashier records a payment that covers the full sale total. MVP sales do not require an unpaid draft state.
+
+### BR-084 — Sales catalog restrictions
+Only menu items explicitly marked as voucher-enabled may appear in the cashier sales flow. Sales ignore modifiers and variants, and menu items with active variants or modifier sets are not valid sale items in MVP.
+
+### BR-085 — Voucher print grouping rule
+Sale voucher printing shall follow the configured document print rule for grouping identical quantities. When grouping is disabled, each unit prints as its own voucher document.
+
+### BR-086 — Sale printer destination
+Sale vouchers and optional sale receipts shall print only to the cashier's assigned printer.
+
+### BR-087 — Sales audit and export coverage
+Sales, sale payments, sale vouchers, sale receipts, and their print outcomes shall follow the same auditability and accounting-export visibility principles as billing-domain payment and document workflows.
+
 ## 6. Roles and permissions
 
 ### BR-056 — Interactive MVP roles
@@ -251,6 +269,8 @@ Important operational and billing events shall be written to an append-only audi
 
 ### BR-063 — Audit minimum coverage
 The audit log shall cover at least billing-group creation, zone assignment, status change, order creation, production-ticket creation, ticket reprint, void/correction, bill generation, bill reprint, payment record creation, reopen, and accounting export.
+
+The audit log shall also cover sale completion, sale payment recording, sale voucher queueing/printing, and sale receipt queueing/printing.
 
 ### BR-064 — Actor attribution
 Each audit event should include actor identity when the event was triggered by an authenticated user.

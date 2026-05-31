@@ -10,6 +10,7 @@ use App\Models\DocumentPrintConfig;
 use App\Models\PrintJob;
 use App\Models\PrinterRoute;
 use App\Models\ProductionTicket;
+use App\Models\SaleDocument;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -122,6 +123,7 @@ class DispatchPrintJob implements ShouldQueue
             $payload = match (true) {
                 $printable instanceof ProductionTicket => $renderer->renderProductionTicket($printable),
                 $printable instanceof BillingDocument => $renderer->renderBill($printable),
+                $printable instanceof SaleDocument => $renderer->renderSaleDocument($printable),
                 default => throw new \LogicException('Unsupported printable: '.$printable::class),
             };
         } catch (Throwable $e) {
@@ -166,6 +168,24 @@ class DispatchPrintJob implements ShouldQueue
                     [
                         'billing_group_id' => $printable->billing_group_id,
                         'billing_document_id' => $printable->id,
+                        'actor_user_id' => $job->requested_by_user_id,
+                    ],
+                );
+            } elseif ($printable instanceof SaleDocument) {
+                $printable->update(['document_status' => 'PRINTED', 'printed_at' => now()]);
+
+                $eventType = $printable->document_type === SaleDocument::TYPE_RECEIPT
+                    ? 'SALE_RECEIPT_PRINTED'
+                    : 'SALE_VOUCHER_PRINTED';
+
+                Audit::record(
+                    $eventType,
+                    "Sale document #{$printable->id} printed successfully",
+                    ['printer_id' => $printer->id, 'job_id' => $job->id],
+                    [
+                        'service_session_id' => $printable->sale?->service_session_id,
+                        'sale_id' => $printable->sale_id,
+                        'sale_document_id' => $printable->id,
                         'actor_user_id' => $job->requested_by_user_id,
                     ],
                 );
@@ -244,6 +264,22 @@ class DispatchPrintJob implements ShouldQueue
             return DocumentPrintConfig::firstOrCreate(
                 ['document_type' => PrinterRoute::DOC_BILL, 'fulfillment_route' => null],
                 ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false],
+            );
+        }
+
+        if ($printable instanceof SaleDocument) {
+            return DocumentPrintConfig::firstOrCreate(
+                [
+                    'document_type' => $printable->document_type === SaleDocument::TYPE_RECEIPT
+                        ? PrinterRoute::DOC_SALE_RECEIPT
+                        : PrinterRoute::DOC_SALE_VOUCHER,
+                    'fulfillment_route' => null,
+                ],
+                [
+                    'group_items' => $printable->document_type === SaleDocument::TYPE_RECEIPT,
+                    'ignore_variants' => true,
+                    'ignore_modifiers' => true,
+                ],
             );
         }
 

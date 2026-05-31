@@ -327,6 +327,39 @@ Related story: US-022.[cite:152]
 - When the action completes,
 - Then the event shall be written to the event log.
 
+### AC-022A — Complete a paid voucher sale from cashier workflow
+
+- Given an authenticated cashier opens the sales screen,
+- When the cashier selects only voucher-enabled menu items and records a payment that covers the full total,
+- Then the system shall create a sale, create the associated sale payment record, and queue voucher print documents.
+- Given a selected menu item has modifiers or active variants,
+- When that item is evaluated for the sales flow,
+- Then the system shall exclude it from the selectable sales catalog.
+- Given the sale completes,
+- When the workflow finishes,
+- Then the event log shall record sale completion, payment recording, and queued sale documents.
+
+### AC-022B — Voucher printing follows document print configuration
+
+- Given an admin configures sale voucher document printing,
+- When the cashier completes a voucher sale,
+- Then voucher output shall follow the configured grouping rule for identical quantities.
+- Given voucher grouping is disabled,
+- When a sale item quantity is greater than one,
+- Then each resulting voucher unit shall print as its own small document.
+- Given voucher grouping is enabled,
+- When a sale item quantity is greater than one,
+- Then the system shall print one voucher document for that sale item with the grouped quantity shown.
+
+### AC-022C — Optional sale receipt printing and export visibility
+
+- Given a cashier opts to print a sale receipt,
+- When the sale completes,
+- Then the system shall queue one sale receipt document to the cashier printer without affecting voucher document history.
+- Given an admin reviews sales or generates accounting exports,
+- When completed sales are listed or exported,
+- Then sales and sale payments shall remain visible as first-class operational records alongside billing-domain exports.
+
 ## EPIC-05 Admin configuration and control
 
 ### AC-023 — Define venue structure by section, row, seat, and seat pair

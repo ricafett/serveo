@@ -101,9 +101,11 @@ A billing feature is done only when:
 
 - A cashier can find the intended billing group reliably.
 - A cashier can print an internal bill without forcing closure.
+- A cashier can complete a paid voucher sale and print the resulting vouchers from the sales flow.
 - Partial payments can be recorded accurately.
 - Remaining balance is calculated correctly.
 - Bill reprints do not change commercial state.
+- Voucher-sale documents follow the configured grouping behavior and use the cashier printer.
 - Reopen after partial payment works only for authorized users and valid states.
 - Billing and payment events are audit-logged.
 
@@ -173,6 +175,7 @@ At minimum, automated tests should cover:
 - Void/correction generation.
 - Order-level and item-level cancellation authorization and reopen prerequisites.
 - Bill generation and bill reprint.
+- Voucher sale completion, voucher printing, optional receipt printing, and sales export visibility.
 - Partial payment and reopen.
 - Role-based authorization checks.
 - Printer queue behavior on failure.

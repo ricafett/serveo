@@ -31,6 +31,7 @@ class AccountingExportController extends ApiController
         $validated = $request->validate([
             'serviceSessionId' => ['nullable', 'exists:service_sessions,id'],
             'exportType' => ['required', 'string', 'in:SESSION_SUMMARY,FULL_LEDGER'],
+            'sourceDomain' => ['nullable', 'string', 'in:ALL,BILLING,SALES'],
             'fileFormat' => ['required', 'string', 'in:CSV'],
             'exportRangeStart' => ['nullable', 'date'],
             'exportRangeEnd' => ['nullable', 'date', 'after_or_equal:exportRangeStart'],
@@ -40,6 +41,7 @@ class AccountingExportController extends ApiController
             'venue_id' => Venue::first()?->id,
             'service_session_id' => $validated['serviceSessionId'] ?? null,
             'export_type' => $validated['exportType'],
+            'source_domain' => $validated['sourceDomain'] ?? 'ALL',
             'export_range_start' => $validated['exportRangeStart'] ?? null,
             'export_range_end' => $validated['exportRangeEnd'] ?? null,
             'file_format' => $validated['fileFormat'],
@@ -69,6 +71,7 @@ class AccountingExportController extends ApiController
             'accountingExportId' => $accountingExport->id,
             'exportType' => $accountingExport->export_type,
             'fileFormat' => $accountingExport->file_format,
+            'sourceDomain' => $accountingExport->source_domain,
             'exportStatus' => $accountingExport->export_status,
             'fileName' => $accountingExport->file_name,
             'requestedAt' => $accountingExport->requested_at?->toIso8601String(),

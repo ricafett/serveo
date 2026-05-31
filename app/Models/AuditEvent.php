@@ -13,6 +13,7 @@ class AuditEvent extends Model
         'service_session_id', 'event_type', 'event_time', 'actor_user_id',
         'billing_group_id', 'occupied_zone_id', 'order_header_id', 'order_item_id',
         'production_ticket_id', 'billing_document_id', 'payment_record_id',
+        'sale_id', 'sale_payment_id', 'sale_document_id',
         'accounting_export_id', 'entity_type', 'entity_id',
         'summary', 'payload_json', 'created_at',
     ];
@@ -31,5 +32,10 @@ class AuditEvent extends Model
     public function billingGroup(): BelongsTo
     {
         return $this->belongsTo(BillingGroup::class);
+    }
+
+    public function sale(): BelongsTo
+    {
+        return $this->belongsTo(Sale::class);
     }
 }

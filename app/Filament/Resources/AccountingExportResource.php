@@ -63,6 +63,14 @@ class AccountingExportResource extends BaseResource
                 ])
                 ->required()
                 ->default('SESSION_SUMMARY'),
+            Forms\Components\Select::make('source_domain')
+                ->options([
+                    'ALL' => __('app.export_source_all'),
+                    'BILLING' => __('app.export_source_billing'),
+                    'SALES' => __('app.export_source_sales'),
+                ])
+                ->required()
+                ->default('ALL'),
             Forms\Components\DateTimePicker::make('export_range_start')
                 ->label(__('app.range_start'))
                 ->nullable(),
@@ -82,6 +90,7 @@ class AccountingExportResource extends BaseResource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('export_type')->badge()->label(__('app.type')),
+                Tables\Columns\TextColumn::make('source_domain')->badge()->label(__('app.source_domain')),
                 Tables\Columns\TextColumn::make('export_range_start')->dateTime()->label(__('app.start')),
                 Tables\Columns\TextColumn::make('export_range_end')->dateTime()->label(__('app.end')),
                 Tables\Columns\TextColumn::make('file_format')->label(__('app.format')),

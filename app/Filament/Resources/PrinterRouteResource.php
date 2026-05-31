@@ -58,6 +58,8 @@ class PrinterRouteResource extends BaseResource
             Forms\Components\Select::make('document_type')->options([
                 'PRODUCTION_TICKET' => __('app.document_type_production_ticket'),
                 'BILL' => __('app.document_type_bill'),
+                'SALE_VOUCHER' => __('app.document_type_sale_voucher'),
+                'SALE_RECEIPT' => __('app.document_type_sale_receipt'),
             ])->required(),
             Forms\Components\Select::make('fulfillment_route')->options(
                 FulfillmentRoute::active()->ordered()->pluck('display_name', 'code')

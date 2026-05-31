@@ -46,6 +46,7 @@ Version 1 includes the following scope:
 - Zone-level discrimination within the same billing group.
 - Kitchen and bar paper ticket printing.
 - Customer bill printing.
+- Cashier voucher / senha sales with printed voucher documents.
 - Reprints.
 - Ticket void slips.
 - Internal billing and checkout support.
@@ -99,7 +100,7 @@ Printed tickets are a primary operational artifact because runners do not use th
 
 Version 1 requires a full event log rather than simple closed-bill history. The system must preserve detailed traceability of operational and billing activity across the service lifecycle.[cite:152]
 
-At a minimum, the event log should be able to capture billing-group creation, occupied-zone assignment, order creation, ticket printing, reprints, voids, reopen actions, partial payments, bill printing, and user-attributed actions taken during service.[cite:152]
+At a minimum, the event log should be able to capture billing-group creation, occupied-zone assignment, order creation, ticket printing, reprints, voids, reopen actions, partial payments, bill printing, voucher sale completion, sale payment recording, sale document printing, and user-attributed actions taken during service.[cite:152]
 
 ## Success criteria for version 1
 

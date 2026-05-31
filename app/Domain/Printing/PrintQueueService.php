@@ -6,6 +6,7 @@ use App\Jobs\DispatchPrintJob;
 use App\Models\BillingDocument;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
+use App\Models\SaleDocument;
 use App\Models\User;
 
 class PrintQueueService
@@ -24,7 +25,7 @@ class PrintQueueService
             'locale' => app()->getLocale(),
         ]);
 
-        DispatchPrintJob::dispatch($job->id)->onQueue('prints');
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
 
         return $job;
     }
@@ -43,7 +44,45 @@ class PrintQueueService
             'locale' => app()->getLocale(),
         ]);
 
-        DispatchPrintJob::dispatch($job->id)->onQueue('prints');
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    public function enqueueSaleVoucher(SaleDocument $document, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind' => PrintJob::KIND_SALE_VOUCHER,
+            'printable_type' => SaleDocument::class,
+            'printable_id' => $document->id,
+            'printer_id' => $document->printer_id,
+            'status' => PrintJob::STATUS_PENDING,
+            'attempts' => 0,
+            'max_attempts' => 3,
+            'requested_by_user_id' => $actor?->id,
+            'locale' => app()->getLocale(),
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    public function enqueueSaleReceipt(SaleDocument $document, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind' => PrintJob::KIND_SALE_RECEIPT,
+            'printable_type' => SaleDocument::class,
+            'printable_id' => $document->id,
+            'printer_id' => $document->printer_id,
+            'status' => PrintJob::STATUS_PENDING,
+            'attempts' => 0,
+            'max_attempts' => 3,
+            'requested_by_user_id' => $actor?->id,
+            'locale' => app()->getLocale(),
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
 
         return $job;
     }
@@ -64,7 +103,7 @@ class PrintQueueService
             'attempts' => 0,
             'next_attempt_at' => now(),
         ]);
-        DispatchPrintJob::dispatch($job->id)->onQueue('prints');
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
 
         return true;
     }

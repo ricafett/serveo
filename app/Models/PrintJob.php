@@ -24,6 +24,10 @@ class PrintJob extends Model
 
     public const KIND_BILL = 'BILL';
 
+    public const KIND_SALE_VOUCHER = 'SALE_VOUCHER';
+
+    public const KIND_SALE_RECEIPT = 'SALE_RECEIPT';
+
     public const STATUS_PENDING = 'PENDING';
 
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';

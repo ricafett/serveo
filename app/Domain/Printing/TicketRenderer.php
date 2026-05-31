@@ -6,6 +6,7 @@ use App\Models\BillingDocument;
 use App\Models\DocumentPrintConfig;
 use App\Models\OrderItem;
 use App\Models\ProductionTicket;
+use App\Models\SaleDocument;
 use Illuminate\Support\Carbon;
 
 /**
@@ -203,6 +204,63 @@ class TicketRenderer
 
         $lines[] = str_repeat('=', $this->width());
         $lines[] = $this->center(__('ticket.no_fiscal'));
+
+        return $this->wrap(implode("\n", $lines)."\n");
+    }
+
+    public function renderSaleDocument(SaleDocument $document): string
+    {
+        $document->loadMissing(['sale.items.menuItem', 'sale.payments', 'sale.soldBy', 'saleItem.menuItem']);
+
+        $lines = [];
+
+        if ($document->document_type === SaleDocument::TYPE_RECEIPT) {
+            $lines[] = $this->center(__('ticket.sale_receipt'));
+            if ($document->is_reprint) {
+                $lines[] = $this->center('** '.__('ticket.reprint').' **');
+            }
+            $lines[] = str_repeat('=', $this->width());
+            $lines[] = __('ticket.sale').': '.($document->sale?->display_code ?? '-');
+            $lines[] = __('ticket.document').': '.($document->document_number ?: '#'.$document->id);
+            $lines[] = __('ticket.time').':      '.$this->localTime($document->requested_at);
+            if ($document->sale?->soldBy) {
+                $lines[] = __('ticket.server').': '.$document->sale->soldBy->name;
+            }
+            $lines[] = str_repeat('-', $this->width());
+
+            foreach ($document->sale?->items ?? [] as $item) {
+                $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($item->display_name_snapshot, 0, 28));
+                $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
+                $lines[] = $this->row($left, $right);
+            }
+
+            $lines[] = str_repeat('-', $this->width());
+            $lines[] = $this->row(__('ticket.total'), number_format((float) $document->sale?->total_amount, 2, ',', ' ').' '.__('ticket.currency'));
+            $paid = (float) ($document->sale?->payments->where('is_voided', false)->sum('amount') ?? 0);
+            $lines[] = $this->row(__('ticket.paid'), number_format($paid, 2, ',', ' ').' '.__('ticket.currency'));
+            $lines[] = str_repeat('=', $this->width());
+            $lines[] = $this->center(__('ticket.no_fiscal'));
+
+            return $this->wrap(implode("\n", $lines)."\n");
+        }
+
+        $lines[] = $this->center(__('ticket.voucher'));
+        if ($document->is_reprint) {
+            $lines[] = $this->center('** '.__('ticket.reprint').' **');
+        }
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = __('ticket.sale').': '.($document->sale?->display_code ?? '-');
+        $lines[] = __('ticket.document').': '.($document->document_number ?: '#'.$document->id);
+        $lines[] = __('ticket.time').':  '.$this->localTime($document->requested_at);
+        if ($document->sale?->soldBy) {
+            $lines[] = __('ticket.server').': '.$document->sale->soldBy->name;
+        }
+        $lines[] = str_repeat('-', $this->width());
+        $itemName = $document->saleItem?->display_name_snapshot ?? __('ticket.unknown_item', ['id' => $document->sale_item_id]);
+        $quantity = max(1, (int) $document->quantity);
+        $left = sprintf('%2dx %s', $quantity, mb_strimwidth($itemName, 0, 28));
+        $lines[] = mb_strimwidth($left, 0, $this->width());
+        $lines[] = str_repeat('=', $this->width());
 
         return $this->wrap(implode("\n", $lines)."\n");
     }

@@ -10,6 +10,8 @@ use App\Models\FulfillmentRoute;
 use App\Models\OrderHeader;
 use App\Models\PaymentRecord;
 use App\Models\Printer;
+use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Observers\FulfillmentRouteObserver;
 use App\Policies\AuditEventPolicy;
 use App\Policies\BillingDocumentPolicy;
@@ -17,6 +19,8 @@ use App\Policies\BillingGroupPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentRecordPolicy;
 use App\Policies\PrinterPolicy;
+use App\Policies\SalePaymentPolicy;
+use App\Policies\SalePolicy;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +52,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(OrderHeader::class, OrderPolicy::class);
         Gate::policy(PaymentRecord::class, PaymentRecordPolicy::class);
         Gate::policy(Printer::class, PrinterPolicy::class);
+        Gate::policy(Sale::class, SalePolicy::class);
+        Gate::policy(SalePayment::class, SalePaymentPolicy::class);
 
         FulfillmentRoute::observe(FulfillmentRouteObserver::class);
 

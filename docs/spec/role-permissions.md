@@ -77,6 +77,7 @@ Main responsibilities:
 - Look up open billing groups.
 - Review group totals and occupied zones.
 - Print internal customer bills.
+- Create paid voucher sales and print voucher documents.
 - Reprint bills.
 - Record partial payments.
 - Browse the full menu catalog.
@@ -90,6 +91,7 @@ Restrictions:
 - No printer route changes.
 - No printer test prints.
 - No accounting export by default.
+- No sale configuration beyond operational voucher selling.
 
 ### ADMIN
 
@@ -167,6 +169,9 @@ Legend:
 | Trigger production print via order submit | Allow | Deny | Allow | Deny | Deny |
 | View production ticket history | Conditional | Conditional | Allow | Deny | Deny |
 | Print internal bill | Deny | Allow | Allow | Deny | Deny |
+| Create paid voucher sale | Deny | Allow | Allow | Deny | Deny |
+| Print sale vouchers | Deny | Allow | Allow | Deny | Deny |
+| Print sale receipt | Deny | Allow | Allow | Deny | Deny |
 | Reprint bill | Deny | Allow | Allow | Deny | Deny |
 | Record partial payment | Deny | Allow | Allow | Deny | Deny |
 | Reopen billing group | Conditional | Conditional | Allow | Deny | Deny |

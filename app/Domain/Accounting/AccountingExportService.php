@@ -4,13 +4,14 @@ namespace App\Domain\Accounting;
 
 use App\Models\AccountingExport;
 use App\Models\BillingGroup;
+use App\Models\Sale;
 use Illuminate\Support\Facades\Storage;
 
 class AccountingExportService
 {
     public function generate(AccountingExport $export): string
     {
-        $query = BillingGroup::query()
+        $groupQuery = BillingGroup::query()
             ->with([
                 'status',
                 'occupiedZones.row.section',
@@ -18,19 +19,29 @@ class AccountingExportService
                 'orderHeaders.items' => fn ($q) => $q->whereNull('voided_at'),
             ]);
 
+        $salesQuery = Sale::query()
+            ->with([
+                'payments',
+                'items',
+            ]);
+
         if ($export->service_session_id) {
-            $query->where('service_session_id', $export->service_session_id);
+            $groupQuery->where('service_session_id', $export->service_session_id);
+            $salesQuery->where('service_session_id', $export->service_session_id);
         }
 
         if ($export->export_range_start) {
-            $query->where('opened_at', '>=', $export->export_range_start);
+            $groupQuery->where('opened_at', '>=', $export->export_range_start);
+            $salesQuery->where('sold_at', '>=', $export->export_range_start);
         }
 
         if ($export->export_range_end) {
-            $query->where('opened_at', '<=', $export->export_range_end);
+            $groupQuery->where('opened_at', '<=', $export->export_range_end);
+            $salesQuery->where('sold_at', '<=', $export->export_range_end);
         }
 
-        $groups = $query->get();
+        $groups = $export->source_domain === 'SALES' ? collect() : $groupQuery->get();
+        $sales = $export->source_domain === 'BILLING' ? collect() : $salesQuery->get();
 
         $handle = fopen('php://temp', 'r+');
 
@@ -44,6 +55,7 @@ class AccountingExportService
             'remaining_balance',
             'occupied_zones',
             'payment_records',
+            'source_domain',
         ]);
 
         foreach ($groups as $group) {
@@ -69,6 +81,29 @@ class AccountingExportService
                 number_format($balance, 2, '.', ''),
                 $zones,
                 $paymentsStr,
+                'BILLING',
+            ]);
+        }
+
+        foreach ($sales as $sale) {
+            $charges = (float) $sale->items->sum('line_subtotal');
+            $payments = (float) $sale->payments->where('is_voided', false)->sum('amount');
+            $balance = round($charges - $payments, 2);
+            $paymentsStr = $sale->payments->where('is_voided', false)->map(function ($payment) {
+                return number_format($payment->amount, 2).' '.$payment->payment_label.' '.$payment->recorded_at->timezone(config('app.timezone'))->format('Y-m-d H:i:s');
+            })->implode('; ');
+
+            fputcsv($handle, [
+                $sale->display_code,
+                'SALE',
+                $sale->sold_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? '',
+                $sale->sold_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? '',
+                number_format($charges, 2, '.', ''),
+                number_format($payments, 2, '.', ''),
+                number_format($balance, 2, '.', ''),
+                '',
+                $paymentsStr,
+                'SALES',
             ]);
         }
 

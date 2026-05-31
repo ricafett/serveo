@@ -57,6 +57,7 @@ class AuditEventResource extends BaseResource
                 Tables\Columns\TextColumn::make('event_type')->badge()->searchable(),
                 Tables\Columns\TextColumn::make('actor.name')->label(__('app.user')),
                 Tables\Columns\TextColumn::make('billing_group_id')->label(__('billing.group_title')),
+                Tables\Columns\TextColumn::make('sale_id')->label(__('app.model_label_sale')),
                 Tables\Columns\TextColumn::make('summary')->wrap()->searchable(),
             ])
             ->defaultSort('event_time', 'desc')

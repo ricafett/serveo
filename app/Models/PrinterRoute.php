@@ -17,6 +17,10 @@ class PrinterRoute extends Model
 
     public const DOC_BILL = 'BILL';
 
+    public const DOC_SALE_VOUCHER = 'SALE_VOUCHER';
+
+    public const DOC_SALE_RECEIPT = 'SALE_RECEIPT';
+
     public function printer(): BelongsTo
     {
         return $this->belongsTo(Printer::class);

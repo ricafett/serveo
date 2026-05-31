@@ -10,12 +10,13 @@ class MenuItem extends Model
 {
     protected $fillable = [
         'menu_category_id', 'sku', 'code', 'display_name', 'short_name',
-        'unit_price', 'tax_code', 'is_active', 'modifier_set_id',
+        'unit_price', 'tax_code', 'is_active', 'is_voucher_enabled', 'modifier_set_id',
     ];
 
     protected $casts = [
         'unit_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_voucher_enabled' => 'boolean',
     ];
 
     public function category(): BelongsTo

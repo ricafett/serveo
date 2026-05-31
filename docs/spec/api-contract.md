@@ -83,6 +83,7 @@ Error example:
 - `/production-tickets`
 - `/billing-documents`
 - `/payments`
+- `/sales`
 - `/event-log`
 
 ### Admin/configuration resources
@@ -623,6 +624,31 @@ Recommended fields:
 - `printedAt`
 - `isReprint`
 
+### Sale DTO
+Recommended fields:
+- `saleId`
+- `displayCode`
+- `serviceSessionId`
+- `soldBy`
+- `totalAmount`
+- `paymentLabel`
+- `soldAt`
+- `items[]`
+- `payments[]`
+- `documents[]`
+
+### SaleDocument DTO
+Recommended fields:
+- `saleDocumentId`
+- `saleId`
+- `saleItemId`
+- `documentType`
+- `documentStatus`
+- `documentNumber`
+- `quantity`
+- `printedAt`
+- `isReprint`
+
 ## Permission matrix at API level
 
 ### Server
@@ -647,6 +673,8 @@ Allowed:
 - view billing-group detail
 - void/correct eligible submitted orders and items
 - generate internal bills
+- create paid voucher sales
+- print sale vouchers and optional sale receipts
 - reprint bills
 - record partial payment
 - reopen billing groups if permitted

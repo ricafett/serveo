@@ -78,6 +78,8 @@ class DocumentPrintConfigResource extends BaseResource
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'PRODUCTION_TICKET' => __('app.document_type_production_ticket'),
                         'BILL' => __('app.document_type_bill'),
+                        'SALE_VOUCHER' => __('app.document_type_sale_voucher'),
+                        'SALE_RECEIPT' => __('app.document_type_sale_receipt'),
                         default => $state,
                     }),
                 Tables\Columns\TextColumn::make('fulfillment_route')

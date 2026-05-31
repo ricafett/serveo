@@ -6,9 +6,11 @@ use App\Models\ServiceSession;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
@@ -32,6 +34,10 @@ abstract class DuskTestCase extends BaseTestCase
         'payment_records',
         'print_jobs',
         'production_tickets',
+        'sale_documents',
+        'sale_items',
+        'sale_payments',
+        'sales',
         'service_sessions',
         'model_has_permissions',
         'model_has_roles',
@@ -57,6 +63,12 @@ abstract class DuskTestCase extends BaseTestCase
         config(['database.connections.sqlite.database' => database_path('dusk.sqlite')]);
         DB::purge('sqlite');
         DB::reconnect('sqlite');
+
+        if (! Schema::hasTable('sale_documents')) {
+            Artisan::call('migrate', ['--force' => true]);
+            DB::purge('sqlite');
+            DB::reconnect('sqlite');
+        }
 
         // Truncate operational tables so each test starts clean,
         // while keeping reference data (roles, permissions, venue, menu, printers).

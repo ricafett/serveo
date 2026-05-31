@@ -75,6 +75,8 @@ class PrintJobResource extends BaseResource
                 Tables\Filters\SelectFilter::make('job_kind')->options([
                     'PRODUCTION_TICKET' => __('app.job_kind_production_ticket'),
                     'BILL' => __('app.job_kind_bill'),
+                    'SALE_VOUCHER' => __('app.job_kind_sale_voucher'),
+                    'SALE_RECEIPT' => __('app.job_kind_sale_receipt'),
                 ]),
             ])
             ->actions([

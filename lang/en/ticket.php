@@ -23,4 +23,7 @@ return [
     'notes' => 'Notes',
     'currency' => '€',
     'unknown_item' => 'Item #:id',
+    'sale' => 'Sale',
+    'voucher' => 'VOUCHER',
+    'sale_receipt' => 'SALE RECEIPT',
 ];

@@ -18,3 +18,61 @@
     --color-primary-900: #312e81;
     --color-primary-950: #1e1b4b;
 }
+
+/* ── Livewire navigate loading bar ── enhanced visibility ── */
+
+/* Color: use the brand primary palette. Livewire's NProgress reads this variable. */
+:root {
+    --livewire-progress-bar-color: var(--color-primary-500);
+}
+:is(.dark) {
+    --livewire-progress-bar-color: var(--color-primary-400);
+}
+
+/* Bar: 4 px tall with a shimmering gradient instead of the default 2 px flat line.
+   `html` prefix bumps specificity above Livewire's injected `<style>`. */
+html #nprogress .bar {
+    height: 4px;
+    background: linear-gradient(
+        90deg,
+        var(--color-primary-400) 0%,
+        var(--color-primary-600) 50%,
+        var(--color-primary-400) 100%
+    );
+    background-size: 200% 100%;
+    animation: nprogress-shimmer 1.5s linear infinite;
+}
+
+@keyframes nprogress-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Dark-mode: use slightly lighter stops for contrast against dark backgrounds. */
+html:is(.dark) #nprogress .bar {
+    background: linear-gradient(
+        90deg,
+        var(--color-primary-300) 0%,
+        var(--color-primary-500) 50%,
+        var(--color-primary-300) 100%
+    );
+    background-size: 200% 100%;
+    animation: nprogress-shimmer 1.5s linear infinite;
+}
+
+/* Peg glow: wider, more pronounced highlight trailing the bar head. */
+html #nprogress .peg {
+    box-shadow:
+        0 0 15px var(--color-primary-500),
+        0 0 8px var(--color-primary-400);
+}
+html:is(.dark) #nprogress .peg {
+    box-shadow:
+        0 0 20px var(--color-primary-400),
+        0 0 10px var(--color-primary-300);
+}
+
+/* Spinner: hidden on operational screens — cleaner UX for service-floor devices. */
+#nprogress .spinner {
+    display: none !important;
+}

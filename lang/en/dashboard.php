@@ -6,6 +6,8 @@ return [
     'floor_description' => 'View occupancy and manage seating',
     'lookup_tile' => 'Billing Groups',
     'lookup_description' => 'Search and manage billing groups',
+    'sales_tile' => 'Sales',
+    'sales_description' => 'Create paid voucher sales and print documents',
     'reprint_tile' => 'Reprint',
     'reprint_description' => 'Reprint bills and documents',
     'admin_panel_tile' => 'Admin Panel',

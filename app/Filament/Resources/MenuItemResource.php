@@ -60,6 +60,10 @@ class MenuItemResource extends BaseResource
             Forms\Components\TextInput::make('unit_price')->numeric()->step('0.01')->required()->default(0),
             Forms\Components\TextInput::make('tax_code')->maxLength(16),
             Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Toggle::make('is_voucher_enabled')
+                ->label(__('app.is_voucher_enabled'))
+                ->helperText(__('app.is_voucher_enabled_help'))
+                ->default(false),
             Forms\Components\Select::make('modifier_set_id')
                 ->label(__('app.modifier_set'))
                 ->options(ModifierSet::query()->where('is_active', true)->pluck('display_name', 'id'))
@@ -87,6 +91,7 @@ class MenuItemResource extends BaseResource
                 Tables\Columns\TextColumn::make('display_name')->searchable(),
                 Tables\Columns\TextColumn::make('unit_price')->money('EUR')->sortable(),
                 Tables\Columns\TextColumn::make('category.route_type')->label(__('app.route'))->badge(),
+                Tables\Columns\IconColumn::make('is_voucher_enabled')->label(__('app.is_voucher_enabled'))->boolean(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->filters([

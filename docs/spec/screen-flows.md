@@ -26,7 +26,7 @@ Recommended top-level navigation by role:
 | Role | Primary screens |
 |---|---|
 | Server | Floor, Billing Group Detail, Order Entry, Bill Preview/Request, Menu, Reopen if permitted |
-| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Reprint, Menu, Reopen |
+| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Sales, Reprint, Menu, Reopen |
 | Admin | Venue Setup, Printer Setup, User/Roles, Status Setup, Event Log, Export |
 
 On small screens, the app should behave like a task-first PWA, with the current screen optimized for one main job at a time. On larger screens, related panels may be shown side by side, but the flow logic should remain the same.[cite:152]
@@ -42,15 +42,16 @@ The MVP screen set should contain at least these screens:
 5. Order Entry screen or drawer.
 6. Billing Group Lookup screen.
 7. Checkout screen.
-8. Reprint / document actions panel.
-9. Menu catalog screen.
-10. Venue Setup screen.
-11. Printer Setup screen.
-12. User and Role Management screen.
-13. Billing Status Configuration screen.
-14. Event Log screen.
-15. Accounting Export screen.
-16. Settings / language switch area.[cite:152]
+8. Sales / Vendas screen.
+9. Reprint / document actions panel.
+10. Menu catalog screen.
+11. Venue Setup screen.
+12. Printer Setup screen.
+13. User and Role Management screen.
+14. Billing Status Configuration screen.
+15. Event Log screen.
+16. Accounting Export screen.
+17. Settings / language switch area.[cite:152]
 
 ## Screen definitions
 
@@ -249,6 +250,32 @@ The MVP screen set should contain at least these screens:
 
 **Flow rules:**
 - Reprints and void outputs must be clearly marked and logged.[cite:152]
+
+### 8. Sales / Vendas screen
+
+**Users:** cashier, admin.[cite:152]
+
+**Purpose:** complete counter voucher sales that are paid before vouchers print.
+
+**Key content:**
+- Voucher-enabled menu items only.
+- Sale cart.
+- Payment amount and payment method.
+- Optional sale receipt toggle.
+- Mobile-first split between menu browsing and sale cart/payment.
+
+**Key actions:**
+- Add voucher-enabled items.
+- Adjust quantities.
+- Record payment that covers the full total.
+- Print vouchers.
+- Optionally print a sale receipt.
+
+**Flow rules:**
+- The flow must exclude modifiers and variants.
+- Sales are created only after payment succeeds.
+- Voucher printing follows configured quantity grouping rules.
+- Sale vouchers and receipts use the cashier's assigned printer and must be audit-logged.
 
 ### 9. Menu catalog screen
 

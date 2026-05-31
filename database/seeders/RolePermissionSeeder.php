@@ -33,6 +33,12 @@ class RolePermissionSeeder extends Seeder
             // Payments
             'payment.record',
             'payment.void',
+            // Sales
+            'sale.create',
+            'sale.view',
+            'sale.print',
+            'sale.receipt',
+            'sale_payment.record',
             // Print jobs
             'print_job.view',
             'print_job.retry',
@@ -103,6 +109,11 @@ class RolePermissionSeeder extends Seeder
             'floor.release_zone',
             'payment.record',
             'payment.void',
+            'sale.create',
+            'sale.view',
+            'sale.print',
+            'sale.receipt',
+            'sale_payment.record',
             'print_job.view',
             'print_job.retry',
             'audit.view',

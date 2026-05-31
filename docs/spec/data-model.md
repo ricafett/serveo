@@ -231,8 +231,13 @@ RouteType examples:
 - UnitPrice
 - TaxCode nullable
 - IsActive
+- IsVoucherEnabled
 - CreatedAt
 - UpdatedAt
+
+Business notes:
+- `IsVoucherEnabled` controls whether the item may appear in the cashier sales workflow.
+- Sales ignore modifiers and variants in MVP, so items with active variants or modifier sets are excluded from sale selection.
 
 ### OrderHeader
 - OrderHeaderId (PK)
@@ -315,13 +320,15 @@ Recommended uniqueness:
 DocumentType examples:
 - PRODUCTION_TICKET
 - BILL
+- SALE_VOUCHER
+- SALE_RECEIPT
 
 ### DocumentPrintConfig
 Per-document-sub-type rendering configuration. Admin-managed via Filament. Configs for production tickets are auto-created when a FulfillmentRoute is created. The BILL config is lazily created on first bill print.
 
 - DocumentPrintConfigId (PK)
-- DocumentType (string) — PRODUCTION_TICKET or BILL
-- FulfillmentRoute nullable (string) — matches FulfillmentRoute.code; null for BILL
+- DocumentType (string) — PRODUCTION_TICKET, BILL, SALE_VOUCHER, or SALE_RECEIPT
+- FulfillmentRoute nullable (string) — matches FulfillmentRoute.code; null for BILL and sale documents
 - GroupItems (boolean, default true) — group identical items with quantity vs. repeat each unit
 - IgnoreVariants (boolean, default false) — strip variant text from printed item names
 - IgnoreModifiers (boolean, default false) — strip modifier text from printed item names
@@ -406,6 +413,79 @@ Business notes:
 - This is an internal operational record only.
 - External payment terminal processing is out of scope.
 
+### Sale
+- SaleId (PK)
+- ServiceSessionId (FK -> ServiceSession)
+- DisplayCode
+- SoldByUserId (FK -> AppUser)
+- SubtotalAmount
+- TotalAmount
+- PaymentLabel
+- SoldAt
+- CreatedAt
+- UpdatedAt
+
+Purpose:
+- Dedicated cashier-owned entity for paid voucher sales that remain separate from billing groups.
+
+### SaleItem
+- SaleItemId (PK)
+- SaleId (FK -> Sale)
+- MenuItemId (FK -> MenuItem)
+- DisplayNameSnapshot
+- UnitPrice
+- Quantity
+- LineSubtotal
+- CreatedAt
+- UpdatedAt
+
+Business notes:
+- Sale items snapshot the menu item name and price at time of sale.
+- Variants and modifiers are not part of sale item history in MVP.
+
+### SalePayment
+- SalePaymentId (PK)
+- SaleId (FK -> Sale)
+- RecordedByUserId (FK -> AppUser)
+- RecordedAt
+- Amount
+- PaymentLabel
+- Notes nullable
+- IsVoided
+- VoidedAt nullable
+- VoidedByUserId nullable (FK -> AppUser)
+- CreatedAt
+- UpdatedAt
+
+Business notes:
+- MVP sale creation requires a payment that covers the full total.
+- Sale payments are first-class operational records for audit and export.
+
+### SaleDocument
+- SaleDocumentId (PK)
+- SaleId (FK -> Sale)
+- SaleItemId nullable (FK -> SaleItem)
+- PrinterId nullable (FK -> Printer)
+- DocumentType
+- DocumentStatus
+- DocumentNumber nullable
+- Quantity
+- PrintedAt nullable
+- RequestedAt
+- ReprintOfSaleDocumentId nullable (FK -> SaleDocument)
+- IsReprint
+- CreatedByUserId (FK -> AppUser)
+- CreatedAt
+- UpdatedAt
+
+DocumentType examples:
+- SALE_VOUCHER
+- SALE_RECEIPT
+
+Business notes:
+- Voucher documents may be grouped by quantity or split per unit according to `DocumentPrintConfig`.
+- Receipt documents summarize the sale after payment and use the cashier printer.
+
 ## Export and audit entities
 
 ### AccountingExport
@@ -413,6 +493,7 @@ Business notes:
 - VenueId (FK -> Venue)
 - ServiceSessionId nullable (FK -> ServiceSession)
 - ExportType
+- SourceDomain
 - ExportRangeStart nullable
 - ExportRangeEnd nullable
 - FileName nullable
@@ -437,6 +518,9 @@ Business notes:
 - ProductionTicketId nullable (FK -> ProductionTicket)
 - BillingDocumentId nullable (FK -> BillingDocument)
 - PaymentRecordId nullable (FK -> PaymentRecord)
+- SaleId nullable (FK -> Sale)
+- SalePaymentId nullable (FK -> SalePayment)
+- SaleDocumentId nullable (FK -> SaleDocument)
 - AccountingExportId nullable (FK -> AccountingExport)
 - EntityType nullable
 - EntityId nullable

@@ -32,6 +32,7 @@ function bootScenario(): ServiceSession
         'production_ticket.view', 'production_ticket.reprint',
         'billing_document.create', 'billing_document.reprint',
         'payment.record', 'payment.void',
+        'sale.create', 'sale.view', 'sale.print', 'sale.receipt', 'sale_payment.record',
         'print_job.view', 'print_job.retry',
         'printer.configure', 'printer.test', 'printer.route_change',
         'venue.configure', 'menu.manage', 'status.configure',
@@ -60,6 +61,7 @@ function bootScenario(): ServiceSession
         'order.create', 'order.void_item',
         'billing_document.create', 'billing_document.reprint',
         'payment.record', 'payment.void',
+        'sale.create', 'sale.view', 'sale.print', 'sale.receipt', 'sale_payment.record',
         'print_job.view', 'print_job.retry',
         'audit.view',
     ]);

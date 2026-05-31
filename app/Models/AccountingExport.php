@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AccountingExport extends Model
 {
     protected $fillable = [
-        'venue_id', 'service_session_id', 'export_type',
+        'venue_id', 'service_session_id', 'export_type', 'source_domain',
         'export_range_start', 'export_range_end',
         'file_name', 'file_format', 'export_status',
         'requested_by_user_id', 'requested_at', 'completed_at',

@@ -93,6 +93,7 @@ Implemented subfolders:
 - `Floor/` — billing group and occupancy management (`BillingGroupService.php`, `OccupancyService.php`, `ZoneOverlapException.php`)
 - `Orders/` — order creation, validation, and voiding (`OrderService.php`)
 - `Printing/` — print pipeline and adapter subsystem (see Printing architecture section)
+- `Sales/` — cashier voucher sale completion and sale-document orchestration (`VoucherSaleService.php`)
 
 Domains that do not yet have their own subfolder (Auth, Users, RolesPermissions, Menu, ServiceSessions, VenueLayout, Payments, AccountingExport, EventLog, Localization) are currently handled through Filament resources and flat Models. When adding new domain logic, create a new subfolder under `app/Domain/` following the existing pattern.
 
@@ -119,6 +120,10 @@ Current models:
 - `PrinterRoute`
 - `ProductionTicket`
 - `Row`
+- `Sale`
+- `SaleDocument`
+- `SaleItem`
+- `SalePayment`
 - `Seat`
 - `SeatPair`
 - `Section`
@@ -135,6 +140,7 @@ Filament is used for the admin panel and currently exposes the following resourc
 - `BillingStatusResource` — billing status configuration
 - `MenuCategoryResource` — menu category management
 - `MenuItemResource` — menu item management with printer route assignment
+- `SaleResource` — sales visibility and detail review
 - `PrintJobResource` — print job visibility and retry actions
 - `PrinterResource` — printer configuration
 - `PrinterRouteResource` — printer route configuration
@@ -153,7 +159,7 @@ Server-driven UI with Livewire for most interactive workflows.
 
 Recommended split:
 
-- **Livewire:** floor operations, billing-group detail, order entry, cashier workflows, printer status, basic event views.
+- **Livewire:** floor operations, billing-group detail, order entry, cashier workflows, cashier voucher sales, printer status, basic event views.
 - **Filament:** admin setup, printers, routes, statuses, users, service sessions, exports, and internal management screens.
 - **Blade/Tailwind:** layout shell, navigation, document preview wrappers, and shared visual components.
 
@@ -209,7 +215,7 @@ app/Domain/Printing/
 
 ### Print flow
 
-1. User action creates a business record (order, bill request, void, correction, or reprint).
+1. User action creates a business record (order, bill request, sale voucher/receipt request, void, correction, or reprint).
 2. The application calls `PrintQueueService` to create a persistent `PrintJob` record.
 3. `PrintQueueService` dispatches `DispatchPrintJob` to the queue.
 4. The queue worker runs `DispatchPrintJob`.
@@ -223,7 +229,7 @@ app/Domain/Printing/
 
 All print dispatch is handled through one unified job: `app/Jobs/DispatchPrintJob.php`.
 
-This single job handles all print job types: production tickets, bills, void slips, and reprints. The job type and payload are carried on the `PrintJob` record.
+This single job handles all print job types: production tickets, bills, sale vouchers, sale receipts, void slips, and reprints. The job type and payload are carried on the `PrintJob` record.
 
 ### Printer adapters
 
@@ -246,6 +252,7 @@ When referring to adapter class names in code or docs, use:
 - Jobs must not disappear silently on printer failure.
 - Void slips go to the same destination as the original production ticket.
 - Customer bills print only to the cashier's assigned printer (`CashierPrinterAssignment`).
+- Sale vouchers and optional sale receipts also print only to the cashier's assigned printer in MVP.
 
 ## Queue and background job design
 
