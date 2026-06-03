@@ -2,6 +2,10 @@
 
 return [
     'void' => 'VOID',
+    'void_slip' => 'VOID SLIP',
+    'void_partial' => 'PARTIAL VOID',
+    'void_full' => 'FULL VOID',
+    'void_reason' => 'Reason',
     'reprint' => 'REPRINT',
     'group' => 'Group',
     'zone' => 'Zone',

@@ -54,6 +54,7 @@ return [
     'void_item' => 'Void Item',
     'void_order' => 'Void Order',
     'void_reason' => 'Void Reason',
+    'void_reason_optional' => 'Void Reason (optional)',
     'void_print_warning' => 'A void slip will be printed to the original destination.',
     'void_order_warning' => 'This voids all remaining eligible items in the order and prints the required void slips.',
     'confirm_void_item' => 'Confirm Void Item',
@@ -61,4 +62,7 @@ return [
     'void_unauthorized' => 'Unauthorized to void this order.',
     'item_voided' => 'Item voided.',
     'order_voided' => 'Order voided.',
+    'status_submitted' => 'Submitted',
+    'status_partially_voided' => 'Partially Voided',
+    'status_voided' => 'Voided',
 ];

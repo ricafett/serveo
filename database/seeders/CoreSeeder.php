@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 7;
+    private const SEED_VERSION = 8;
 
     public function run(): void
     {
@@ -583,6 +583,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'billing', 'void_unauthorized', 'Não autorizado a anular este pedido.'],
             ['pt-PT', 'billing', 'item_voided', 'Item anulado.'],
             ['pt-PT', 'billing', 'order_voided', 'Pedido anulado.'],
+            ['pt-PT', 'billing', 'void_reason_optional', 'Motivo da anulação (opcional)'],
+            ['pt-PT', 'billing', 'status_submitted', 'Submetido'],
+            ['pt-PT', 'billing', 'status_partially_voided', 'Parcialmente Anulado'],
+            ['pt-PT', 'billing', 'status_voided', 'Anulado'],
 
             ['en-US', 'billing', 'group_title', 'Group'],
             ['en-US', 'billing', 'name', 'Name'],
@@ -644,6 +648,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'billing', 'void_unauthorized', 'Unauthorized to void this order.'],
             ['en-US', 'billing', 'item_voided', 'Item voided.'],
             ['en-US', 'billing', 'order_voided', 'Order voided.'],
+            ['en-US', 'billing', 'void_reason_optional', 'Void Reason (optional)'],
+            ['en-US', 'billing', 'status_submitted', 'Submitted'],
+            ['en-US', 'billing', 'status_partially_voided', 'Partially Voided'],
+            ['en-US', 'billing', 'status_voided', 'Voided'],
 
             // ---------- cashier ----------
             ['pt-PT', 'cashier', 'title', 'Contas'],
@@ -777,12 +785,16 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'ticket', 'currency', '€'],
             ['pt-PT', 'ticket', 'name', 'Nome'],
             ['pt-PT', 'ticket', 'zones', 'Zonas'],
-            ['pt-PT', 'ticket', 'server', 'Servidor'],
-            ['pt-PT', 'ticket', 'assigned', 'Atribuídos'],
+            ['pt-PT', 'ticket', 'server', 'Pedido por'],
+            ['pt-PT', 'ticket', 'assigned', 'Responsável'],
             ['pt-PT', 'ticket', 'order_num', 'Pedido'],
             ['pt-PT', 'ticket', 'notes', 'Notas'],
             ['pt-PT', 'ticket', 'unknown_item', 'Item #:id'],
             ['pt-PT', 'ticket', 'delivery_arrow', '   -> :label'],
+            ['pt-PT', 'ticket', 'void_slip', 'ANULAÇÃO'],
+            ['pt-PT', 'ticket', 'void_partial', 'ANULAÇÃO PARCIAL'],
+            ['pt-PT', 'ticket', 'void_full', 'ANULAÇÃO TOTAL'],
+            ['pt-PT', 'ticket', 'void_reason', 'Motivo'],
             ['pt-PT', 'ticket', 'sale', 'Venda'],
             ['pt-PT', 'ticket', 'voucher', 'SENHA'],
             ['pt-PT', 'ticket', 'sale_receipt', 'TALÃO DE VENDA'],
@@ -810,6 +822,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'ticket', 'notes', 'Notes'],
             ['en-US', 'ticket', 'unknown_item', 'Item #:id'],
             ['en-US', 'ticket', 'delivery_arrow', '   -> :label'],
+            ['en-US', 'ticket', 'void_slip', 'VOID SLIP'],
+            ['en-US', 'ticket', 'void_partial', 'PARTIAL VOID'],
+            ['en-US', 'ticket', 'void_full', 'FULL VOID'],
+            ['en-US', 'ticket', 'void_reason', 'Reason'],
 
             ['pt-PT', 'sales', 'title', 'Vendas'],
             ['pt-PT', 'sales', 'subtitle', 'Criar vendas pagas de senhas para resgate posterior.'],
