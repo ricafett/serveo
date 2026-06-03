@@ -7,6 +7,7 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Domain\Orders\OrderService;
+use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
@@ -35,13 +36,24 @@ class BillingGroupDetail extends Component
 
     public ?int $assignedServerId = null;
 
+    // Payment form
+    public ?float $paymentAmount = null;
+
+    public ?string $paymentLabel = 'Cash';
+
+    public ?string $paymentNotes = null;
+
+    // Messages
     public ?string $errorMessage = null;
 
-    // Status change
-    public ?string $newStatusCode = null;
+    public ?string $successMessage = null;
 
-    public bool $isSubmitting = false;
+    // Zone release modal
+    public bool $showReleaseModal = false;
 
+    public ?int $releaseZoneId = null;
+
+    // Void modals
     public bool $showVoidItemModal = false;
 
     public bool $showVoidOrderModal = false;
@@ -51,6 +63,8 @@ class BillingGroupDetail extends Component
     public ?int $voidOrderId = null;
 
     public ?string $voidReason = null;
+
+    public bool $isSubmitting = false;
 
     public function mount(int $id): void
     {
@@ -118,6 +132,10 @@ class BillingGroupDetail extends Component
 
         return $assignedServer;
     }
+
+    // ------------------------------------------------------------------
+    // Zone Management
+    // ------------------------------------------------------------------
 
     public function openAddZoneModal(): void
     {
@@ -197,19 +215,40 @@ class BillingGroupDetail extends Component
         }
     }
 
-    public function releaseZone(int $zoneId): void
+    // ------------------------------------------------------------------
+    // Zone Release (modal confirmation)
+    // ------------------------------------------------------------------
+
+    public function confirmReleaseZone(int $zoneId): void
+    {
+        $this->releaseZoneId = $zoneId;
+        $this->showReleaseModal = true;
+        $this->errorMessage = null;
+    }
+
+    public function cancelReleaseZone(): void
+    {
+        $this->showReleaseModal = false;
+        $this->releaseZoneId = null;
+    }
+
+    public function releaseZone(): void
     {
         if ($this->isSubmitting) {
             return;
         }
 
-        $zone = OccupiedZone::findOrFail($zoneId);
+        if (! $this->releaseZoneId) {
+            return;
+        }
+
+        $zone = OccupiedZone::findOrFail($this->releaseZoneId);
         if ($zone->billing_group_id !== $this->group?->id) {
             return;
         }
 
         if (! Auth::user()?->can('floor.release_zone')) {
-            $this->dispatch('notify', message: __('Unauthorized to release zones.'));
+            $this->errorMessage = __('Unauthorized to release zones.');
 
             return;
         }
@@ -218,13 +257,20 @@ class BillingGroupDetail extends Component
             $this->isSubmitting = true;
 
             app(OccupancyService::class)->releaseZone($zone, Auth::user());
+            $this->successMessage = __('Zone released.');
+            $this->showReleaseModal = false;
+            $this->releaseZoneId = null;
             $this->loadGroup();
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: $e->getMessage());
+            $this->errorMessage = $e->getMessage();
         } finally {
             $this->isSubmitting = false;
         }
     }
+
+    // ------------------------------------------------------------------
+    // Bill Printing
+    // ------------------------------------------------------------------
 
     public function printBill(): void
     {
@@ -232,8 +278,11 @@ class BillingGroupDetail extends Component
             return;
         }
 
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
         if (! Auth::user()?->can('billing_document.create')) {
-            $this->dispatch('notify', message: __('Unauthorized to print bills.'));
+            $this->errorMessage = __('Unauthorized to print bills.');
 
             return;
         }
@@ -242,13 +291,97 @@ class BillingGroupDetail extends Component
             $this->isSubmitting = true;
 
             app(BillingService::class)->generateInternalBill($this->group, Auth::user());
-            $this->dispatch('notify', message: __('Bill sent to printer.'));
+            $this->successMessage = __('Bill sent to printer.');
+            $this->loadGroup();
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: $e->getMessage());
+            $this->errorMessage = $e->getMessage();
         } finally {
             $this->isSubmitting = false;
         }
     }
+
+    public function reprintBill(int $billId): void
+    {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        if (! Auth::user()?->can('billing_document.reprint')) {
+            $this->errorMessage = __('Unauthorized to reprint bills.');
+
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            $original = BillingDocument::findOrFail($billId);
+            app(BillingService::class)->reprintBill($original, Auth::user());
+            $this->successMessage = __('Bill reprint sent to printer.');
+            $this->loadGroup();
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Payment
+    // ------------------------------------------------------------------
+
+    public function recordPayment(): void
+    {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        if (! Auth::user()?->can('payment.record')) {
+            $this->errorMessage = __('Unauthorized to record payments.');
+
+            return;
+        }
+
+        $this->validate([
+            'paymentAmount' => 'required|numeric|min:0.01',
+            'paymentLabel' => 'required|string|max:50',
+        ]);
+
+        try {
+            $this->isSubmitting = true;
+
+            app(BillingService::class)->recordPayment(
+                $this->group,
+                Auth::user(),
+                (float) $this->paymentAmount,
+                $this->paymentLabel,
+                $this->paymentNotes,
+            );
+            $this->successMessage = __('Payment recorded.');
+            $this->paymentAmount = null;
+            $this->paymentNotes = null;
+            $this->loadGroup();
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
+    public function fillBalance(): void
+    {
+        $this->paymentAmount = round($this->balance, 2);
+    }
+
+    // ------------------------------------------------------------------
+    // Reopen
+    // ------------------------------------------------------------------
 
     public function reopenGroup(): void
     {
@@ -256,8 +389,11 @@ class BillingGroupDetail extends Component
             return;
         }
 
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
         if (! Auth::user()?->can('billing_group.reopen')) {
-            $this->dispatch('notify', message: __('Unauthorized to reopen groups.'));
+            $this->errorMessage = __('Unauthorized to reopen groups.');
 
             return;
         }
@@ -266,19 +402,27 @@ class BillingGroupDetail extends Component
             $this->isSubmitting = true;
 
             app(BillingGroupService::class)->reopen($this->group, Auth::user());
+            $this->successMessage = __('Group reopened.');
             $this->loadGroup();
-            $this->dispatch('notify', message: __('Group reopened.'));
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: $e->getMessage());
+            $this->errorMessage = $e->getMessage();
         } finally {
             $this->isSubmitting = false;
         }
     }
 
+    // ------------------------------------------------------------------
+    // Orders
+    // ------------------------------------------------------------------
+
     public function addOrder(): void
     {
         $this->redirect(route('orders.new', ['billingGroupId' => $this->group->id]), navigate: true);
     }
+
+    // ------------------------------------------------------------------
+    // Void / Cancel
+    // ------------------------------------------------------------------
 
     public function canVoidOrder(OrderHeader $order): bool
     {
@@ -305,13 +449,13 @@ class BillingGroupDetail extends Component
         $item = OrderItem::with('header')->findOrFail($itemId);
 
         if ($item->header->billing_group_id !== $this->group?->id) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
 
         if (! $this->canVoidItem($item)) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
@@ -327,13 +471,13 @@ class BillingGroupDetail extends Component
         $order = OrderHeader::with('items')->findOrFail($orderId);
 
         if ($order->billing_group_id !== $this->group?->id) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
 
         if (! $this->canVoidOrder($order)) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
@@ -359,6 +503,9 @@ class BillingGroupDetail extends Component
             return;
         }
 
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
         $this->validate([
             'voidReason' => 'nullable|string|max:500',
         ]);
@@ -366,13 +513,13 @@ class BillingGroupDetail extends Component
         $item = OrderItem::with('header')->findOrFail($this->voidItemId);
 
         if ($item->header->billing_group_id !== $this->group?->id) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
 
         if (! Auth::user()?->can('voidItem', $item->header)) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
@@ -381,11 +528,11 @@ class BillingGroupDetail extends Component
             $this->isSubmitting = true;
 
             app(OrderService::class)->voidItem($item, Auth::user(), $this->voidReason);
+            $this->successMessage = __('billing.item_voided');
             $this->closeVoidModal();
             $this->loadGroup();
-            $this->dispatch('notify', message: __('billing.item_voided'));
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: $e->getMessage());
+            $this->errorMessage = $e->getMessage();
         } finally {
             $this->isSubmitting = false;
         }
@@ -397,6 +544,9 @@ class BillingGroupDetail extends Component
             return;
         }
 
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
         $this->validate([
             'voidReason' => 'nullable|string|max:500',
         ]);
@@ -404,13 +554,13 @@ class BillingGroupDetail extends Component
         $order = OrderHeader::findOrFail($this->voidOrderId);
 
         if ($order->billing_group_id !== $this->group?->id) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
 
         if (! Auth::user()?->can('voidOrder', $order)) {
-            $this->dispatch('notify', message: __('billing.void_unauthorized'));
+            $this->errorMessage = __('billing.void_unauthorized');
 
             return;
         }
@@ -419,15 +569,19 @@ class BillingGroupDetail extends Component
             $this->isSubmitting = true;
 
             app(OrderService::class)->voidOrder($order, Auth::user(), $this->voidReason);
+            $this->successMessage = __('billing.order_voided');
             $this->closeVoidModal();
             $this->loadGroup();
-            $this->dispatch('notify', message: __('billing.order_voided'));
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: $e->getMessage());
+            $this->errorMessage = $e->getMessage();
         } finally {
             $this->isSubmitting = false;
         }
     }
+
+    // ------------------------------------------------------------------
+    // Favorites
+    // ------------------------------------------------------------------
 
     public function toggleFavorite(): void
     {
@@ -439,14 +593,13 @@ class BillingGroupDetail extends Component
         $pivot = $this->group->favoritedBy()->where('user_id', $user->id)->first();
 
         if ($pivot) {
-            // Cannot unfavorite if this server has open zones assigned to this group.
             $hasAssignedZone = OccupiedZone::where('billing_group_id', $this->group->id)
                 ->where('server_id', $user->id)
                 ->where('is_open', true)
                 ->exists();
 
             if ($hasAssignedZone || ($pivot->pivot->is_manual === false)) {
-                $this->dispatch('notify', message: __('floor.cannot_unfavorite_assigned'));
+                $this->errorMessage = __('floor.cannot_unfavorite_assigned');
 
                 return;
             }
@@ -468,9 +621,15 @@ class BillingGroupDetail extends Component
         return $this->group->favoritedBy->where('id', $user->id)->isNotEmpty();
     }
 
+    // ------------------------------------------------------------------
+    // Lifecycle
+    // ------------------------------------------------------------------
+
     public function refreshData(): void
     {
         $this->loadGroup();
+        $this->errorMessage = null;
+        $this->successMessage = null;
     }
 
     public function render()
