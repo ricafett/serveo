@@ -51,18 +51,18 @@ RUN rm .env
 # Set final permissions
 RUN chown -R serveo:serveo /var/www/html
 
-# Backup public assets so the entrypoint can restore them when the
-# app-public volume is stale. The volume mounts over public/ so
-# the image's files there are hidden; these copies survive that.
-RUN echo "=== Checking public/build/ before backup ===" \
+# Backup the entire public/ directory so the entrypoint can sync it
+# into a volume-mounted public/ at runtime. Named volumes survive
+# image updates and hide the image's files — this backup lives
+# outside the mount and survives. Using a full-directory backup
+# means any file added to public/ (sw.js, manifest.webmanifest,
+# icons, build assets, Filament assets) is automatically deployed.
+RUN echo "=== Checking public/ assets before backup ===" \
     && ls -la /var/www/html/public/build/ \
-    && echo "=== Creating backup directories ===" \
-    && cp -a /var/www/html/public/build /var/www/build-backup \
-    && cp -a /var/www/html/public/css /var/www/css-backup \
-    && cp -a /var/www/html/public/js /var/www/js-backup \
-    && cp -a /var/www/html/public/fonts /var/www/fonts-backup \
+    && echo "=== Backing up public/ ===" \
+    && cp -a /var/www/html/public /var/www/public-backup \
     && echo "=== Backup complete ===" \
-    && ls /var/www/build-backup/manifest.json
+    && ls /var/www/public-backup/build/manifest.json
 
 # Entrypoint: runs migrate + optimize at runtime with real env vars, then starts php-fpm
 COPY --chmod=755 docker/app/entrypoint.sh /entrypoint.sh

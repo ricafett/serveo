@@ -44,27 +44,15 @@ php artisan db:seed --class=CoreSeeder --force
 echo "[entrypoint] Caching config, routes and views..."
 php artisan optimize
 
-# Restore Vite build assets from backup if the volume is stale.
-# The app-public named volume mounts over public/ and hides the image's
-# public/build/ directory. This backup is outside the volume mount.
-if [ ! -f public/build/manifest.json ] && [ -d /var/www/build-backup ]; then
-    echo "[entrypoint] Restoring public/build/ from backup (volume was stale)..."
-    rm -rf public/build 2>/dev/null || true
-    cp -a /var/www/build-backup public/build
-    echo "[entrypoint] public/build/ restored."
-fi
-
-# Restore Filament assets if the volume is stale.
-if [ ! -f public/css/filament/filament/app.css ] && [ -d /var/www/css-backup ]; then
-    echo "[entrypoint] Restoring Filament assets from backup..."
-    for dir in css js fonts; do
-        backup="/var/www/${dir}-backup"
-        if [ -d "$backup" ] && [ ! -d "public/$dir/filament" ]; then
-            mkdir -p "public/$dir"
-            cp -a "$backup/filament" "public/$dir/filament" 2>/dev/null || true
-        fi
-    done
-    echo "[entrypoint] Filament assets restored."
+# Sync public/ assets from backup when the volume is stale.
+# Named volumes survive image updates and hide the image's public/ files.
+# cp -au copies only newer/missing files — existing volume files (like
+# debug.php) are preserved. This handles ALL public/ content: build
+# assets, Filament assets, icons, manifest, service worker, etc.
+if [ -d /var/www/public-backup ]; then
+    echo "[entrypoint] Syncing public/ assets from backup..."
+    cp -au /var/www/public-backup/. /var/www/html/public/
+    echo "[entrypoint] public/ sync complete."
 fi
 
 if [ "$APP_DEBUG" = "true" ]; then
@@ -100,9 +88,13 @@ foreach (['HTTP_X_FORWARDED_PROTO','HTTP_X_FORWARDED_HOST','HTTP_X_FORWARDED_FOR
     else echo "  $h: $v\n";
 }
 echo "\n=== PUBLIC ASSETS ===\n";
-echo "manifest.json: " . (file_exists('/var/www/html/public/build/manifest.json') ? 'YES' : 'MISSING') . "\n";
-echo "filament css:  " . (file_exists('/var/www/html/public/css/filament/filament/app.css') ? 'YES' : 'MISSING') . "\n";
-echo "filament js:   " . (file_exists('/var/www/html/public/js/filament/filament/app.js') ? 'YES' : 'MISSING') . "\n";
+echo "manifest.json:    " . (file_exists('/var/www/html/public/build/manifest.json') ? 'YES' : 'MISSING') . "\n";
+echo "filament css:     " . (file_exists('/var/www/html/public/css/filament/filament/app.css') ? 'YES' : 'MISSING') . "\n";
+echo "filament js:      " . (file_exists('/var/www/html/public/js/filament/filament/app.js') ? 'YES' : 'MISSING') . "\n";
+echo "manifest:         " . (file_exists('/var/www/html/public/manifest.webmanifest') ? 'YES' : 'MISSING') . "\n";
+echo "sw.js:            " . (file_exists('/var/www/html/public/sw.js') ? 'YES' : 'MISSING') . "\n";
+echo "icon-192:         " . (file_exists('/var/www/html/public/icons/icon-192.png') ? 'YES' : 'MISSING') . "\n";
+echo "public-backup/:   " . (is_dir('/var/www/public-backup') ? 'YES' : 'MISSING') . "\n";
 DEBUGEOPHP
     echo "[entrypoint] debug.php written."
 else
