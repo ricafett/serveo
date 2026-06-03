@@ -58,7 +58,7 @@ class Dashboard extends Component
 
         if ($user?->hasRole('ADMIN')) {
             $tiles[] = [
-                'route' => 'filament.admin.pages.dashboard',
+                'route' => 'filament.admin.pages.admin-dashboard',
                 'label' => __('dashboard.admin_panel_tile'),
                 'description' => __('dashboard.admin_panel_description'),
                 'icon' => $this->adminIcon(),

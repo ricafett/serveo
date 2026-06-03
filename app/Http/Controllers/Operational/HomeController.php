@@ -27,7 +27,7 @@ class HomeController extends Controller
         }
 
         if ($user->hasRole('ADMIN')) {
-            return redirect()->route('filament.admin.pages.dashboard');
+            return redirect()->route('filament.admin.pages.admin-dashboard');
         }
 
         // Fallback for users with no recognized role
