@@ -14,3 +14,4 @@ Heroku.Procfile
 opencode.json
 .env.bak
 audit/*
+.sisyphus

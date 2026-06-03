@@ -99,7 +99,8 @@ Write-Host "========================================" -ForegroundColor Blue
 # ---------------------------------------------------------------------------
 
 Write-Host "`n[1/5] Installing Composer dependencies..." -ForegroundColor Cyan
-& composer install --no-interaction --prefer-dist 2>&1 | ForEach-Object { Write-Host $_ }
+$composerOutput = & composer install --no-interaction --prefer-dist 2>&1
+$composerOutput | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Composer install failed."
     exit 1
@@ -114,14 +115,17 @@ if (-not $SkipNpm) {
         Write-Warning "npm not found. Skipping frontend dependencies."
     } else {
         Write-Host "`n[2/5] Installing npm dependencies..." -ForegroundColor Cyan
-        & npm ci 2>&1 | ForEach-Object { Write-Host $_ }
+        $npmCiOutput = & npm ci 2>&1
+        $npmCiOutput | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             Write-Host "  npm ci failed, trying npm install..." -ForegroundColor Yellow
-            & npm install 2>&1 | ForEach-Object { Write-Host $_ }
+            $npmInstallOutput = & npm install 2>&1
+            $npmInstallOutput | ForEach-Object { Write-Host $_ }
         }
 
         Write-Host "`n     Building frontend assets..." -ForegroundColor Cyan
-        & npm run build 2>&1 | ForEach-Object { Write-Host $_ }
+        $buildOutput = & npm run build 2>&1
+        $buildOutput | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             Write-Error "npm run build failed."
             exit 1
@@ -136,9 +140,19 @@ if (-not $SkipNpm) {
 # ---------------------------------------------------------------------------
 
 Write-Host "`n[3/5] Running database migrations..." -ForegroundColor Cyan
-& php artisan migrate --force 2>&1 | ForEach-Object { Write-Host $_ }
+$migrateOutput = & php artisan migrate --force 2>&1
+$migrateOutput | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Migrations failed."
+    exit 1
+}
+
+# Verify no pending migrations remain
+$pendingMigrations = & php artisan migrate:status 2>&1 | Select-String -Pattern '\s+Pending\s*$'
+if ($pendingMigrations) {
+    Write-Host "`n  WARNING: Some migrations are still pending:" -ForegroundColor Yellow
+    $pendingMigrations | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
+    Write-Error "Migrations did not complete. $($pendingMigrations.Count) migration(s) still pending."
     exit 1
 }
 
@@ -151,7 +165,8 @@ $seedArgs = @("artisan", "db:seed", "--class=CoreSeeder")
 if ($ForceSeed) {
     $seedArgs += "--force"
 }
-& php @seedArgs 2>&1 | ForEach-Object { Write-Host $_ }
+$seedOutput = & php @seedArgs 2>&1
+$seedOutput | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) {
     Write-Error "CoreSeeder failed."
     exit 1
