@@ -4,13 +4,11 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
-use App\Livewire\Cashier\Checkout;
 use App\Livewire\Cashier\ReprintPanel;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\CashierPrinterAssignment;
 use App\Models\MenuItem;
-use App\Models\PaymentRecord;
 use App\Models\Printer;
 use App\Models\ProductionTicket;
 use App\Models\Row;
@@ -128,110 +126,12 @@ it('searches billing groups by display code', function () {
 });
 
 // ------------------------------------------------------------------
-// Checkout Screen
-// ------------------------------------------------------------------
-
-it('renders checkout screen with charges and balance', function () {
-    $response = $this->actingAs($this->cashier)->get("/checkout/{$this->group->id}");
-    $response->assertOk();
-    $response->assertSee('Checkout');
-    $response->assertSee($this->group->display_code);
-    $response->assertSee('Charges');
-    $response->assertSee('Balance');
-});
-
-it('prints bill from checkout', function () {
-    $this->actingAs($this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->call('printBill')
-        ->assertSet('successMessage', 'Bill sent to printer.');
-
-    $doc = BillingDocument::where('billing_group_id', $this->group->id)->first();
-    expect($doc)->not->toBeNull();
-    expect($doc->is_reprint)->toBeFalse();
-});
-
-it('records partial payment from checkout', function () {
-    $this->actingAs($this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('paymentAmount', 5.00)
-        ->set('paymentLabel', 'Cash')
-        ->call('recordPayment')
-        ->assertSet('successMessage', 'Payment recorded.');
-
-    $payment = PaymentRecord::where('billing_group_id', $this->group->id)->first();
-    expect($payment)->not->toBeNull();
-    expect((float) $payment->amount)->toBe(5.00);
-});
-
-it('reopens closed group from checkout', function () {
-    $this->group->refresh();
-    $balance = $this->group->balance();
-    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
-    expect($this->group->fresh()->is_closed)->toBeTrue();
-
-    $this->actingAs($this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->call('reopenGroup')
-        ->assertSet('successMessage', 'Group reopened.');
-
-    $group = BillingGroup::find($this->group->id);
-    expect($group->is_closed)->toBeFalse();
-});
-
-it('reprints bill from checkout', function () {
-    $this->actingAs($this->cashier);
-
-    // First print a bill
-    $bill = app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->call('reprintBill', $bill->id)
-        ->assertSet('successMessage', 'Bill reprint sent to printer.');
-
-    $reprints = BillingDocument::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
-    expect($reprints)->toHaveCount(1);
-});
-
-it('cashier can void another server order from checkout', function () {
-    $this->actingAs($this->cashier);
-
-    $order = $this->group->orderHeaders()->latest('id')->first();
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->call('openVoidOrderModal', $order->id)
-        ->set('voidReason', 'Cashier approved cancellation')
-        ->call('confirmVoidOrder')
-        ->assertSet('successMessage', __('billing.order_voided'));
-
-    expect($order->refresh()->submission_status)->toBe('VOIDED');
-});
-
-it('cashier can void another server item from checkout', function () {
-    $this->actingAs($this->cashier);
-
-    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->call('openVoidItemModal', $item->id)
-        ->set('voidReason', 'Cashier item correction')
-        ->call('confirmVoidItem')
-        ->assertSet('successMessage', __('billing.item_voided'));
-
-    expect($item->refresh()->voided_at)->not->toBeNull();
-});
-
-// ------------------------------------------------------------------
 // Reprint Panel
 // ------------------------------------------------------------------
 
 it('renders reprint panel with bills and tickets', function () {
     $this->actingAs($this->cashier);
 
-    // Create a bill and ticket
     app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
 
     $response = $this->actingAs($this->cashier)->get("/reprint/{$this->group->id}");
@@ -306,11 +206,6 @@ it('cashier can submit an order from order entry', function () {
         ->toBe($this->cashier->id);
 });
 
-it('prevents server from accessing checkout', function () {
-    $response = $this->actingAs($this->server)->get("/checkout/{$this->group->id}");
-    $response->assertForbidden();
-});
-
 it('allows admin to access cashier screens', function () {
     $admin = User::factory()->create(['username' => 'testadmin', 'is_active' => true]);
     $admin->assignRole('ADMIN');
@@ -320,96 +215,8 @@ it('allows admin to access cashier screens', function () {
 });
 
 // ------------------------------------------------------------------
-// Duplicate Submission Prevention (isSubmitting guards)
+// Duplicate Submission Prevention (reprint panel isSubmitting guards)
 // ------------------------------------------------------------------
-
-it('prevents double-click on printBill in checkout', function () {
-    $this->actingAs($this->cashier);
-
-    // Set isSubmitting to simulate a request in flight
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('isSubmitting', true)
-        ->call('printBill')
-        ->assertSet('successMessage', null)
-        ->assertSet('errorMessage', null);
-
-    // No bill should have been created.
-    expect(BillingDocument::where('billing_group_id', $this->group->id)->count())->toBe(0);
-});
-
-it('prevents double-click on recordPayment in checkout', function () {
-    $this->actingAs($this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('paymentAmount', 5.00)
-        ->set('paymentLabel', 'Cash')
-        ->set('isSubmitting', true)
-        ->call('recordPayment')
-        ->assertSet('successMessage', null);
-
-    expect(PaymentRecord::where('billing_group_id', $this->group->id)->count())->toBe(0);
-});
-
-it('prevents double-click on reopenGroup in checkout', function () {
-    $this->group->refresh();
-    $balance = $this->group->balance();
-    app(BillingService::class)->recordPayment($this->group, $this->cashier, $balance, 'Cash');
-    expect($this->group->fresh()->is_closed)->toBeTrue();
-    $this->actingAs($this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('isSubmitting', true)
-        ->call('reopenGroup')
-        ->assertSet('successMessage', null);
-
-    $group = BillingGroup::find($this->group->id);
-    expect($group->is_closed)->toBeTrue();
-});
-
-it('prevents double-click on reprintBill in checkout', function () {
-    $this->actingAs($this->cashier);
-
-    $bill = app(BillingService::class)->generateInternalBill($this->group, $this->cashier);
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('isSubmitting', true)
-        ->call('reprintBill', $bill->id)
-        ->assertSet('successMessage', null);
-
-    // No reprint document should have been created.
-    $reprints = BillingDocument::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
-    expect($reprints)->toHaveCount(0);
-});
-
-it('prevents double-click on confirmVoidItem in checkout', function () {
-    $this->actingAs($this->cashier);
-
-    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('voidItemId', $item->id)
-        ->set('voidReason', 'Duplicate click')
-        ->set('isSubmitting', true)
-        ->call('confirmVoidItem')
-        ->assertSet('successMessage', null);
-
-    expect($item->refresh()->voided_at)->toBeNull();
-});
-
-it('prevents double-click on confirmVoidOrder in checkout', function () {
-    $this->actingAs($this->cashier);
-
-    $order = $this->group->orderHeaders()->latest('id')->first();
-
-    Livewire::test(Checkout::class, ['id' => $this->group->id])
-        ->set('voidOrderId', $order->id)
-        ->set('voidReason', 'Duplicate click')
-        ->set('isSubmitting', true)
-        ->call('confirmVoidOrder')
-        ->assertSet('successMessage', null);
-
-    expect($order->refresh()->submission_status)->toBe('SUBMITTED');
-});
 
 it('prevents double-click on reprintTicket in reprint panel', function () {
     $this->actingAs($this->cashier);

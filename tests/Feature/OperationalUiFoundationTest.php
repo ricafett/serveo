@@ -132,13 +132,14 @@ it('allows server to access billing group detail', function () {
     $response->assertSee('G-001');
 });
 
-it('allows cashier to access checkout', function () {
+it('allows cashier to access billing group detail with payment options', function () {
     $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('CASHIER');
 
-    $response = $this->actingAs($user)->get('/checkout/1');
+    $response = $this->actingAs($user)->get('/billing-groups/1');
     $response->assertOk();
-    $response->assertSee('Checkout');
+    $response->assertSee('G-001');
+    $response->assertSee('Charges');
 });
 
 it('allows cashier to access reprint panel via group route', function () {
