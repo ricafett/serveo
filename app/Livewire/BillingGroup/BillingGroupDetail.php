@@ -360,7 +360,7 @@ class BillingGroupDetail extends Component
         }
 
         $this->validate([
-            'voidReason' => 'required|string|max:500',
+            'voidReason' => 'nullable|string|max:500',
         ]);
 
         $item = OrderItem::with('header')->findOrFail($this->voidItemId);
@@ -398,7 +398,7 @@ class BillingGroupDetail extends Component
         }
 
         $this->validate([
-            'voidReason' => 'required|string|max:500',
+            'voidReason' => 'nullable|string|max:500',
         ]);
 
         $order = OrderHeader::findOrFail($this->voidOrderId);

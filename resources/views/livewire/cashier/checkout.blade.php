@@ -128,15 +128,15 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 @if($this->canVoidOrder($order) && $order->items->whereNull('voided_at')->isNotEmpty())
-                                    <button type="button" wire:click="openVoidOrderModal({{ $order->id }})" wire:target="openVoidOrderModal" wire:loading.attr="disabled" class="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                                        {{ __('billing.void_order') }}
+                                    <button type="button" wire:click="openVoidOrderModal({{ $order->id }})" wire:target="openVoidOrderModal" wire:loading.attr="disabled" title="{{ __('billing.void_order') }}" class="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                 @endif
                                 <span class="text-sm rounded-full px-2 py-0.5 font-medium
                                     {{ $order->submission_status === 'SUBMITTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
                                     {{ $order->submission_status === 'PARTIALLY_VOIDED' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : '' }}
                                     {{ $order->submission_status === 'VOIDED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}
-                                ">{{ $order->submission_status }}</span>
+                                ">{{ __('billing.status_'.strtolower($order->submission_status)) }}</span>
                             </div>
                         </div>
                         @if($order->notes)
@@ -148,12 +148,12 @@
                             @foreach($order->items as $item)
                                 <div class="flex items-center justify-between text-base">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-gray-900 dark:text-gray-100 {{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : '' }}">{{ $item->quantity }}× {{ $item->menuItem?->display_name }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100 {{ $item->voided_at ? 'line-through text-gray-500 dark:text-gray-400' : '' }}">{{ $item->quantity }}× {{ $item->menuItem?->display_name }}</span>
                                         @if($item->voided_at)
                                             <span class="text-sm text-red-500 dark:text-red-400">{{ __('billing.voided') }}</span>
                                         @elseif($this->canVoidItem($item))
-                                            <button type="button" wire:click="openVoidItemModal({{ $item->id }})" wire:target="openVoidItemModal" wire:loading.attr="disabled" class="rounded-lg border border-red-300 px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                {{ __('billing.void_item') }}
+                                            <button type="button" wire:click="openVoidItemModal({{ $item->id }})" wire:target="openVoidItemModal" wire:loading.attr="disabled" title="{{ __('billing.void_item') }}" class="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
                                         @endif
                                     </div>
@@ -286,10 +286,12 @@
             <div class="p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_item') }}</h2>
-                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">×</button>
+                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
-                <label for="checkout-void-item-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason') }}</label>
-                <textarea id="checkout-void-item-reason" wire:model="voidReason" rows="3" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
+                <label for="checkout-void-item-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason_optional') }}</label>
+                <textarea id="checkout-void-item-reason" wire:model="voidReason" rows="3" placeholder="{{ __('billing.void_reason_optional') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
                 @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_print_warning') }}</p>
                 <div class="mt-4 flex gap-3">
@@ -307,10 +309,12 @@
             <div class="p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_order') }}</h2>
-                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">×</button>
+                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
-                <label for="checkout-void-order-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason') }}</label>
-                <textarea id="checkout-void-order-reason" wire:model="voidReason" rows="3" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
+                <label for="checkout-void-order-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason_optional') }}</label>
+                <textarea id="checkout-void-order-reason" wire:model="voidReason" rows="3" placeholder="{{ __('billing.void_reason_optional') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
                 @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_order_warning') }}</p>
                 <div class="mt-4 flex gap-3">
