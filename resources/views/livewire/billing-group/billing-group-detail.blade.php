@@ -155,8 +155,9 @@
 
         {{-- Orders --}}
         <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.orders') }}</h2>
+                <span class="text-base text-gray-500 dark:text-gray-400">{{ $group?->orderHeaders?->count() ?? 0 }}</span>
             </div>
             <div class="divide-y divide-gray-200 dark:divide-gray-800">
                 @forelse($group?->orderHeaders ?? [] as $order)
@@ -222,8 +223,9 @@
         {{-- Payments --}}
         @if($group?->paymentRecords?->count() > 0)
             <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                     <h2 class="font-semibold text-gray-900 dark:text-white">{{ __('billing.payments') }}</h2>
+                    <span class="text-base text-gray-500 dark:text-gray-400">{{ $group->paymentRecords?->count() ?? 0 }}</span>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                     @foreach($group->paymentRecords as $payment)
