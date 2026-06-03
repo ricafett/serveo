@@ -58,7 +58,7 @@ class BillingGroupLookup extends Component
 
     public function openCheckout(int $groupId): void
     {
-        $this->redirect(route('checkout', ['id' => $groupId]), navigate: true);
+        $this->redirect(route('billing-groups.detail', ['id' => $groupId]), navigate: true);
     }
 
     public function render()

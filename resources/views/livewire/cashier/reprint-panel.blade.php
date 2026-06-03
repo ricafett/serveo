@@ -4,7 +4,7 @@
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 @if($billingGroupId)
-                    <a href="{{ route('checkout', ['id' => $billingGroupId]) }}" wire:navigate class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    <a href="{{ route('billing-groups.detail', ['id' => $billingGroupId]) }}" wire:navigate class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                     </a>
                 @else
