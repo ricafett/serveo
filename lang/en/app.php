@@ -62,6 +62,8 @@ return [
     'last_seen' => 'Last seen',
     'room' => 'Room',
     'location' => 'Location',
+    'navigation_label_admin_dashboard' => 'Admin Dashboard',
+    'navigation_label_frontend_dashboard' => 'Dashboard',
     'navigation_group_operation' => 'Operation',
     'navigation_group_config' => 'Configuration',
     'navigation_label_sales' => 'Sales',
