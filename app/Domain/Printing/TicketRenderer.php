@@ -38,7 +38,18 @@ class TicketRenderer
         ]);
 
         $lines = [];
-        $lines[] = $this->center($ticket->is_void_slip ? '*** '.__('ticket.void').' ***' : strtoupper($ticket->ticket_type));
+
+        $firstItem = $ticket->items->first();
+        $voidRoute = $firstItem?->fulfillment_route ?? $ticket->ticket_type;
+
+        if ($ticket->is_void_slip) {
+            $isFullVoid = $firstItem?->header?->submission_status === 'VOIDED';
+            $prefix = $isFullVoid ? __('ticket.void_full').' - ' : __('ticket.void_partial').' - ';
+            $lines[] = $this->center('*** '.$prefix.strtoupper($voidRoute).' ***');
+        } else {
+            $lines[] = $this->center(strtoupper($ticket->ticket_type));
+        }
+
         if ($ticket->is_reprint) {
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
         }
@@ -99,6 +110,20 @@ class TicketRenderer
             $lines[] = $this->center(strtoupper(__('ticket.notes')));
             foreach ($orderNotes as $note) {
                 $lines[] = $note;
+            }
+        }
+
+        if ($ticket->is_void_slip) {
+            $voidReasons = $ticket->items
+                ->map(fn ($item) => $item->void_reason)
+                ->filter()
+                ->unique()
+                ->values();
+            if ($voidReasons->isNotEmpty()) {
+                $lines[] = str_repeat('-', $this->width());
+                foreach ($voidReasons as $reason) {
+                    $lines[] = __('ticket.void_reason').': '.$reason;
+                }
             }
         }
 
