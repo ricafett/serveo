@@ -165,7 +165,7 @@ it('shows billing group detail with orders and items', function () {
     $response = $this->actingAs($this->server)->get("/billing-groups/{$group->id}");
     $response->assertOk();
     $response->assertSee($menuItem->display_name);
-    $response->assertSee('SUBMITTED');
+    $response->assertSee(__('billing.status_submitted'));
 });
 
 it('shows billing group charges payments and balance', function () {

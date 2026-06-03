@@ -134,7 +134,7 @@ it('does not display notes section when order has no notes', function () {
 
     // The notes icon SVG path should not appear (order has no notes)
     $html = $component->html();
-    expect($html)->toContain('SUBMITTED');
+    expect($html)->toContain('Submitted');
 });
 
 it('displays multiple order notes from different orders', function () {

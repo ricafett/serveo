@@ -102,7 +102,7 @@ test('submitted order appears in billing group detail', function () {
 
         $browser->visit("/billing-groups/{$this->group->id}")
             ->waitForText($menuItem->display_name, 5)
-            ->assertSee('SUBMITTED');
+            ->assertSee('Submitted');
     });
 });
 
