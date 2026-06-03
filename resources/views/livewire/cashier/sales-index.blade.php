@@ -96,7 +96,7 @@
                                 <label class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('app.notes') }}</label>
                                 <textarea id="sale-payment-notes" wire:model="paymentNotes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
                             </div>
-                            <label class="flex items-center gap-2 text-base text-gray-700 dark:text-gray-300">
+                            <label class="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-base text-gray-700 dark:text-gray-300 cursor-pointer min-h-[44px]">
                                 <input id="sale-print-receipt" type="checkbox" wire:model="printReceipt" class="rounded border-gray-300 text-primary-600 shadow-sm focus:ring-primary-500">
                                 <span>{{ __('sales.print_receipt') }}</span>
                             </label>
@@ -132,6 +132,13 @@
             menuCategories,
             selectedCategoryId: defaultCategoryId,
             cart: [],
+            init() {
+                this.$watch('cartTotal', value => {
+                    if (value > 0) {
+                        this.$wire.set('paymentAmount', value);
+                    }
+                });
+            },
             get filteredItems() {
                 if (! this.selectedCategoryId) {
                     return this.menuItems;

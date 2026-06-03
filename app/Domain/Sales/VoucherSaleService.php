@@ -47,20 +47,13 @@ class VoucherSaleService
 
         return DB::transaction(function () use ($session, $cashier, $lines, $paymentAmount, $paymentLabel, $paymentNotes, $printReceipt) {
             $resolvedItems = collect($lines)->map(function (array $line) {
-                $item = MenuItem::with(['activeVariants', 'modifierSet'])->findOrFail($line['menu_item_id']);
+                $item = MenuItem::findOrFail($line['menu_item_id']);
 
                 if (! $item->is_active || ! $item->is_voucher_enabled) {
                     throw new RuntimeException("Item {$item->display_name} is not voucher-enabled.");
                 }
 
-                if ($item->activeVariants->isNotEmpty()) {
-                    throw new RuntimeException("Item {$item->display_name} cannot be sold as a voucher because it has active variants.");
-                }
-
-                if ($item->modifierSet) {
-                    throw new RuntimeException("Item {$item->display_name} cannot be sold as a voucher because it has modifiers.");
-                }
-
+                // Sales ignore modifiers and variants — the base item is sold as-is.
                 $quantity = max(1, (int) ($line['quantity'] ?? 1));
 
                 return [

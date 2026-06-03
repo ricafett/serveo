@@ -38,17 +38,13 @@ class SalesIndex extends Component
     {
         $this->defaultCategoryId = MenuCategory::whereHas('items', function ($query) {
             $query->where('is_active', true)
-                ->where('is_voucher_enabled', true)
-                ->whereNull('modifier_set_id')
-                ->whereDoesntHave('activeVariants');
+                ->where('is_voucher_enabled', true);
         })->where('is_active', true)->orderBy('sort_order')->value('id');
 
         $this->menuCategoriesData = MenuCategory::where('is_active', true)
             ->whereHas('items', function ($query) {
                 $query->where('is_active', true)
-                    ->where('is_voucher_enabled', true)
-                    ->whereNull('modifier_set_id')
-                    ->whereDoesntHave('activeVariants');
+                    ->where('is_voucher_enabled', true);
             })
             ->orderBy('sort_order')
             ->get()
@@ -62,8 +58,6 @@ class SalesIndex extends Component
             ->with('category')
             ->where('is_active', true)
             ->where('is_voucher_enabled', true)
-            ->whereNull('modifier_set_id')
-            ->whereDoesntHave('activeVariants')
             ->orderBy('display_name')
             ->get()
             ->map(fn (MenuItem $item) => [
