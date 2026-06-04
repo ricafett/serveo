@@ -223,10 +223,10 @@ it('server can void own order from billing group detail', function () {
     );
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->call('openVoidOrderModal', $order->id)
+        ->call('openVoidModal', $order->id, true)
         ->set('voidReason', 'Guest cancelled')
-        ->call('confirmVoidOrder')
-        ->assertSet('successMessage', __('billing.order_voided'));
+        ->call('confirmVoid')
+        ->assertSet('successMessage', __('billing.items_voided'));
 
     expect($order->refresh()->submission_status)->toBe('VOIDED');
 });
@@ -245,7 +245,7 @@ it('prevents server from voiding another server order from billing group detail'
     $this->actingAs($otherServer);
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->call('openVoidOrderModal', $order->id)
+        ->call('openVoidModal', $order->id, true)
         ->assertSet('errorMessage', __('billing.void_unauthorized'));
 
     expect($order->refresh()->submission_status)->toBe('SUBMITTED');
@@ -328,26 +328,70 @@ it('cashier can void another server order from billing group detail', function (
     $order = $this->group->orderHeaders()->latest('id')->first();
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->call('openVoidOrderModal', $order->id)
+        ->call('openVoidModal', $order->id, true)
         ->set('voidReason', 'Cashier approved cancellation')
-        ->call('confirmVoidOrder')
-        ->assertSet('successMessage', __('billing.order_voided'));
+        ->call('confirmVoid')
+        ->assertSet('successMessage', __('billing.items_voided'));
 
     expect($order->refresh()->submission_status)->toBe('VOIDED');
 });
 
-it('cashier can void another server item from billing group detail', function () {
+it('cashier can void a single item from billing group detail', function () {
     $this->actingAs($this->cashier);
 
-    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
+    // Create an order with multiple items so voiding one leaves PARTIALLY_VOIDED.
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [
+            ['menu_item_id' => $this->menuItem->id, 'quantity' => 1],
+            ['menu_item_id' => $this->menuItem->id, 'quantity' => 1],
+        ],
+        $this->zone,
+    );
+    $item = $order->items()->first();
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->call('openVoidItemModal', $item->id)
+        ->call('openVoidModal', $item->order_header_id, false)
+        ->set('selectedVoidItemIds', [$item->id])
         ->set('voidReason', 'Cashier item correction')
-        ->call('confirmVoidItem')
-        ->assertSet('successMessage', __('billing.item_voided'));
+        ->call('confirmVoid')
+        ->assertSet('successMessage', __('billing.items_voided'));
 
     expect($item->refresh()->voided_at)->not->toBeNull();
+    expect($order->fresh()->submission_status)->toBe('PARTIALLY_VOIDED');
+});
+
+it('can void multiple items from the same order at once', function () {
+    $this->actingAs($this->server);
+
+    $order = app(OrderService::class)->submit(
+        $this->group,
+        $this->server,
+        [
+            ['menu_item_id' => $this->menuItem->id, 'quantity' => 1],
+            ['menu_item_id' => $this->menuItem->id, 'quantity' => 2],
+            ['menu_item_id' => $this->menuItem->id, 'quantity' => 1],
+        ],
+        $this->zone,
+    );
+
+    $items = $order->items()->get();
+    expect($items)->toHaveCount(3);
+
+    // Void only 2 of 3 items.
+    $voidIds = $items->take(2)->pluck('id')->toArray();
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->call('openVoidModal', $order->id, false)
+        ->set('selectedVoidItemIds', $voidIds)
+        ->set('voidReason', 'Partial void')
+        ->call('confirmVoid')
+        ->assertSet('successMessage', __('billing.items_voided'));
+
+    expect($order->refresh()->submission_status)->toBe('PARTIALLY_VOIDED');
+    expect($order->items()->whereNotNull('voided_at')->count())->toBe(2);
+    expect($order->items()->whereNull('voided_at')->count())->toBe(1);
 });
 
 // ------------------------------------------------------------------
@@ -409,32 +453,18 @@ it('prevents double-click on reprintBill', function () {
     expect($reprints)->toHaveCount(0);
 });
 
-it('prevents double-click on confirmVoidItem', function () {
-    $this->actingAs($this->cashier);
-
-    $item = $this->group->orderHeaders()->latest('id')->first()->items()->first();
-
-    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->set('voidItemId', $item->id)
-        ->set('voidReason', 'Duplicate click')
-        ->set('isSubmitting', true)
-        ->call('confirmVoidItem')
-        ->assertSet('successMessage', null);
-
-    expect($item->refresh()->voided_at)->toBeNull();
-});
-
-it('prevents double-click on confirmVoidOrder', function () {
+it('prevents double-click on confirmVoid', function () {
     $this->actingAs($this->cashier);
 
     $order = $this->group->orderHeaders()->latest('id')->first();
+    $item = $order->items()->first();
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->set('voidOrderId', $order->id)
+        ->call('openVoidModal', $order->id, true)
         ->set('voidReason', 'Duplicate click')
         ->set('isSubmitting', true)
-        ->call('confirmVoidOrder')
+        ->call('confirmVoid')
         ->assertSet('successMessage', null);
 
-    expect($order->refresh()->submission_status)->toBe('SUBMITTED');
+    expect($item->refresh()->voided_at)->toBeNull();
 });

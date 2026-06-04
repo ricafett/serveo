@@ -16,13 +16,8 @@
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('order.order_entry') }}</h1>
-                    <p class="text-base font-medium text-gray-700 dark:text-gray-300">{{ $this->group?->name ?? $this->group?->display_code }}</p>
-                    @if($this->zones->isNotEmpty())
-                        <div class="mt-1 text-base text-gray-500 dark:text-gray-400">
-                            @foreach($this->zones as $zone)
-                                <div>{{ $zone->rangeLabel() }}</div>
-                            @endforeach
-                        </div>
+                    @if($this->group)
+                        <p class="text-base text-gray-500 dark:text-gray-400">{{ $this->group->longLabel() }}</p>
                     @endif
                 </div>
             </div>

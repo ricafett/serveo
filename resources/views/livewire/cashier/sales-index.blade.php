@@ -4,13 +4,6 @@
     class="p-4 sm:p-6 lg:p-8"
 >
     <div class="max-w-5xl mx-auto">
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('sales.title') }}</h1>
-                <p class="text-base text-gray-500 dark:text-gray-400">{{ __('sales.subtitle') }}</p>
-            </div>
-        </div>
-
         @if($errorMessage)
             <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-base text-red-600 dark:text-red-400">{{ $errorMessage }}</div>
         @endif

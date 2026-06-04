@@ -76,3 +76,6 @@ html:is(.dark) #nprogress .peg {
 #nprogress .spinner {
     display: none !important;
 }
+
+/* Prevent Alpine x-cloak flash */
+[x-cloak] { display: none !important; }

@@ -79,20 +79,42 @@ unset($item);
             @foreach($navItems as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex flex-col items-center justify-center py-2 px-3 min-h-[56px] min-w-[64px] text-sm font-medium transition-colors
+                    class="flex flex-col items-center justify-center py-2 px-1 min-h-[56px] min-w-[64px] flex-1 text-sm font-medium transition-colors
                         {{ $item['active']
                             ? 'text-primary-600 dark:text-primary-400'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}"
                 >
                     {!! $item['icon'] !!}
-                    <span class="mt-0.5">{{ $item['label'] }}</span>
+                    <span class="mt-0.5 text-center truncate w-full">{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </div>
     </nav>
 
     {{-- Desktop Side Navigation --}}
-    <nav class="hidden sm:flex fixed left-0 {{ ($showTopBar ?? true) ? 'top-14' : 'top-0' }} bottom-0 w-16 lg:w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col py-4 z-20">
+    <nav
+        x-data="{ collapsed: JSON.parse(localStorage.getItem('sidebar-collapsed') || 'false') }"
+        x-init="
+            if (collapsed) document.body.classList.add('sidebar-collapsed');
+            $watch('collapsed', v => {
+                localStorage.setItem('sidebar-collapsed', JSON.stringify(v));
+                document.body.classList.toggle('sidebar-collapsed', v);
+            })
+        "
+        class="hidden sm:flex fixed left-0 {{ ($showTopBar ?? true) ? 'top-14' : 'top-0' }} bottom-0 w-16 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col py-4 z-20 transition-all duration-200 overflow-hidden"
+        :class="{ 'lg:w-56': !collapsed }">
+        {{-- Collapse toggle (visible lg+) --}}
+        <button
+            @click="collapsed = !collapsed"
+            class="hidden lg:flex items-center justify-center w-full py-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+            :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+            <svg class="h-5 w-5 transition-transform duration-200"
+                 :class="{ 'rotate-180': !collapsed }"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+        </button>
+
         <div class="flex-1 space-y-1 px-2">
             @foreach($navItems as $item)
                 <a
@@ -103,13 +125,13 @@ unset($item);
                             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}"
                 >
                     {!! $item['icon'] !!}
-                    <span class="hidden lg:inline">{{ $item['label'] }}</span>
+                    <span x-show="!collapsed" x-cloak class="hidden lg:inline">{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </div>
 
         {{-- Desktop-only: App version / footer --}}
-        <div class="px-3 py-2 text-base text-gray-400 dark:text-gray-600 text-center hidden lg:block">
+        <div x-show="!collapsed" x-cloak class="px-3 py-2 text-base text-gray-400 dark:text-gray-600 text-center hidden lg:block">
             Serveo
         </div>
     </nav>
@@ -121,6 +143,7 @@ unset($item);
         }
         @media (min-width: 1024px) {
             main { margin-left: 14rem; }
+            body.sidebar-collapsed main { margin-left: 4rem; }
         }
     </style>
 @endif

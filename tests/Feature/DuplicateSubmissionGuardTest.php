@@ -188,10 +188,10 @@ it('prevents double-click on confirmVoidItem in billing group detail', function 
     $item = $order->items()->first();
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->set('voidItemId', $item->id)
+        ->call('openVoidModal', $order->id, true)
         ->set('voidReason', 'Duplicate click')
         ->set('isSubmitting', true)
-        ->call('confirmVoidItem');
+        ->call('confirmVoid');
 
     expect($item->refresh()->voided_at)->toBeNull();
 });
@@ -206,10 +206,10 @@ it('prevents double-click on confirmVoidOrder in billing group detail', function
     );
 
     Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
-        ->set('voidOrderId', $order->id)
+        ->call('openVoidModal', $order->id, true)
         ->set('voidReason', 'Duplicate click')
         ->set('isSubmitting', true)
-        ->call('confirmVoidOrder');
+        ->call('confirmVoid');
 
     expect($order->refresh()->submission_status)->toBe('SUBMITTED');
 });

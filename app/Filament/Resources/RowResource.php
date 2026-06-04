@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RowResource\Pages;
+use App\Filament\Resources\RowResource\RelationManagers\SeatPairsRelationManager;
 use App\Models\Row;
 use App\Models\Section;
 use App\Models\User;
@@ -93,6 +94,13 @@ class RowResource extends BaseResource
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            SeatPairsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
