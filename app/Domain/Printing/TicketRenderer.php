@@ -269,23 +269,10 @@ class TicketRenderer
             return $this->wrap(implode("\n", $lines)."\n");
         }
 
-        $lines[] = $this->center(__('ticket.voucher'));
-        if ($document->is_reprint) {
-            $lines[] = $this->center('** '.__('ticket.reprint').' **');
-        }
-        $lines[] = str_repeat('=', $this->width());
-        $lines[] = __('ticket.sale').': '.($document->sale?->display_code ?? '-');
-        $lines[] = __('ticket.document').': '.($document->document_number ?: '#'.$document->id);
-        $lines[] = __('ticket.time').':  '.$this->localTime($document->requested_at);
-        if ($document->sale?->soldBy) {
-            $lines[] = __('ticket.server').': '.$document->sale->soldBy->name;
-        }
-        $lines[] = str_repeat('-', $this->width());
         $itemName = $document->saleItem?->display_name_snapshot ?? __('ticket.unknown_item', ['id' => $document->sale_item_id]);
         $quantity = max(1, (int) $document->quantity);
         $left = sprintf('%2dx %s', $quantity, mb_strimwidth($itemName, 0, 28));
         $lines[] = mb_strimwidth($left, 0, $this->width());
-        $lines[] = str_repeat('=', $this->width());
 
         return $this->wrap(implode("\n", $lines)."\n");
     }
