@@ -77,7 +77,7 @@ class BillingGroupDetail extends Component
             'status',
             'occupiedZones.row.section',
             'occupiedZones.server',
-            'orderHeaders' => fn ($q) => $q->orderBy('ordered_at', 'desc')->with(['items.menuItem', 'occupiedZone.row.section', 'orderedBy']),
+            'orderHeaders' => fn ($q) => $q->orderBy('ordered_at', 'desc')->orderBy('id', 'desc')->with(['items.menuItem', 'occupiedZone.row.section', 'orderedBy']),
             'paymentRecords' => fn ($q) => $q->orderBy('recorded_at', 'desc'),
             'billingDocuments' => fn ($q) => $q->orderBy('created_at', 'desc'),
             'favoritedBy',

@@ -49,7 +49,9 @@ class BillingGroup extends Model
 
     public function orderHeaders(): HasMany
     {
-        return $this->hasMany(OrderHeader::class);
+        return $this->hasMany(OrderHeader::class)
+            ->orderBy('ordered_at', 'desc')
+            ->orderBy('id', 'desc');
     }
 
     public function billingDocuments(): HasMany
