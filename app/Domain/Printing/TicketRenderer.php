@@ -271,6 +271,13 @@ class TicketRenderer
 
         $itemName = $document->saleItem?->display_name_snapshot ?? __('ticket.unknown_item', ['id' => $document->sale_item_id]);
         $quantity = max(1, (int) $document->quantity);
+
+        if ($document->is_reprint) {
+            $lines[] = $this->center('** '.__('ticket.reprint').' **');
+        }
+        $lines[] = __('ticket.document').': '.($document->document_number ?: '#'.$document->id);
+        $lines[] = __('ticket.time').':  '.$this->localTime($document->requested_at);
+        $lines[] = str_repeat('-', $this->width());
         $left = sprintf('%2dx %s', $quantity, mb_strimwidth($itemName, 0, 28));
         $lines[] = mb_strimwidth($left, 0, $this->width());
 
