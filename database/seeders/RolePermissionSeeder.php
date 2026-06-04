@@ -33,6 +33,7 @@ class RolePermissionSeeder extends Seeder
             // Payments
             'payment.record',
             'payment.void',
+            'payment.view',
             // Sales
             'sale.create',
             'sale.view',

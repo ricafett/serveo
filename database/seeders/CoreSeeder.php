@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 9;
+    private const SEED_VERSION = 10;
 
     public function run(): void
     {
@@ -909,6 +909,23 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'retry_batch_result', ':success reenviado(s), :skipped ignorado(s)'],
             ['pt-PT', 'app', 'retry_batch_success', 'Reenviado(s)'],
             ['pt-PT', 'app', 'retry_batch_none', 'Nenhum reenviado'],
+            ['pt-PT', 'app', 'date', 'Data'],
+            ['pt-PT', 'app', 'navigation_group_payments', 'Pagamentos'],
+            ['pt-PT', 'app', 'navigation_label_billing_group_payments', 'Pagamentos de Grupos'],
+            ['pt-PT', 'app', 'model_label_billing_group_payment', 'Pagamento de Grupo'],
+            ['pt-PT', 'app', 'plural_model_label_billing_group_payments', 'Pagamentos de Grupos'],
+            ['pt-PT', 'app', 'navigation_label_sale_payments', 'Pagamentos de Vendas'],
+            ['pt-PT', 'app', 'model_label_sale_payment', 'Pagamento de Venda'],
+            ['pt-PT', 'app', 'plural_model_label_sale_payments', 'Pagamentos de Vendas'],
+
+            ['en-US', 'app', 'date', 'Date'],
+            ['en-US', 'app', 'navigation_group_payments', 'Payments'],
+            ['en-US', 'app', 'navigation_label_billing_group_payments', 'Billing Group Payments'],
+            ['en-US', 'app', 'model_label_billing_group_payment', 'Billing Group Payment'],
+            ['en-US', 'app', 'plural_model_label_billing_group_payments', 'Billing Group Payments'],
+            ['en-US', 'app', 'navigation_label_sale_payments', 'Sale Payments'],
+            ['en-US', 'app', 'model_label_sale_payment', 'Sale Payment'],
+            ['en-US', 'app', 'plural_model_label_sale_payments', 'Sale Payments'],
 
             ['en-US', 'app', 'navigation_label_modifier_sets', 'Modifier Sets'],
             ['en-US', 'app', 'model_label_modifier_set', 'Modifier Set'],
@@ -964,6 +981,17 @@ class CoreSeeder extends Seeder
             ['en-US', 'menu', 'default', 'default'],
             ['en-US', 'menu', 'route_kitchen', 'Kitchen'],
             ['en-US', 'menu', 'route_bar', 'Bar'],
+
+            // ---------- payments ----------
+            ['pt-PT', 'payments', 'amount', 'Montante'],
+            ['pt-PT', 'payments', 'payment_label', 'Método de Pagamento'],
+            ['pt-PT', 'payments', 'voided', 'Anulado'],
+            ['pt-PT', 'payments', 'not_voided', 'Não Anulado'],
+
+            ['en-US', 'payments', 'amount', 'Amount'],
+            ['en-US', 'payments', 'payment_label', 'Payment Method'],
+            ['en-US', 'payments', 'voided', 'Voided'],
+            ['en-US', 'payments', 'not_voided', 'Not Voided'],
 
             // ---------- order (variants & modifiers) ----------
             ['pt-PT', 'order', 'select_variant', 'Selecionar variante'],
