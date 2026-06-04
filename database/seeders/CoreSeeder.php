@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 11;
+    private const SEED_VERSION = 12;
 
     public function run(): void
     {
@@ -1052,6 +1052,63 @@ class CoreSeeder extends Seeder
             ['en-US', 'order', 'unspecified', 'Unspecified'],
 
             ['pt-PT', 'order', 'unspecified', 'Ignorar'],
+
+            // ---------- backup ----------
+            ['pt-PT', 'app', 'navigation_group_system', 'Sistema'],
+            ['pt-PT', 'app', 'navigation_label_backups', 'Cópias de segurança'],
+            ['pt-PT', 'app', 'model_label_backup', 'Cópia de segurança'],
+            ['pt-PT', 'app', 'plural_model_label_backups', 'Cópias de segurança'],
+            ['pt-PT', 'app', 'backup_type', 'Tipo de cópia'],
+            ['pt-PT', 'app', 'backup_type_config', 'Configuração'],
+            ['pt-PT', 'app', 'backup_type_config_desc', 'Layout do espaço, menu, impressoras, utilizadores, traduções'],
+            ['pt-PT', 'app', 'backup_type_full', 'Completa'],
+            ['pt-PT', 'app', 'backup_type_full_desc', 'Base de dados completa incluindo todos os dados operacionais'],
+            ['pt-PT', 'app', 'backup_type_help', 'Cópia de configuração exporta apenas dados de referência configurados pelo admin. Cópia completa exporta tudo.'],
+            ['pt-PT', 'app', 'backup_import', 'Importar cópia de segurança'],
+            ['pt-PT', 'app', 'backup_file', 'Ficheiro de cópia'],
+            ['pt-PT', 'app', 'backup_file_help', 'Carregue um ficheiro .dump de uma exportação anterior.'],
+            ['pt-PT', 'app', 'backup_import_warning', 'Restaurar uma cópia de segurança irá SOBREPOR os dados existentes. Para cópias de configuração, apenas as tabelas de configuração são afetadas. Para cópias completas, toda a base de dados é substituída. Esta operação não pode ser desfeita.'],
+            ['pt-PT', 'app', 'backup_restore_start', 'Restaurar cópia de segurança'],
+            ['pt-PT', 'app', 'backup_restore_dispatched', 'Restauro em fila'],
+            ['pt-PT', 'app', 'backup_restore_dispatched_body', 'O restauro da cópia de segurança foi colocado em fila e será processado em segundo plano.'],
+            ['pt-PT', 'app', 'backup_status_requested', 'Solicitado'],
+            ['pt-PT', 'app', 'backup_status_completed', 'Concluído'],
+            ['pt-PT', 'app', 'backup_status_failed', 'Falhou'],
+            ['pt-PT', 'app', 'backup_status_uploaded', 'Carregado'],
+            ['pt-PT', 'app', 'backup_status_restoring', 'A restaurar'],
+            ['pt-PT', 'app', 'backup_status_restored', 'Restaurado'],
+            ['pt-PT', 'app', 'backup_status_restore_failed', 'Restauro falhou'],
+            ['pt-PT', 'app', 'file_name', 'Nome do ficheiro'],
+            ['pt-PT', 'app', 'file_size', 'Tamanho'],
+            ['pt-PT', 'app', 'requested_at', 'Solicitado em'],
+
+            ['en-US', 'app', 'navigation_group_system', 'System'],
+            ['en-US', 'app', 'navigation_label_backups', 'Backups'],
+            ['en-US', 'app', 'model_label_backup', 'Backup'],
+            ['en-US', 'app', 'plural_model_label_backups', 'Backups'],
+            ['en-US', 'app', 'backup_type', 'Backup Type'],
+            ['en-US', 'app', 'backup_type_config', 'Config'],
+            ['en-US', 'app', 'backup_type_config_desc', 'Venue layout, menu, printers, users, translations'],
+            ['en-US', 'app', 'backup_type_full', 'Full'],
+            ['en-US', 'app', 'backup_type_full_desc', 'Entire database including all operational data'],
+            ['en-US', 'app', 'backup_type_help', 'Config backup exports only admin-configured reference data. Full backup exports everything.'],
+            ['en-US', 'app', 'backup_import', 'Import Backup'],
+            ['en-US', 'app', 'backup_file', 'Backup File'],
+            ['en-US', 'app', 'backup_file_help', 'Upload a .dump file from a previous backup export.'],
+            ['en-US', 'app', 'backup_import_warning', 'Restoring a backup will OVERWRITE existing data. For config backups, only configuration tables are affected. For full backups, the entire database is replaced. This operation cannot be undone.'],
+            ['en-US', 'app', 'backup_restore_start', 'Restore Backup'],
+            ['en-US', 'app', 'backup_restore_dispatched', 'Restore queued'],
+            ['en-US', 'app', 'backup_restore_dispatched_body', 'The backup restore has been queued and will be processed in the background.'],
+            ['en-US', 'app', 'backup_status_requested', 'Requested'],
+            ['en-US', 'app', 'backup_status_completed', 'Completed'],
+            ['en-US', 'app', 'backup_status_failed', 'Failed'],
+            ['en-US', 'app', 'backup_status_uploaded', 'Uploaded'],
+            ['en-US', 'app', 'backup_status_restoring', 'Restoring'],
+            ['en-US', 'app', 'backup_status_restored', 'Restored'],
+            ['en-US', 'app', 'backup_status_restore_failed', 'Restore Failed'],
+            ['en-US', 'app', 'file_name', 'File Name'],
+            ['en-US', 'app', 'file_size', 'File Size'],
+            ['en-US', 'app', 'requested_at', 'Requested At'],
         ];
         foreach ($translations as [$lang, $ns, $key, $val]) {
             TranslationKey::updateOrCreate(
