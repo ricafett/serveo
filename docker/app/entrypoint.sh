@@ -38,6 +38,9 @@ echo "[entrypoint] Database is ready."
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force
 
+echo "[entrypoint] Seeding permissions and roles..."
+php artisan db:seed --class=RolePermissionSeeder --force
+
 echo "[entrypoint] Running CoreSeeder..."
 php artisan db:seed --class=CoreSeeder --force
 
