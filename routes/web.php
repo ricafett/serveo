@@ -10,6 +10,7 @@ use App\Livewire\Home\Dashboard;
 use App\Livewire\Menu\MenuIndex;
 use App\Livewire\Order\OrderEntry;
 use App\Models\AccountingExport;
+use App\Models\Backup;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -73,3 +74,18 @@ Route::get('/accounting-exports/{export}/download', function (AccountingExport $
         'Content-Type' => 'text/csv',
     ]);
 })->name('accounting-export.download')->middleware('auth');
+
+// Backup download (protected)
+Route::get('/backups/{backup}/download', function (Backup $backup) {
+    if ($backup->backup_status !== 'COMPLETED' || ! $backup->file_name) {
+        abort(404);
+    }
+
+    if (! Storage::disk('local')->exists($backup->file_name)) {
+        abort(404);
+    }
+
+    return Storage::disk('local')->download($backup->file_name, basename($backup->file_name), [
+        'Content-Type' => 'application/octet-stream',
+    ]);
+})->name('backup.download')->middleware('auth');

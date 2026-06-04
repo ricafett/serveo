@@ -45,6 +45,12 @@ class Audit
         'EXPORT_REQUESTED',
         'EXPORT_COMPLETED',
         'EXPORT_FAILED',
+        'BACKUP_REQUESTED',
+        'BACKUP_COMPLETED',
+        'BACKUP_FAILED',
+        'BACKUP_RESTORE_STARTED',
+        'BACKUP_RESTORE_COMPLETED',
+        'BACKUP_RESTORE_FAILED',
     ];
 
     /**
