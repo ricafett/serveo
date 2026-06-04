@@ -194,6 +194,8 @@ return [
     'helper_text_group_items' => 'Group identical items and display quantity (e.g. "3x Pizza"). When off, each unit prints on its own line.',
     'helper_text_ignore_variants' => 'Do not print variant names (e.g. "Casa", "Reserva") on this document type.',
     'helper_text_ignore_modifiers' => 'Do not print modifier names (e.g. "sem cebola") on this document type.',
+    'branding_header' => 'Branding Header',
+    'helper_text_branding_header' => 'Optional text printed in bold at the top of this document type. Supports multiple lines.',
     'is_voucher_enabled' => 'Voucher enabled',
     'is_voucher_enabled_help' => 'Only voucher-enabled items appear in cashier sales and sales ignore variants and modifiers.',
 ];

@@ -39,6 +39,9 @@ class TicketRenderer
 
         $lines = [];
 
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
         $firstItem = $ticket->items->first();
         $voidRoute = $firstItem?->fulfillment_route ?? $ticket->ticket_type;
 
@@ -149,6 +152,10 @@ class TicketRenderer
         $bill->loadMissing(['billingGroup.orderHeaders.items.menuItem', 'billingGroup.paymentRecords', 'billingGroup.occupiedZones.row.section', 'createdBy']);
 
         $lines = [];
+
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
         $lines[] = $this->center(__('ticket.internal_bill'));
         if ($bill->is_reprint) {
             $lines[] = $this->center('** '.__('ticket.reprint').' **');
@@ -239,6 +246,9 @@ class TicketRenderer
 
         $lines = [];
 
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
         if ($document->document_type === SaleDocument::TYPE_RECEIPT) {
             $lines[] = $this->center(__('ticket.sale_receipt'));
             if ($document->is_reprint) {
@@ -303,6 +313,27 @@ class TicketRenderer
         }
 
         return $name;
+    }
+
+    private function appendBrandingHeader(array &$lines): void
+    {
+        $header = $this->documentConfig?->branding_header;
+
+        if (blank($header)) {
+            return;
+        }
+
+        foreach (explode("\n", $header) as $headerLine) {
+            $lines[] = $this->bold($this->center(trim($headerLine)));
+        }
+    }
+
+    /**
+     * Wrap text in ESC/POS bold on/off commands.
+     */
+    private function bold(string $text): string
+    {
+        return "\x1B\x45\x01".$text."\x1B\x45\x00";
     }
 
     private function wrap(string $payload): string

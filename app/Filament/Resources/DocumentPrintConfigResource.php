@@ -65,8 +65,13 @@ class DocumentPrintConfigResource extends BaseResource
                 ->helperText(__('app.helper_text_ignore_variants')),
             Forms\Components\Toggle::make('ignore_modifiers')
                 ->helperText(__('app.helper_text_ignore_modifiers')),
-            Forms\Components\Toggle::make('is_active')->default(true),
-        ]);
+                Forms\Components\Toggle::make('is_active')->default(true),
+                Forms\Components\Textarea::make('branding_header')
+                    ->label(__('app.branding_header'))
+                    ->helperText(__('app.helper_text_branding_header'))
+                    ->rows(3)
+                    ->autosize(),
+            ]);
     }
 
     public static function table(Table $table): Table

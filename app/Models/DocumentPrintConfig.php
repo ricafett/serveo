@@ -17,7 +17,7 @@ class DocumentPrintConfig extends Model
     protected $fillable = [
         'document_type', 'fulfillment_route',
         'group_items', 'ignore_variants', 'ignore_modifiers',
-        'is_active',
+        'is_active', 'branding_header',
     ];
 
     protected $casts = [

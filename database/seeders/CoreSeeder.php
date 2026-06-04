@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 8;
+    private const SEED_VERSION = 9;
 
     public function run(): void
     {
@@ -224,6 +224,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'helper_text_group_items', 'Agrupar itens iguais e mostrar quantidade (ex: "3x Pizza"). Desligado: cada unidade numa linha própria.'],
             ['pt-PT', 'app', 'helper_text_ignore_variants', 'Não imprimir nomes de variantes (ex: "Casa", "Reserva") neste tipo de documento.'],
             ['pt-PT', 'app', 'helper_text_ignore_modifiers', 'Não imprimir nomes de modificadores (ex: "sem cebola") neste tipo de documento.'],
+            ['pt-PT', 'app', 'branding_header', 'Cabeçalho de Marca'],
+            ['pt-PT', 'app', 'helper_text_branding_header', 'Texto opcional impresso a negrito no topo deste tipo de documento. Suporta várias linhas.'],
             ['pt-PT', 'app', 'is_voucher_enabled', 'Ativar senhas'],
             ['pt-PT', 'app', 'is_voucher_enabled_help', 'Apenas itens com senhas ativas aparecem nas vendas de caixa e as vendas ignoram variantes e modificadores.'],
 
@@ -384,6 +386,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'helper_text_group_items', 'Group identical items and show quantity (e.g. "3x Pizza"). When off, each unit prints on its own line.'],
             ['en-US', 'app', 'helper_text_ignore_variants', 'Do not print variant names (e.g. "Casa", "Reserva") on this document type.'],
             ['en-US', 'app', 'helper_text_ignore_modifiers', 'Do not print modifier names (e.g. "without onion") on this document type.'],
+            ['en-US', 'app', 'branding_header', 'Branding Header'],
+            ['en-US', 'app', 'helper_text_branding_header', 'Optional text printed in bold at the top of this document type. Supports multiple lines.'],
             ['en-US', 'app', 'is_voucher_enabled', 'Voucher enabled'],
             ['en-US', 'app', 'is_voucher_enabled_help', 'Only voucher-enabled items appear in cashier sales and sales ignore variants and modifiers.'],
 
