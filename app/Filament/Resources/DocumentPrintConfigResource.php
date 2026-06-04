@@ -71,6 +71,20 @@ class DocumentPrintConfigResource extends BaseResource
                     ->helperText(__('app.helper_text_branding_header'))
                     ->rows(3)
                     ->autosize(),
+                Forms\Components\TextInput::make('print_begin_space')
+                    ->label(__('app.print_begin_space'))
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(10)
+                    ->default(0)
+                    ->helperText(__('app.print_begin_space_help')),
+                Forms\Components\TextInput::make('print_end_space')
+                    ->label(__('app.print_end_space'))
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(10)
+                    ->default(3)
+                    ->helperText(__('app.print_end_space_help')),
             ]);
     }
 

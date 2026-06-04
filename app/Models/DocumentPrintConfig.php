@@ -18,6 +18,7 @@ class DocumentPrintConfig extends Model
         'document_type', 'fulfillment_route',
         'group_items', 'ignore_variants', 'ignore_modifiers',
         'is_active', 'branding_header',
+        'print_begin_space', 'print_end_space',
     ];
 
     protected $casts = [

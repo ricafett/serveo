@@ -16,11 +16,17 @@ use Illuminate\Support\Carbon;
 class TicketRenderer
 {
     public function __construct(
-        private readonly int $charWidth = 48,
-        private readonly int $beginSpace = 0,
-        private readonly int $endSpace = 3,
+        private int $charWidth = 48,
+        private int $beginSpace = 0,
+        private int $endSpace = 0,
         private readonly ?DocumentPrintConfig $documentConfig = null,
-    ) {}
+    ) {
+        // Document config overrides printer defaults for begin/end feed lines.
+        if ($this->documentConfig) {
+            $this->beginSpace = $this->documentConfig->print_begin_space ?? $this->beginSpace;
+            $this->endSpace = $this->documentConfig->print_end_space ?? $this->endSpace;
+        }
+    }
 
     private function width(): int
     {
