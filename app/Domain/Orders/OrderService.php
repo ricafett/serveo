@@ -214,6 +214,70 @@ class OrderService
         });
     }
 
+    /**
+     * Mark a single order item as delivered. No-op if already delivered or voided.
+     */
+    public function markDelivered(OrderItem $item, User $actor): void
+    {
+        if ($item->isVoided()) {
+            throw new RuntimeException('Cannot mark a voided item as delivered.');
+        }
+
+        if ($item->isDelivered()) {
+            return;
+        }
+
+        $item->update([
+            'delivered_at' => now(),
+            'delivered_by_user_id' => $actor->id,
+        ]);
+
+        $header = $item->header()->with('billingGroup')->first();
+
+        Audit::record(
+            'ORDER_ITEM_DELIVERED',
+            "Item #{$item->id} marcado como entregue",
+            [],
+            [
+                'billing_group_id' => $header?->billing_group_id,
+                'order_header_id' => $header?->id,
+                'order_item_id' => $item->id,
+                'service_session_id' => $header?->billingGroup?->service_session_id,
+                'actor_user_id' => $actor->id,
+            ],
+        );
+    }
+
+    /**
+     * Unmark a delivered order item. No-op if not delivered.
+     */
+    public function unmarkDelivered(OrderItem $item, User $actor): void
+    {
+        if (! $item->isDelivered()) {
+            return;
+        }
+
+        $item->update([
+            'delivered_at' => null,
+            'delivered_by_user_id' => null,
+        ]);
+
+        $header = $item->header()->with('billingGroup')->first();
+
+        Audit::record(
+            'ORDER_ITEM_UNDELIVERED',
+            "Item #{$item->id} desmarcado como entregue",
+            [],
+            [
+                'billing_group_id' => $header?->billing_group_id,
+                'order_header_id' => $header?->id,
+                'order_item_id' => $item->id,
+                'service_session_id' => $header?->billingGroup?->service_session_id,
+                'actor_user_id' => $actor->id,
+            ],
+        );
+    }
+
     public function voidItem(OrderItem $item, User $actor, ?string $reason = null): void
     {
         $this->assertCanVoidOrder($actor, $item->header);
@@ -278,6 +342,114 @@ class OrderService
         });
     }
 
+    /**
+     * Void one or more items from the same order, optionally grouped into a single
+     * void ticket per fulfillment route.
+     *
+     * @param  int[]  $itemIds
+     */
+    public function voidItems(array $itemIds, User $actor, ?string $reason = null): OrderHeader
+    {
+        if (empty($itemIds)) {
+            throw new RuntimeException('No items selected for void.');
+        }
+
+        $items = OrderItem::with('header.billingGroup.serviceSession')
+            ->whereIn('id', $itemIds)
+            ->get();
+
+        if ($items->isEmpty()) {
+            throw new RuntimeException('No items found.');
+        }
+
+        $orderIds = $items->pluck('header.id')->unique();
+        if ($orderIds->count() !== 1) {
+            throw new RuntimeException('All items must belong to the same order.');
+        }
+
+        $header = $items->first()->header;
+        $this->assertCanVoidOrder($actor, $header);
+
+        if ($header->billingGroup?->is_closed) {
+            throw new RuntimeException('Cannot void items on a closed billing group.');
+        }
+
+        if (! $header->billingGroup?->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
+        // Only void items that are not already voided and not delivered.
+        $toVoid = $items->filter(fn (OrderItem $item) => ! $item->isVoided() && ! $item->isDelivered());
+        if ($toVoid->isEmpty()) {
+            return $header->refresh();
+        }
+
+        return DB::transaction(function () use ($header, $toVoid, $actor, $reason) {
+            // Group by fulfillment route.
+            $byRoute = $toVoid->groupBy('fulfillment_route');
+
+            foreach ($byRoute as $route => $routeItems) {
+                foreach ($routeItems as $item) {
+                    $item->update([
+                        'voided_at' => now(),
+                        'voided_by_user_id' => $actor->id,
+                        'void_reason' => $reason,
+                    ]);
+                }
+
+                $printer = $this->resolvePrinterForRoute(
+                    $header->billingGroup,
+                    $route,
+                    PrinterRoute::DOC_PRODUCTION_TICKET,
+                );
+
+                $voidTicket = null;
+
+                if ($printer) {
+                    $voidTicket = ProductionTicket::create([
+                        'service_session_id' => $header->billingGroup->service_session_id,
+                        'billing_group_id' => $header->billing_group_id,
+                        'occupied_zone_id' => $header->occupied_zone_id,
+                        'printer_id' => $printer->id,
+                        'ticket_type' => 'VOID',
+                        'ticket_status' => 'PENDING',
+                        'requested_at' => now(),
+                        'is_void_slip' => true,
+                        'is_reprint' => false,
+                        'created_by_user_id' => $actor->id,
+                        'delivery_reference_label' => $routeItems->first()->delivery_reference_label,
+                    ]);
+                    $voidTicket->items()->sync($routeItems->pluck('id'));
+                    $this->printQueue->enqueueProductionTicket($voidTicket, $actor);
+                }
+
+                Audit::record(
+                    'ORDER_ITEMS_VOIDED',
+                    "{$routeItems->count()} itens anulados na rota {$route} (pedido #{$header->id})",
+                    [
+                        'reason' => $reason,
+                        'item_count' => $routeItems->count(),
+                        'void_slip_skipped' => $voidTicket === null,
+                    ],
+                    [
+                        'billing_group_id' => $header->billing_group_id,
+                        'order_header_id' => $header->id,
+                        'service_session_id' => $header->billingGroup?->service_session_id,
+                        'actor_user_id' => $actor->id,
+                        'production_ticket_id' => $voidTicket?->id,
+                    ],
+                );
+            }
+
+            $remaining = $header->items()->whereNull('voided_at')->count();
+            $header->update([
+                'submission_status' => $remaining === 0 ? 'VOIDED' : 'PARTIALLY_VOIDED',
+            ]);
+
+            return $header->refresh();
+        });
+    }
+
     private function assertCanVoidOrder(User $actor, OrderHeader $header): void
     {
         $this->ensureCan($actor, 'order.void_item');
@@ -297,6 +469,10 @@ class OrderService
     {
         if ($item->voided_at) {
             return;
+        }
+
+        if ($item->isDelivered()) {
+            throw new RuntimeException('Cannot void a delivered item. Unmark as delivered first.');
         }
 
         $item->update([

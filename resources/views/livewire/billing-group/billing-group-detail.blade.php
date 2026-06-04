@@ -2,8 +2,7 @@
     x-data="{
         addZoneModal: @entangle('showAddZoneModal'),
         releaseModal: @entangle('showReleaseModal'),
-        voidItemModal: @entangle('showVoidItemModal'),
-        voidOrderModal: @entangle('showVoidOrderModal'),
+        voidModal: @entangle('showVoidModal'),
     }"
     wire:poll.10s="refreshData">
     <div class="max-w-4xl mx-auto">
@@ -137,22 +136,6 @@
             </div>
         </div>
 
-        {{-- Totals --}}
-        <div class="mb-6 grid grid-cols-3 gap-3">
-            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.charges') }}</div>
-                <div class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ number_format($this->chargesTotal, 2) }} €</div>
-            </div>
-            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.paid') }}</div>
-                <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($this->paymentsTotal, 2) }} €</div>
-            </div>
-            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
-                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('app.balance') }}</div>
-                <div class="mt-1 text-xl font-bold {{ $this->balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ number_format($this->balance, 2) }} €</div>
-            </div>
-        </div>
-
         {{-- Orders --}}
         <div class="mb-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
@@ -171,10 +154,69 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-2">
-                                @if($this->canVoidOrder($order) && $order->items->whereNull('voided_at')->isNotEmpty())
-                                    <button type="button" wire:click="openVoidOrderModal({{ $order->id }})" wire:target="openVoidOrderModal" wire:loading.attr="disabled" title="{{ __('billing.void_order') }}" class="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                                    </button>
+                                @can('order.mark_delivered')
+                                    @php
+                                        $nonVoidedItems = $order->items->whereNull('voided_at');
+                                        $allDelivered = $nonVoidedItems->isNotEmpty() && $nonVoidedItems->every(fn($i) => $i->delivered_at);
+                                    @endphp
+                                    @if($nonVoidedItems->isNotEmpty())
+                                        <button
+                                            type="button"
+                                            wire:click="toggleOrderDelivered({{ $order->id }})"
+                                            wire:target="toggleOrderDelivered({{ $order->id }})"
+                                            wire:loading.attr="disabled"
+                                            class="rounded-lg p-1 min-h-[36px] min-w-[36px] flex items-center justify-center transition-colors
+                                                {{ $allDelivered
+                                                    ? 'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'
+                                                    : 'text-gray-300 hover:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-800' }}"
+                                            title="{{ $allDelivered ? __('billing.mark_all_undelivered') : __('billing.mark_all_delivered') }}"
+                                        >
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                @endcan
+                                @if($this->canVoidOrder($order) && $order->items->whereNull('voided_at')->whereNull('delivered_at')->isNotEmpty())
+                                    <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                        <button type="button" @click="open = !open" class="rounded-lg p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-800 min-h-[36px] min-w-[36px] flex items-center justify-center">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
+                                            </svg>
+                                        </button>
+                                        <div
+                                            x-show="open"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="transform opacity-0 scale-95"
+                                            x-transition:enter-end="transform opacity-100 scale-100"
+                                            x-transition:leave="transition ease-in duration-75"
+                                            x-transition:leave-start="transform opacity-100 scale-100"
+                                            x-transition:leave-end="transform opacity-0 scale-95"
+                                            class="absolute right-0 z-20 mt-1 w-44 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
+                                            style="display: none;"
+                                        >
+                                            <div class="py-1">
+                                                <button
+                                                    type="button"
+                                                    wire:click="openVoidModal({{ $order->id }}, true)"
+                                                    @click="open = false"
+                                                    class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
+                                                >
+                                                    {{ __('billing.void_order') }}
+                                                </button>
+                                                @if($order->items->whereNull('voided_at')->count() > 1)
+                                                    <button
+                                                        type="button"
+                                                        wire:click="openVoidModal({{ $order->id }}, false)"
+                                                        @click="open = false"
+                                                        class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
+                                                    >
+                                                        {{ __('billing.void_items') }}
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endif
                                 <span class="text-sm rounded-full px-2 py-0.5 font-medium
                                     {{ $order->submission_status === 'SUBMITTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
@@ -192,7 +234,33 @@
                             @foreach($order->items as $item)
                                 <div class="flex items-center justify-between text-base">
                                     <div class="flex items-center gap-2">
-                                        <span class="{{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-gray-100' }}">
+                                        {{-- Delivery toggle (left side) --}}
+                                        @if(!$item->voided_at)
+                                            @can('order.mark_delivered')
+                                                <button
+                                                    type="button"
+                                                    wire:click="toggleDelivered({{ $item->id }})"
+                                                    wire:target="toggleDelivered({{ $item->id }})"
+                                                    wire:loading.attr="disabled"
+                                                    class="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg transition-colors
+                                                        {{ $item->delivered_at
+                                                            ? 'text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20'
+                                                            : 'text-gray-300 hover:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-800' }}"
+                                                    title="{{ $item->delivered_at ? __('billing.mark_undelivered') : __('billing.mark_delivered') }}"
+                                                >
+                                                    @if($item->delivered_at)
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                                        </svg>
+                                                    @else
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    @endif
+                                                </button>
+                                            @endcan
+                                        @endif
+                                        <span class="{{ $item->voided_at ? 'line-through text-gray-400 dark:text-gray-600' : ($item->delivered_at ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100') }}">
                                             {{ $item->quantity }}× {{ $item->menuItem?->display_name }}
                                             @if($item->variant_name)
                                                 <span class="text-primary-500 dark:text-primary-400">{{ $item->variant_name }}</span>
@@ -203,10 +271,8 @@
                                         </span>
                                         @if($item->voided_at)
                                             <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.voided') }}</span>
-                                        @elseif($this->canVoidItem($item))
-                                            <button type="button" wire:click="openVoidItemModal({{ $item->id }})" wire:target="openVoidItemModal" wire:loading.attr="disabled" title="{{ __('billing.void_item') }}" class="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                                            </button>
+                                        @elseif($item->delivered_at)
+                                            <span class="text-sm text-green-600 dark:text-green-400">{{ __('billing.delivered') }}</span>
                                         @endif
                                     </div>
                                     <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }} €</span>
@@ -217,6 +283,22 @@
                 @empty
                     <div class="px-4 py-6 text-center text-base text-gray-500 dark:text-gray-400">{{ __('billing.no_orders') }}</div>
                 @endforelse
+            </div>
+        </div>
+
+        {{-- Totals --}}
+        <div class="mb-6 grid grid-cols-3 gap-3">
+            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.charges') }}</div>
+                <div class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ number_format($this->chargesTotal, 2) }} €</div>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('billing.paid') }}</div>
+                <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($this->paymentsTotal, 2) }} €</div>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('app.balance') }}</div>
+                <div class="mt-1 text-xl font-bold {{ $this->balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ number_format($this->balance, 2) }} €</div>
             </div>
         </div>
 
@@ -418,47 +500,69 @@
         </div>
     </div>
 
-    {{-- Void Item Modal --}}
-    <div x-show="voidItemModal" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="display: none;">
-        <div x-show="voidItemModal" class="fixed inset-0 bg-black/50 dark:bg-black/70" @click="voidItemModal = false; $wire.closeVoidModal()"></div>
-        <div x-show="voidItemModal" class="relative w-full sm:w-[28rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+    {{-- Void Confirmation Modal --}}
+    <div x-show="voidModal" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="display: none;">
+        <div x-show="voidModal" x-transition.opacity class="fixed inset-0 bg-black/50 dark:bg-black/70" @click="voidModal = false; $wire.closeVoidModal()"></div>
+        <div x-show="voidModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0" x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100" x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0" class="relative w-full sm:w-[28rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_item') }}</h2>
-                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                        @if(! empty($this->selectedVoidItemIds) && count($this->selectedVoidItemIds) === collect($this->voidableItems)->count())
+                            {{ __('billing.void_order') }} #{{ $this->voidOrderId }}
+                        @else
+                            {{ __('billing.void_items') }} — {{ __('billing.orders') }} #{{ $this->voidOrderId }}
+                        @endif
+                    </h2>
+                    <button type="button" @click="voidModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <label for="detail-void-item-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason_optional') }}</label>
-                <textarea id="detail-void-item-reason" wire:model="voidReason" rows="3" placeholder="{{ __('billing.void_reason_optional') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
+
+                @if(empty($this->voidableItems))
+                    <p class="text-base text-gray-500 dark:text-gray-400 mb-4">{{ __('billing.no_voidable_items') }}</p>
+                @else
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ __('billing.select_items_to_void') }}</p>
+
+                    <div class="space-y-1 mb-3">
+                        @foreach($this->voidableItems as $item)
+                            <label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                <input type="checkbox" wire:model="selectedVoidItemIds" value="{{ $item['id'] }}" class="h-5 w-5 rounded border-gray-300 dark:border-gray-700 text-primary-600 focus:ring-primary-500">
+                                <span class="flex-1 text-base text-gray-900 dark:text-gray-100">
+                                    {{ $item['quantity'] }}× {{ $item['menu_item']['display_name'] ?? '#' . $item['id'] }}
+                                    @if($item['variant_name'] ?? null)
+                                        <span class="text-primary-500 dark:text-primary-400">{{ $item['variant_name'] }}</span>
+                                    @endif
+                                </span>
+                                <span class="text-base text-gray-500 dark:text-gray-400">{{ number_format($item['line_subtotal'], 2) }} €</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <button
+                        type="button"
+                        wire:click="openVoidModal({{ $this->voidOrderId }}, {{ empty($this->selectedVoidItemIds) ? 'true' : 'false' }})"
+                        class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 mb-3"
+                    >
+                        {{ empty($this->selectedVoidItemIds) ? __('billing.select_all') : __('billing.deselect_all') }}
+                    </button>
+                @endif
+
+                <label for="detail-void-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason_optional') }}</label>
+                <textarea id="detail-void-reason" wire:model="voidReason" rows="3" placeholder="{{ __('billing.void_reason_optional') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
                 @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_print_warning') }}</p>
                 <div class="mt-4 flex gap-3">
-                    <button type="button" @click="voidItemModal = false; $wire.closeVoidModal()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">{{ __('app.cancel') }}</button>
-                    <button type="button" wire:click="confirmVoidItem" wire:target="confirmVoidItem" wire:loading.attr="disabled" class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{{ __('billing.confirm_void_item') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Void Order Modal --}}
-    <div x-show="voidOrderModal" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="display: none;">
-        <div x-show="voidOrderModal" class="fixed inset-0 bg-black/50 dark:bg-black/70" @click="voidOrderModal = false; $wire.closeVoidModal()"></div>
-        <div x-show="voidOrderModal" class="relative w-full sm:w-[28rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
-            <div class="p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('billing.void_order') }}</h2>
-                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button type="button" @click="voidModal = false; $wire.closeVoidModal()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">{{ __('app.cancel') }}</button>
+                    <button
+                        type="button"
+                        wire:click="confirmVoid"
+                        wire:target="confirmVoid"
+                        wire:loading.attr="disabled"
+                        @if(empty($this->selectedVoidItemIds)) disabled @endif
+                        class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {{ empty($this->selectedVoidItemIds) ? __('billing.confirm_void') : __('billing.confirm_void_n_items', ['count' => count($this->selectedVoidItemIds)]) }}
                     </button>
-                </div>
-                <label for="detail-void-order-reason" class="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('billing.void_reason_optional') }}</label>
-                <textarea id="detail-void-order-reason" wire:model="voidReason" rows="3" placeholder="{{ __('billing.void_reason_optional') }}" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
-                @error('voidReason') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('billing.void_order_warning') }}</p>
-                <div class="mt-4 flex gap-3">
-                    <button type="button" @click="voidOrderModal = false; $wire.closeVoidModal()" class="flex-1 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 min-h-[48px] transition-colors">{{ __('app.cancel') }}</button>
-                    <button type="button" wire:click="confirmVoidOrder" wire:target="confirmVoidOrder" wire:loading.attr="disabled" class="flex-1 rounded-lg bg-red-600 px-4 py-3 text-base font-semibold text-white hover:bg-red-500 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{{ __('billing.confirm_void_order') }}</button>
                 </div>
             </div>
         </div>

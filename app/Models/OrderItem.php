@@ -13,6 +13,7 @@ class OrderItem extends Model
         'delivery_seat_pair_id', 'delivery_reference_label',
         'sent_to_production_at', 'voided_at', 'voided_by_user_id',
         'void_reason', 'parent_order_item_id', 'variant_name', 'modifier_name',
+        'delivered_at', 'delivered_by_user_id',
     ];
 
     protected $casts = [
@@ -20,6 +21,7 @@ class OrderItem extends Model
         'line_subtotal' => 'decimal:2',
         'sent_to_production_at' => 'datetime',
         'voided_at' => 'datetime',
+        'delivered_at' => 'datetime',
     ];
 
     public function header(): BelongsTo
@@ -37,8 +39,18 @@ class OrderItem extends Model
         return $this->belongsTo(SeatPair::class, 'delivery_seat_pair_id');
     }
 
+    public function deliveredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'delivered_by_user_id');
+    }
+
     public function isVoided(): bool
     {
         return $this->voided_at !== null;
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->delivered_at !== null;
     }
 }

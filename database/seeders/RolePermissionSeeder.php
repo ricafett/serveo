@@ -24,6 +24,7 @@ class RolePermissionSeeder extends Seeder
             // Orders
             'order.create',
             'order.void_item',
+            'order.mark_delivered',
             // Production tickets
             'production_ticket.view',
             'production_ticket.reprint',
@@ -90,6 +91,7 @@ class RolePermissionSeeder extends Seeder
             'billing_group.reopen',
             'order.create',
             'order.void_item',
+            'order.mark_delivered',
             'production_ticket.view',
             'audit.view',
             'event_log.view_limited',

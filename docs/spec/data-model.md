@@ -273,6 +273,8 @@ Business notes:
 - VoidedByUserId nullable (FK -> AppUser)
 - VoidReason nullable
 - ParentOrderItemId nullable (FK -> OrderItem)
+- DeliveredAt nullable
+- DeliveredByUserId nullable (FK -> AppUser)
 - CreatedAt
 - UpdatedAt
 

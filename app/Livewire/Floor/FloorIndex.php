@@ -7,6 +7,7 @@ use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
+use App\Models\OrderHeader;
 use App\Models\Row;
 use App\Models\Section;
 use App\Models\ServiceSession;
@@ -135,7 +136,23 @@ class FloorIndex extends Component
             $query->whereHas('favoritedBy', fn ($q) => $q->where('user_id', $user?->id));
         }
 
-        return $query->orderBy('opened_at', 'desc')->get();
+        $groups = $query->orderBy('opened_at', 'desc')->get();
+
+        // Compute undelivered order counts in a single query.
+        $groupIds = $groups->pluck('id');
+
+        $undeliveredCounts = OrderHeader::whereIn('billing_group_id', $groupIds)
+            ->where('submission_status', '!=', 'VOIDED')
+            ->whereHas('items', fn ($q) => $q
+                ->whereNull('voided_at')
+                ->whereNull('delivered_at'))
+            ->selectRaw('billing_group_id, COUNT(*) as count')
+            ->groupBy('billing_group_id')
+            ->pluck('count', 'billing_group_id');
+
+        $groups->each(fn ($g) => $g->undelivered_order_count = $undeliveredCounts[$g->id] ?? 0);
+
+        return $groups;
     }
 
     public function getAvailableServersProperty()

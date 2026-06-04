@@ -133,6 +133,9 @@ A specific seat-pair delivery override should not be accepted unless the system 
 ### BR-032 — Order immutability after submission
 Once an order item has been submitted to production, it shall not be silently edited in place. Changes after submission must be represented through voids, corrections, or additional order items.
 
+### BR-032D — Delivered item void restriction
+An order item marked as delivered shall not be voided. The delivered mark must be removed before voiding can proceed.
+
 ### BR-032A — Order cancellation ownership
 Servers may cancel only orders and order items they originally created. Cashiers and admins may cancel any eligible order or order item.
 
