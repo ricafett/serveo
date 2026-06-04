@@ -61,9 +61,9 @@
                             <template x-if="cart.length > 0">
                                 <template x-for="(item, index) in cart" :key="item.cart_key">
                                     <div class="px-4 py-3 flex items-center justify-between">
-                                        <div class="min-w-0 flex-1">
-                                            <div class="text-base font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400" x-text="(item.unit_price * item.quantity).toFixed(2) + ' €'"></div>
+                                        <div class="min-w-0 flex-1 flex items-center gap-2">
+                                            <span class="text-base font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400 shrink-0" x-text="(item.unit_price * item.quantity).toFixed(2) + ' €'"></span>
                                         </div>
                                         <div class="flex items-center gap-1 ml-3">
                                             <button type="button" @click="decrement(index)" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center">-</button>
