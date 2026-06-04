@@ -12,7 +12,8 @@
     3. Install npm dependencies
     4. Run database migrations
     5. Seed core data (CoreSeeder)
-    6. Clear all caches
+    6. Seed roles and permissions (RolePermissionSeeder)
+    7. Clear all caches
 
 .PARAMETER SkipNpm
     Skip npm install (useful when frontend deps haven't changed).
@@ -98,7 +99,7 @@ Write-Host "========================================" -ForegroundColor Blue
 # Composer dependencies
 # ---------------------------------------------------------------------------
 
-Write-Host "`n[1/5] Installing Composer dependencies..." -ForegroundColor Cyan
+Write-Host "`n[1/6] Installing Composer dependencies..." -ForegroundColor Cyan
 $composerOutput = & composer install --no-interaction --prefer-dist 2>&1
 $composerOutput | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) {
@@ -114,7 +115,7 @@ if (-not $SkipNpm) {
     if (-not (Test-CommandExists "npm")) {
         Write-Warning "npm not found. Skipping frontend dependencies."
     } else {
-        Write-Host "`n[2/5] Installing npm dependencies..." -ForegroundColor Cyan
+        Write-Host "`n[2/6] Installing npm dependencies..." -ForegroundColor Cyan
         $npmCiOutput = & npm ci 2>&1
         $npmCiOutput | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
@@ -132,14 +133,14 @@ if (-not $SkipNpm) {
         }
     }
 } else {
-    Write-Host "`n[2/5] Skipping npm install (-SkipNpm)" -ForegroundColor DarkGray
+    Write-Host "`n[2/6] Skipping npm install (-SkipNpm)" -ForegroundColor DarkGray
 }
 
 # ---------------------------------------------------------------------------
 # Migrate
 # ---------------------------------------------------------------------------
 
-Write-Host "`n[3/5] Running database migrations..." -ForegroundColor Cyan
+Write-Host "`n[3/6] Running database migrations..." -ForegroundColor Cyan
 $migrateOutput = & php artisan migrate --force 2>&1
 $migrateOutput | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) {
@@ -160,7 +161,7 @@ if ($pendingMigrations) {
 # Seed
 # ---------------------------------------------------------------------------
 
-Write-Host "`n[4/5] Seeding core data..." -ForegroundColor Cyan
+Write-Host "`n[4/6] Seeding core data..." -ForegroundColor Cyan
 $seedArgs = @("artisan", "db:seed", "--class=CoreSeeder")
 if ($ForceSeed) {
     $seedArgs += "--force"
@@ -173,10 +174,22 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ---------------------------------------------------------------------------
-# Clear caches
+# Seed roles and permissions
 # ---------------------------------------------------------------------------
 
-Write-Host "`n[5/5] Clearing caches..." -ForegroundColor Cyan
+Write-Host "`n[5/6] Seeding roles and permissions..." -ForegroundColor Cyan
+$seedPermsArgs = @("artisan", "db:seed", "--class=RolePermissionSeeder")
+if ($ForceSeed) {
+    $seedPermsArgs += "--force"
+}
+$seedPermsOutput = & php @seedPermsArgs 2>&1
+$seedPermsOutput | ForEach-Object { Write-Host $_ }
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "RolePermissionSeeder failed."
+    exit 1
+}
+
+Write-Host "`n[6/6] Clearing caches..." -ForegroundColor Cyan
 $cacheCommands = @(
     @("artisan", "config:clear"),
     @("artisan", "route:clear"),
