@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SaleResource\Pages;
 use App\Models\Sale;
 use BackedEnum;
+use Filament\Actions;
 use Filament\Infolists\Components;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
@@ -63,7 +64,7 @@ class SaleResource extends BaseResource
             ])
             ->defaultSort('sold_at', 'desc')
             ->recordActions([
-                Tables\Actions\ViewAction::make(),
+                Actions\ViewAction::make(),
             ]);
     }
 
