@@ -24,4 +24,9 @@ class PaymentRecord extends Model
     {
         return $this->belongsTo(BillingGroup::class);
     }
+
+    public function recordedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recorded_by_user_id');
+    }
 }
