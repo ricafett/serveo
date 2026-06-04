@@ -7,9 +7,9 @@ use App\Jobs\RestoreBackupJob;
 use App\Models\Backup;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,7 +17,7 @@ class ImportBackup extends Page
 {
     protected static string $resource = BackupResource::class;
 
-    protected static string $view = 'filament.resources.backup-resource.pages.import-backup';
+    protected string $view = 'filament.resources.backup-resource.pages.import-backup';
 
     public ?array $data = [];
 
@@ -30,9 +30,9 @@ class ImportBackup extends Page
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Forms\Components\FileUpload::make('backup_file')
                     ->label(__('app.backup_file'))

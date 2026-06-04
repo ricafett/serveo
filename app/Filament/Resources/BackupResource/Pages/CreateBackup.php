@@ -6,17 +6,17 @@ use App\Filament\Resources\BackupResource;
 use App\Jobs\GenerateBackupJob;
 use App\Models\Backup;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
 class CreateBackup extends CreateRecord
 {
     protected static string $resource = BackupResource::class;
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->schema([
             Forms\Components\Select::make('backup_type')
                 ->label(__('app.backup_type'))
                 ->options(function () {
