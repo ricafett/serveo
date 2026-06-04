@@ -38,6 +38,7 @@ class AdminPanelProvider extends PanelProvider
                 __('app.navigation_group_operation'),
                 __('app.navigation_group_config'),
                 __('app.navigation_group_audit'),
+                __('app.navigation_group_system'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

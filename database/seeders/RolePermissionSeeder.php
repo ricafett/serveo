@@ -72,6 +72,10 @@ class RolePermissionSeeder extends Seeder
             'config.billing_statuses',
             'config.translations',
             'export.create',
+            // Backups
+            'backup.export_config',
+            'backup.export_full',
+            'backup.import',
         ];
 
         foreach ($permissions as $perm) {
