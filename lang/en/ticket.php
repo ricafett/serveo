@@ -30,4 +30,8 @@ return [
     'sale' => 'Sale',
     'voucher' => 'VOUCHER',
     'sale_receipt' => 'SALE RECEIPT',
+    'items_qty' => 'Qty',
+    'items_item' => 'Item',
+    'items_unit_price' => 'Un. price',
+    'items_value' => 'Value',
 ];

@@ -848,6 +848,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'ticket', 'sale', 'Venda'],
             ['pt-PT', 'ticket', 'voucher', 'SENHA'],
             ['pt-PT', 'ticket', 'sale_receipt', 'TALÃO DE VENDA'],
+            ['pt-PT', 'ticket', 'items_qty', 'Qtd'],
+            ['pt-PT', 'ticket', 'items_item', 'Artigo'],
+            ['pt-PT', 'ticket', 'items_unit_price', 'Preço un.'],
+            ['pt-PT', 'ticket', 'items_value', 'Valor'],
 
             ['en-US', 'ticket', 'void', 'VOID'],
             ['en-US', 'ticket', 'reprint', 'REPRINT'],
@@ -900,6 +904,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'ticket', 'sale', 'Sale'],
             ['en-US', 'ticket', 'voucher', 'VOUCHER'],
             ['en-US', 'ticket', 'sale_receipt', 'SALE RECEIPT'],
+            ['en-US', 'ticket', 'items_qty', 'Qty'],
+            ['en-US', 'ticket', 'items_item', 'Item'],
+            ['en-US', 'ticket', 'items_unit_price', 'Un. price'],
+            ['en-US', 'ticket', 'items_value', 'Value'],
 
             ['en-US', 'sales', 'title', 'Sales'],
             ['en-US', 'sales', 'subtitle', 'Create paid voucher sales for counter redemption.'],

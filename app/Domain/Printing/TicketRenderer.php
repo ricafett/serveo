@@ -92,6 +92,8 @@ class TicketRenderer
 
         $lines[] = str_repeat('-', $this->width());
 
+        $this->appendItemsHeader($lines);
+
         $shouldGroup = $this->documentConfig?->group_items ?? true;
         $ignoreNotes = $this->documentConfig?->ignore_item_notes ?? false;
 
@@ -100,8 +102,12 @@ class TicketRenderer
             $name = $this->buildItemName($item);
             if ($shouldGroup) {
                 $qty = $item->quantity;
-                $left = sprintf('%2dx %s', $qty, $name);
-                $lines[] = mb_strimwidth($left, 0, $this->width());
+                $lines[] = $this->formatItemLine(
+                    $qty,
+                    $name,
+                    $qty >= 2 ? (float) $item->unit_price : null,
+                    (float) $item->line_subtotal,
+                );
             } else {
                 for ($i = 0; $i < $item->quantity; $i++) {
                     $left = sprintf(' 1x %s', $name);
@@ -198,6 +204,8 @@ class TicketRenderer
 
         $lines[] = str_repeat('-', $this->width());
 
+        $this->appendItemsHeader($lines);
+
         $items = collect();
         foreach ($bill->billingGroup?->orderHeaders ?? [] as $header) {
             foreach ($header->items as $item) {
@@ -233,9 +241,11 @@ class TicketRenderer
 
             foreach ($grouped as $group) {
                 $name = $this->buildItemName($group['item']);
-                $left = sprintf('%2dx %s', $group['qty'], mb_strimwidth($name, 0, 28));
-                $right = number_format($group['subtotal'], 2, ',', ' ').' '.__('ticket.currency');
-                $lines[] = $this->row($left, $right);
+                $qty = $group['qty'];
+                $subtotal = $group['subtotal'];
+                $unitPrice = $qty >= 2 ? (float) $group['item']->unit_price : null;
+
+                $lines[] = $this->formatItemLine($qty, $name, $unitPrice, $subtotal);
 
                 // Append note if not ignored
                 if (! $ignoreNotes && $group['item']->note) {
@@ -250,9 +260,11 @@ class TicketRenderer
         } else {
             foreach ($items as $item) {
                 $name = $this->buildItemName($item);
-                $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
-                $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
-                $lines[] = $this->row($left, $right);
+                $qty = $item->quantity;
+                $subtotal = (float) $item->line_subtotal;
+                $unitPrice = $qty >= 2 ? (float) $item->unit_price : null;
+
+                $lines[] = $this->formatItemLine($qty, $name, $unitPrice, $subtotal);
 
                 // Append note if not ignored
                 if (! $ignoreNotes && $item->note) {
@@ -305,10 +317,15 @@ class TicketRenderer
             }
             $lines[] = str_repeat('-', $this->width());
 
+            $this->appendItemsHeader($lines);
+
             foreach ($document->sale?->items ?? [] as $item) {
-                $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($item->display_name_snapshot, 0, 28));
-                $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
-                $lines[] = $this->row($left, $right);
+                $qty = $item->quantity;
+                $name = $item->display_name_snapshot;
+                $subtotal = (float) $item->line_subtotal;
+                $unitPrice = $qty >= 2 ? (float) $item->unit_price : null;
+
+                $lines[] = $this->formatItemLine($qty, $name, $unitPrice, $subtotal);
             }
 
             $lines[] = str_repeat('-', $this->width());
@@ -355,6 +372,44 @@ class TicketRenderer
         }
 
         return $name;
+    }
+
+    /**
+     * Format a receipt item line with an items header row.
+     */
+    private function appendItemsHeader(array &$lines): void
+    {
+        $qtyHdr = __('ticket.items_qty');
+        $itemHdr = __('ticket.items_item');
+        $unitHdr = __('ticket.items_unit_price');
+        $valueHdr = __('ticket.items_value');
+
+        $left = $qtyHdr.'  '.$itemHdr;
+        $right = $unitHdr.'  '.$valueHdr;
+
+        $lines[] = $this->row($left, $right);
+    }
+
+    /**
+     * Format a receipt item line, showing unit price only when quantity >= 2.
+     */
+    private function formatItemLine(int $qty, string $name, ?float $unitPrice, float $subtotal): string
+    {
+        $currency = __('ticket.currency');
+        $valueStr = number_format($subtotal, 2, ',', ' ').' '.$currency;
+
+        $qtyStr = sprintf('%2dx', $qty);
+        $nameTrunc = mb_strimwidth($name, 0, $unitPrice !== null ? 26 : 36);
+        $left = $qtyStr.' '.$nameTrunc;
+
+        if ($unitPrice === null) {
+            return $this->row($left, $valueStr);
+        }
+
+        $unitStr = number_format($unitPrice, 2, ',', ' ').' '.$currency;
+        $right = $unitStr.'  '.$valueStr;
+
+        return $this->row($left, $right);
     }
 
     private function appendBrandingHeader(array &$lines): void
