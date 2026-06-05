@@ -6,6 +6,7 @@ use App\Filament\Resources\BackupResource\Pages;
 use App\Models\Backup;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -114,7 +115,7 @@ class BackupResource extends BaseResource
                     ->visible(fn (Backup $record) => $record->backup_status === 'COMPLETED' && $record->file_name)
                     ->url(fn (Backup $record) => route('backup.download', $record))
                     ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->label(__('app.delete'))
                     ->visible(fn (Backup $record) => in_array($record->backup_status, ['COMPLETED', 'FAILED', 'UPLOADED', 'RESTORED', 'RESTORE_FAILED']))
                     ->before(function (Backup $record) {
