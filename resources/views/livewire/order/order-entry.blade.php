@@ -229,41 +229,84 @@
                             <div>
                                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
                                     <template x-for="(item, index) in cart" :key="item.cart_key">
-                                        <div class="px-4 py-3 flex items-center justify-between">
-                                            <div class="min-w-0 flex-1">
-                                                <div class="text-base font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <template x-if="item.variant_name">
-                                                        <span class="text-primary-500 dark:text-primary-400" x-text="item.variant_name"></span>
-                                                    </template>
-                                                    <template x-if="item.modifier_name">
-                                                        <span class="text-gray-400 dark:text-gray-500" x-text="' (' + item.modifier_name + ')'"></span>
-                                                    </template>
-                                                    <template x-if="item.variant_name || item.modifier_name">
-                                                        <span class="mx-1 text-gray-300 dark:text-gray-600">—</span>
-                                                    </template>
-                                                    <span x-text="item.unit_price.toFixed(2) + ' €'"></span>
-                                                    <span x-show="item.quantity > 1" class="ml-1 text-gray-400 dark:text-gray-500">→</span>
-                                                    <span x-show="item.quantity > 1" class="ml-1 font-medium text-gray-700 dark:text-gray-300" x-text="(item.unit_price * item.quantity).toFixed(2) + ' €'"></span>
+                                        <div class="px-4 py-3">
+                                            <div class="flex items-center justify-between">
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="text-base font-medium text-gray-900 dark:text-white truncate" x-text="item.display_name"></div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                        <template x-if="item.variant_name">
+                                                            <span class="text-primary-500 dark:text-primary-400" x-text="item.variant_name"></span>
+                                                        </template>
+                                                        <template x-if="item.modifier_name">
+                                                            <span class="text-gray-400 dark:text-gray-500" x-text="' (' + item.modifier_name + ')'"></span>
+                                                        </template>
+                                                        <template x-if="item.variant_name || item.modifier_name">
+                                                            <span class="mx-1 text-gray-300 dark:text-gray-600">—</span>
+                                                        </template>
+                                                        <span x-text="item.unit_price.toFixed(2) + ' €'"></span>
+                                                        <span x-show="item.quantity > 1" class="ml-1 text-gray-400 dark:text-gray-500">→</span>
+                                                        <span x-show="item.quantity > 1" class="ml-1 font-medium text-gray-700 dark:text-gray-300" x-text="(item.unit_price * item.quantity).toFixed(2) + ' €'"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-1 ml-3">
+                                                    <button
+                                                        type="button"
+                                                        @click="decrement(index)"
+                                                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                                    >
+                                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
+                                                    </button>
+                                                    <span class="text-base font-semibold text-gray-900 dark:text-white w-6 text-center" x-text="item.quantity"></span>
+                                                    <button
+                                                        type="button"
+                                                        @click="increment(index)"
+                                                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                                    >
+                                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                                    </button>
+                                                    <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                                        <button
+                                                            type="button"
+                                                            @click="open = !open"
+                                                            class="rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                                        >
+                                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
+                                                            </svg>
+                                                        </button>
+                                                        <div
+                                                            x-show="open"
+                                                            x-transition:enter="transition ease-out duration-100"
+                                                            x-transition:enter-start="transform opacity-0 scale-95"
+                                                            x-transition:enter-end="transform opacity-100 scale-100"
+                                                            x-transition:leave="transition ease-in duration-75"
+                                                            x-transition:leave-start="transform opacity-100 scale-100"
+                                                            x-transition:leave-end="transform opacity-0 scale-95"
+                                                            class="absolute right-0 z-20 mt-1 w-40 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
+                                                            style="display: none;"
+                                                        >
+                                                            <div class="py-1">
+                                                                <button
+                                                                    type="button"
+                                                                    @click="openNoteModal(index); open = false"
+                                                                    class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
+                                                                    x-text="item.note ? '{{ __('order.edit_note') }}' : '{{ __('order.add_note') }}'"
+                                                                ></button>
+                                                                <template x-if="item.note">
+                                                                    <button
+                                                                        type="button"
+                                                                        @click="deleteNote(index); open = false"
+                                                                        class="block w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
+                                                                    >{{ __('order.delete_note') }}</button>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center gap-1 ml-3">
-                                                <button
-                                                    type="button"
-                                                    @click="decrement(index)"
-                                                    class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                                                >
-                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
-                                                </button>
-                                                <span class="text-base font-semibold text-gray-900 dark:text-white w-6 text-center" x-text="item.quantity"></span>
-                                                <button
-                                                    type="button"
-                                                    @click="increment(index)"
-                                                    class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                                                >
-                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                                </button>
-                                            </div>
+                                            <template x-if="item.note">
+                                                <div class="text-sm text-gray-400 dark:text-gray-500 italic mt-1" x-text="'\u257A\u2578 ' + item.note"></div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -290,7 +333,7 @@
         <div class="sm:static sm:mt-4 sm:bg-transparent sm:border-0 sm:p-0 fixed bottom-14 left-0 right-0 px-4 py-3 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 z-30">
             <button
                 type="button"
-                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name }; }))"
+                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name, note: i.note }; }))"
                 :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
                 wire:target="submitOrder"
                 wire:loading.attr="disabled"
@@ -498,6 +541,79 @@
                 </div>
             </div>
         </div>
+    {{-- Note Modal --}}
+    <div
+        x-show="showNoteModal"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        style="display: none;"
+    >
+        <div
+            x-show="showNoteModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/50 dark:bg-black/70"
+            @click="closeNoteModal()"
+        ></div>
+
+        <div
+            x-show="showNoteModal"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
+            x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+            class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
+        >
+            <div class="p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        {{ __('order.note_for') }} <span x-text="noteModalItemName"></span>
+                    </h3>
+                    <button
+                        type="button"
+                        @click="closeNoteModal()"
+                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.item_note_label') }}</label>
+                    <textarea
+                        x-model="noteModalText"
+                        rows="4"
+                        maxlength="200"
+                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"
+                        placeholder="{{ __('order.item_note_placeholder') }}"
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500" x-text="noteModalText.length + ' / 200'"></p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button
+                        type="button"
+                        @click="closeNoteModal()"
+                        class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
+                    >
+                        {{ __('app.cancel') }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="saveNote()"
+                        class="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-primary-500 min-h-[44px] transition-colors"
+                    >
+                        {{ __('app.save') }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -516,6 +632,12 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         modalSelectedVariant: '',
         modalSelectedModifierSingle: '',
         modalSelectedModifiers: [],
+
+        // Note modal state
+        showNoteModal: false,
+        noteModalItemIndex: null,
+        noteModalText: '',
+        noteModalItemName: '',
 
         get filteredItems() {
             if (!this.selectedCategoryId) return this.menuItems;
@@ -592,7 +714,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                 }
             }
 
-            var cartKey = this.modalItem.id + '|' + (variantName || '') + '|' + (modifierName || '');
+            var cartKey = this.modalItem.id + '|' + (variantName || '') + '|' + (modifierName || '') + '|';
             var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
@@ -606,6 +728,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                     route_type: this.modalItem.route_type,
                     variant_name: variantName,
                     modifier_name: modifierName,
+                    note: null,
                 });
             }
 
@@ -613,7 +736,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         },
 
         addToCartWithModifier(menuItem, modifierName) {
-            var cartKey = menuItem.id + '||' + modifierName;
+            var cartKey = menuItem.id + '||' + modifierName + '|';
             var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
@@ -627,12 +750,13 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                     route_type: menuItem.route_type,
                     variant_name: null,
                     modifier_name: modifierName,
+                    note: null,
                 });
             }
         },
 
         addToCartSimple(menuItem) {
-            var cartKey = menuItem.id + '||';
+            var cartKey = menuItem.id + '|||';
             var existing = this.cart.find(function (i) { return i.cart_key === cartKey; });
             if (existing) {
                 existing.quantity++;
@@ -646,6 +770,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                     route_type: menuItem.route_type,
                     variant_name: null,
                     modifier_name: null,
+                    note: null,
                 });
             }
         },
@@ -658,6 +783,59 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             if (this.cart[index].quantity > 1) {
                 this.cart[index].quantity--;
             } else {
+                this.cart.splice(index, 1);
+            }
+        },
+
+        openNoteModal(index) {
+            var item = this.cart[index];
+            this.noteModalItemIndex = index;
+            this.noteModalText = item.note || '';
+            this.noteModalItemName = item.display_name;
+            this.showNoteModal = true;
+        },
+
+        closeNoteModal() {
+            this.showNoteModal = false;
+            this.noteModalItemIndex = null;
+            this.noteModalText = '';
+            this.noteModalItemName = '';
+        },
+
+        saveNote() {
+            if (this.noteModalItemIndex === null) return;
+
+            var item = this.cart[this.noteModalItemIndex];
+            var noteText = this.noteModalText.trim() || null;
+
+            if (item.quantity > 1) {
+                // Split: original line keeps (qty-1), new noted line gets qty=1
+                item.quantity--;
+                var notedItem = Object.assign({}, item, { quantity: 1, note: noteText });
+                notedItem.cart_key = item.menu_item_id + '|' + (item.variant_name || '') + '|' + (item.modifier_name || '') + '|' + (noteText || '');
+                this.cart.splice(this.noteModalItemIndex + 1, 0, notedItem);
+            } else {
+                item.note = noteText;
+                item.cart_key = item.menu_item_id + '|' + (item.variant_name || '') + '|' + (item.modifier_name || '') + '|' + (noteText || '');
+            }
+
+            this.closeNoteModal();
+        },
+
+        deleteNote(index) {
+            var item = this.cart[index];
+            item.note = null;
+            var baseKey = item.menu_item_id + '|' + (item.variant_name || '') + '|' + (item.modifier_name || '') + '|';
+            item.cart_key = baseKey;
+
+            // Merge into existing non-noted line if one exists
+            var self = this;
+            var mergeIdx = null;
+            this.cart.forEach(function(other, i) {
+                if (i !== index && other.cart_key === baseKey && !other.note) mergeIdx = i;
+            });
+            if (mergeIdx !== null) {
+                this.cart[mergeIdx].quantity += item.quantity;
                 this.cart.splice(index, 1);
             }
         },

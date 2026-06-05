@@ -17,6 +17,7 @@ class DocumentPrintConfig extends Model
     protected $fillable = [
         'document_type', 'fulfillment_route',
         'group_items', 'ignore_variants', 'ignore_modifiers',
+        'ignore_item_notes',
         'is_active', 'branding_header',
         'print_begin_space', 'print_end_space',
     ];
@@ -25,6 +26,7 @@ class DocumentPrintConfig extends Model
         'group_items' => 'boolean',
         'ignore_variants' => 'boolean',
         'ignore_modifiers' => 'boolean',
+        'ignore_item_notes' => 'boolean',
         'is_active' => 'boolean',
     ];
 

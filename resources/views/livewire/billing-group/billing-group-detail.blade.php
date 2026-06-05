@@ -273,6 +273,9 @@
                                             <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.voided') }}</span>
                                         @endif
                                     </div>
+                                    @if($item->note)
+                                        <div class="text-sm text-gray-400 dark:text-gray-500 italic mt-0.5">╺╸ {{ $item->note }}</div>
+                                    @endif
                                     <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }} €</span>
                                 </div>
                             @endforeach

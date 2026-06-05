@@ -93,6 +93,7 @@ class TicketRenderer
         $lines[] = str_repeat('-', $this->width());
 
         $shouldGroup = $this->documentConfig?->group_items ?? true;
+        $ignoreNotes = $this->documentConfig?->ignore_item_notes ?? false;
 
         /** @var OrderItem $item */
         foreach ($ticket->items as $item) {
@@ -105,6 +106,16 @@ class TicketRenderer
                 for ($i = 0; $i < $item->quantity; $i++) {
                     $left = sprintf(' 1x %s', $name);
                     $lines[] = mb_strimwidth($left, 0, $this->width());
+                }
+            }
+
+            // Append item note if not ignored
+            if (! $ignoreNotes && $item->note) {
+                $indent = '   -- ';
+                $noteWidth = $this->width() - mb_strlen($indent);
+                $wrapped = wordwrap($item->note, $noteWidth, "\n", true);
+                foreach (explode("\n", $wrapped) as $noteLine) {
+                    $lines[] = $indent.$noteLine;
                 }
             }
         }
@@ -198,6 +209,7 @@ class TicketRenderer
         }
 
         $shouldGroup = $this->documentConfig?->group_items ?? false;
+        $ignoreNotes = $this->documentConfig?->ignore_item_notes ?? true;
 
         if ($shouldGroup) {
             $grouped = [];
@@ -208,6 +220,10 @@ class TicketRenderer
                 }
                 if (! ($this->documentConfig?->ignore_modifiers ?? false) && $item->modifier_name) {
                     $key .= '|m:'.$item->modifier_name;
+                }
+                // Include note in grouping key only when notes are shown
+                if (! $ignoreNotes && $item->note) {
+                    $key .= '|n:'.$item->note;
                 }
 
                 $grouped[$key] ??= ['qty' => 0, 'subtotal' => 0.0, 'item' => $item];
@@ -220,6 +236,16 @@ class TicketRenderer
                 $left = sprintf('%2dx %s', $group['qty'], mb_strimwidth($name, 0, 28));
                 $right = number_format($group['subtotal'], 2, ',', ' ').' '.__('ticket.currency');
                 $lines[] = $this->row($left, $right);
+
+                // Append note if not ignored
+                if (! $ignoreNotes && $group['item']->note) {
+                    $indent = '   -- ';
+                    $noteWidth = $this->width() - mb_strlen($indent);
+                    $wrapped = wordwrap($group['item']->note, $noteWidth, "\n", true);
+                    foreach (explode("\n", $wrapped) as $noteLine) {
+                        $lines[] = $indent.$noteLine;
+                    }
+                }
             }
         } else {
             foreach ($items as $item) {
@@ -227,6 +253,16 @@ class TicketRenderer
                 $left = sprintf('%2dx %s', $item->quantity, mb_strimwidth($name, 0, 28));
                 $right = number_format((float) $item->line_subtotal, 2, ',', ' ').' '.__('ticket.currency');
                 $lines[] = $this->row($left, $right);
+
+                // Append note if not ignored
+                if (! $ignoreNotes && $item->note) {
+                    $indent = '   -- ';
+                    $noteWidth = $this->width() - mb_strlen($indent);
+                    $wrapped = wordwrap($item->note, $noteWidth, "\n", true);
+                    foreach (explode("\n", $wrapped) as $noteLine) {
+                        $lines[] = $indent.$noteLine;
+                    }
+                }
             }
         }
 

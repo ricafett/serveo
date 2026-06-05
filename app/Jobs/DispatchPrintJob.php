@@ -263,7 +263,7 @@ class DispatchPrintJob implements ShouldQueue
         if ($printable instanceof BillingDocument) {
             return DocumentPrintConfig::firstOrCreate(
                 ['document_type' => PrinterRoute::DOC_BILL, 'fulfillment_route' => null],
-                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false],
+                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => true],
             );
         }
 
@@ -279,6 +279,7 @@ class DispatchPrintJob implements ShouldQueue
                     'group_items' => $printable->document_type === SaleDocument::TYPE_RECEIPT,
                     'ignore_variants' => true,
                     'ignore_modifiers' => true,
+                    'ignore_item_notes' => true,
                 ],
             );
         }

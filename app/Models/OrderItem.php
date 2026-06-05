@@ -13,7 +13,7 @@ class OrderItem extends Model
         'delivery_seat_pair_id', 'delivery_reference_label',
         'sent_to_production_at', 'voided_at', 'voided_by_user_id',
         'void_reason', 'parent_order_item_id', 'variant_name', 'modifier_name',
-        'delivered_at', 'delivered_by_user_id',
+        'note', 'delivered_at', 'delivered_by_user_id',
     ];
 
     protected $casts = [

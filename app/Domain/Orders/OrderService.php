@@ -34,7 +34,7 @@ class OrderService
      * for the same billing group are detected and safely return the existing order
      * instead of creating a duplicate.
      *
-     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null}>  $lines
+     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null, note?:string|null}>  $lines
      */
     public function submit(
         BillingGroup $group,
@@ -149,6 +149,7 @@ class OrderService
                     'sent_to_production_at' => now(),
                     'variant_name' => $variantName,
                     'modifier_name' => $modifierName,
+                    'note' => $line['note'] ?? null,
                 ]);
 
                 $createdItems[] = $item;

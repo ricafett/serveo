@@ -191,6 +191,7 @@ class OrderEntry extends Component
                 'delivery_seat_pair_id' => $this->selectedDeliveryPairId,
                 'variant_name' => $item['variant_name'] ?? null,
                 'modifier_name' => $item['modifier_name'] ?? null,
+                'note' => $item['note'] ?? null,
             ])->all();
 
             app(OrderService::class)->submit(
