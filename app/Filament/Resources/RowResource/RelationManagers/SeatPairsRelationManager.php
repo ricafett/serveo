@@ -5,6 +5,7 @@ namespace App\Filament\Resources\RowResource\RelationManagers;
 use App\Models\Seat;
 use App\Models\SeatPair;
 use App\Models\User;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -103,17 +104,17 @@ class SeatPairsRelationManager extends RelationManager
             ])
             ->defaultSort('pair_sequence')
             ->headerActions([
-                Tables\Actions\CreateAction::make()
+                Actions\CreateAction::make()
                     ->beforeFormValidated(function () {
                         $this->validateSeatNotReused();
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
+                Actions\EditAction::make()
                     ->beforeFormValidated(function () {
                         $this->validateSeatNotReused();
                     }),
-                Tables\Actions\Action::make('toggleActive')
+                Actions\Action::make('toggleActive')
                     ->label(fn (SeatPair $record) => $record->is_active
                         ? __('app.deactivate')
                         : __('app.activate'))
