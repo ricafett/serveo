@@ -271,8 +271,6 @@
                                         </span>
                                         @if($item->voided_at)
                                             <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('billing.voided') }}</span>
-                                        @elseif($item->delivered_at)
-                                            <span class="text-sm text-green-600 dark:text-green-400">{{ __('billing.delivered') }}</span>
                                         @endif
                                     </div>
                                     <span class="text-gray-500 dark:text-gray-400 {{ $item->voided_at ? 'line-through' : '' }}">{{ number_format($item->line_subtotal, 2) }} €</span>
