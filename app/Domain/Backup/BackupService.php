@@ -79,6 +79,14 @@ class BackupService
      */
     public function generate(Backup $backup): string
     {
+        $driver = config('database.default');
+
+        if ($driver !== 'pgsql') {
+            throw new RuntimeException(
+                "Backups are only supported with PostgreSQL. Current database driver: {$driver}."
+            );
+        }
+
         $params = $this->dbConnectionParams();
         $fileName = $this->buildFileName($backup);
         $diskPath = "backups/{$fileName}";
