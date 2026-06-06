@@ -9,12 +9,21 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Lisbon
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Install prerequisites for pg_dump 16 repository setup
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl unzip ca-certificates gnupg \
+        curl gnupg ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Add PostgreSQL APT repository for pg_dump 16 (match postgres:16-alpine server version)
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git unzip \
         libpq-dev libzip-dev libonig-dev libxml2-dev \
         libpng-dev libjpeg-dev libfreetype6-dev libicu-dev \
         zip iputils-ping procps \
-        postgresql-client \
+        postgresql-client-16 \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_pgsql pgsql bcmath intl mbstring zip gd opcache pcntl \
