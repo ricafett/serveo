@@ -7,6 +7,8 @@
 
     <title>{{ __('auth.sign_in') }} — {{ config('app.name', 'Serveo') }}</title>
 
+    @include('components.pwa-head')
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
@@ -109,6 +111,12 @@
             </form>
         </div>
     </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        }
+    </script>
 
     @livewireScripts
 </body>
