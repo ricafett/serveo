@@ -6,6 +6,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - app-public:/var/www/html/public
+      - ${STORAGE_DATA_PATH:-./data/storage}:/var/www/html/storage/app/private
     environment: &worker-env
       APP_NAME: ${APP_NAME:-Serveo}
       APP_ENV: ${APP_ENV:-production}
@@ -207,6 +208,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www/html
     command: ["php", "artisan", "queue:work", "redis", "--timeout=120", "--tries=3", "--sleep=3", "--queue=default"]
+    volumes:
+      - ${STORAGE_DATA_PATH:-./data/storage}:/var/www/html/storage/app/private
     environment:
       <<: *worker-env
     healthcheck:
@@ -231,6 +234,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www/html
     command: ["sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    volumes:
+      - ${STORAGE_DATA_PATH:-./data/storage}:/var/www/html/storage/app/private
     environment:
       <<: *worker-env
     healthcheck:
