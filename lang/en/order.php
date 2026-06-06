@@ -31,4 +31,10 @@ return [
     'has_variants' => 'Variants',
     'has_modifiers' => 'Modifiers',
     'has_variants_and_modifiers' => 'Variants & Modifiers',
+    'edit_note' => 'Edit note',
+    'add_note' => 'Add note',
+    'delete_note' => 'Delete note',
+    'note_for' => 'Note -',
+    'item_note_label' => 'Item note',
+    'item_note_placeholder' => 'e.g. no onion, well done',
 ];
