@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 12;
+    private const SEED_VERSION = 14;
 
     public function run(): void
     {
@@ -135,6 +135,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'last_seen', 'Visto pela última vez'],
             ['pt-PT', 'app', 'room', 'Sala'],
             ['pt-PT', 'app', 'location', 'Localização'],
+            ['pt-PT', 'app', 'navigation_label_admin_dashboard', 'Painel Admin'],
+            ['pt-PT', 'app', 'navigation_label_frontend_dashboard', 'Painel Principal'],
             ['pt-PT', 'app', 'navigation_group_operation', 'Operação'],
             ['pt-PT', 'app', 'navigation_group_config', 'Configuração'],
             ['pt-PT', 'app', 'navigation_label_sales', 'Vendas'],
@@ -237,6 +239,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'helper_text_branding_header', 'Texto opcional impresso a negrito no topo deste tipo de documento. Suporta várias linhas.'],
             ['pt-PT', 'app', 'is_voucher_enabled', 'Ativar senhas'],
             ['pt-PT', 'app', 'is_voucher_enabled_help', 'Apenas itens com senhas ativas aparecem nas vendas de caixa e as vendas ignoram variantes e modificadores.'],
+            ['pt-PT', 'app', 'batch_create_pairs', 'Criar pares em lote'],
+            ['pt-PT', 'app', 'number_of_pairs', 'Número de pares'],
+            ['pt-PT', 'app', 'pairs_created', ':count pares criados'],
+            ['pt-PT', 'app', 'pair_sequence_exists', 'Uma ou mais sequências já existem nesta fila'],
 
             ['en-US', 'app', 'name', 'Serveo'],
             ['en-US', 'app', 'cancel', 'Cancel'],
@@ -306,6 +312,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'last_seen', 'Last seen'],
             ['en-US', 'app', 'room', 'Room'],
             ['en-US', 'app', 'location', 'Location'],
+            ['en-US', 'app', 'navigation_label_admin_dashboard', 'Admin Dashboard'],
+            ['en-US', 'app', 'navigation_label_frontend_dashboard', 'Dashboard'],
             ['en-US', 'app', 'navigation_group_operation', 'Operation'],
             ['en-US', 'app', 'navigation_group_config', 'Configuration'],
             ['en-US', 'app', 'navigation_label_sales', 'Sales'],
@@ -408,6 +416,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'helper_text_branding_header', 'Optional text printed in bold at the top of this document type. Supports multiple lines.'],
             ['en-US', 'app', 'is_voucher_enabled', 'Voucher enabled'],
             ['en-US', 'app', 'is_voucher_enabled_help', 'Only voucher-enabled items appear in cashier sales and sales ignore variants and modifiers.'],
+            ['en-US', 'app', 'batch_create_pairs', 'Batch Create Pairs'],
+            ['en-US', 'app', 'number_of_pairs', 'Number of Pairs'],
+            ['en-US', 'app', 'pairs_created', ':count pairs created'],
+            ['en-US', 'app', 'pair_sequence_exists', 'One or more pair sequences already exist in this row'],
 
             // ---------- auth ----------
             ['pt-PT', 'auth', 'sign_in', 'Iniciar sessão'],

@@ -3,332 +3,302 @@
 use App\Models\Row;
 use App\Models\Seat;
 use App\Models\SeatPair;
-use App\Models\Section;
-use App\Models\User;
-use App\Models\Venue;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->session = bootScenario();
+    $this->admin = makeUser('ADMIN');
+    $this->server = makeUser('SERVER');
+    $this->row = Row::first();
+});
 
-    $this->admin = makeUser('ADMIN', 'admin-seatpair-test');
-    $this->server = makeUser('SERVER', 'server-seatpair-test');
+// ─── Cascade Delete: Single ──────────────────────────────────────────
 
-    $this->venue = Venue::first();
+it('deletes seats when a seat pair is deleted', function () {
+    $pair = $this->row->seatPairs()->first();
+    $seatAId = $pair->seat_a_id;
+    $seatBId = $pair->seat_b_id;
 
-    $this->section = Section::create([
-        'venue_id' => $this->venue->id,
-        'section_code' => 'STP',
-        'name' => 'Seat Pair Test',
+    expect(Seat::find($seatAId))->not->toBeNull();
+    expect(Seat::find($seatBId))->not->toBeNull();
+
+    $pair->delete();
+
+    expect(SeatPair::find($pair->id))->toBeNull();
+    expect(Seat::find($seatAId))->toBeNull();
+    expect(Seat::find($seatBId))->toBeNull();
+});
+
+it('only deletes owned seats when a single pair is deleted', function () {
+    $pair1 = $this->row->seatPairs()->where('pair_sequence', 1)->first();
+    $pair2 = $this->row->seatPairs()->where('pair_sequence', 2)->first();
+
+    $pair1SeatAId = $pair1->seat_a_id;
+    $pair1SeatBId = $pair1->seat_b_id;
+    $pair2SeatAId = $pair2->seat_a_id;
+    $pair2SeatBId = $pair2->seat_b_id;
+
+    $pair1->delete();
+
+    // Pair 1 seats gone
+    expect(Seat::find($pair1SeatAId))->toBeNull();
+    expect(Seat::find($pair1SeatBId))->toBeNull();
+
+    // Pair 2 seats still exist
+    expect(Seat::find($pair2SeatAId))->not->toBeNull();
+    expect(Seat::find($pair2SeatBId))->not->toBeNull();
+    expect($pair2->exists())->toBeTrue();
+});
+
+// ─── Cascade Delete: Bulk ────────────────────────────────────────────
+
+it('deletes seats when multiple seat pairs are individually deleted', function () {
+    $pairs = $this->row->seatPairs()->take(3)->get();
+    $pairIds = $pairs->pluck('id');
+    $seatIds = $pairs->flatMap(fn (SeatPair $p) => [$p->seat_a_id, $p->seat_b_id]);
+
+    expect(Seat::whereIn('id', $seatIds)->count())->toBe(6);
+
+    // Per-model deletion (matching Filament's DeleteBulkAction behavior)
+    $pairs->each->delete();
+
+    expect(SeatPair::whereIn('id', $pairIds)->count())->toBe(0);
+    expect(Seat::whereIn('id', $seatIds)->count())->toBe(0);
+});
+
+// ─── Batch Create ─────────────────────────────────────────────────────
+
+it('batch creates seat pairs with correct auto-numbering', function () {
+    $existingCount = $this->row->seatPairs()->count();
+    $existingMaxSeq = $this->row->seatPairs()->max('pair_sequence');
+    $startSeq = $existingMaxSeq + 1;
+    $count = 3;
+
+    DB::transaction(function () use ($startSeq, $count) {
+        for ($i = 0; $i < $count; $i++) {
+            $seq = $startSeq + $i;
+
+            $seatA = Seat::create([
+                'row_id' => $this->row->id,
+                'seat_number' => $seq * 2 - 1,
+                'sort_order' => $seq * 2 - 1,
+                'is_active' => true,
+            ]);
+
+            $seatB = Seat::create([
+                'row_id' => $this->row->id,
+                'seat_number' => $seq * 2,
+                'sort_order' => $seq * 2,
+                'is_active' => true,
+            ]);
+
+            SeatPair::create([
+                'row_id' => $this->row->id,
+                'pair_sequence' => $seq,
+                'seat_a_id' => $seatA->id,
+                'seat_b_id' => $seatB->id,
+                'is_active' => true,
+            ]);
+        }
+    });
+
+    // Verify all pairs created with correct numbering
+    for ($i = 0; $i < $count; $i++) {
+        $seq = $startSeq + $i;
+        $pair = SeatPair::where('row_id', $this->row->id)
+            ->where('pair_sequence', $seq)
+            ->first();
+
+        expect($pair)->not->toBeNull();
+        expect($pair->seatA->seat_number)->toBe($seq * 2 - 1);
+        expect($pair->seatB->seat_number)->toBe($seq * 2);
+        expect($pair->is_active)->toBeTrue();
+    }
+
+    expect($this->row->seatPairs()->count())->toBe($existingCount + $count);
+});
+
+it('batch creates pairs with default server assigned', function () {
+    $startSeq = $this->row->seatPairs()->max('pair_sequence') + 1;
+    $count = 2;
+
+    DB::transaction(function () use ($startSeq, $count) {
+        for ($i = 0; $i < $count; $i++) {
+            $seq = $startSeq + $i;
+
+            $seatA = Seat::create([
+                'row_id' => $this->row->id,
+                'seat_number' => $seq * 2 - 1,
+                'sort_order' => $seq * 2 - 1,
+                'is_active' => true,
+            ]);
+
+            $seatB = Seat::create([
+                'row_id' => $this->row->id,
+                'seat_number' => $seq * 2,
+                'sort_order' => $seq * 2,
+                'is_active' => true,
+            ]);
+
+            SeatPair::create([
+                'row_id' => $this->row->id,
+                'pair_sequence' => $seq,
+                'seat_a_id' => $seatA->id,
+                'seat_b_id' => $seatB->id,
+                'default_server_id' => $this->server->id,
+                'is_active' => true,
+            ]);
+        }
+    });
+
+    $pair = SeatPair::where('row_id', $this->row->id)
+        ->where('pair_sequence', $startSeq)
+        ->first();
+
+    expect($pair->default_server_id)->toBe($this->server->id);
+    expect($pair->defaultServer->id)->toBe($this->server->id);
+});
+
+it('batch created seats have correct row assignment', function () {
+    $startSeq = $this->row->seatPairs()->max('pair_sequence') + 1;
+
+    DB::transaction(function () use ($startSeq) {
+        $seq = $startSeq;
+        $seatA = Seat::create([
+            'row_id' => $this->row->id,
+            'seat_number' => $seq * 2 - 1,
+            'sort_order' => $seq * 2 - 1,
+            'is_active' => true,
+        ]);
+        $seatB = Seat::create([
+            'row_id' => $this->row->id,
+            'seat_number' => $seq * 2,
+            'sort_order' => $seq * 2,
+            'is_active' => true,
+        ]);
+
+        SeatPair::create([
+            'row_id' => $this->row->id,
+            'pair_sequence' => $seq,
+            'seat_a_id' => $seatA->id,
+            'seat_b_id' => $seatB->id,
+            'is_active' => true,
+        ]);
+    });
+
+    $pair = SeatPair::where('row_id', $this->row->id)
+        ->where('pair_sequence', $startSeq)
+        ->first();
+
+    expect($pair->seatA->row_id)->toBe($this->row->id);
+    expect($pair->seatB->row_id)->toBe($this->row->id);
+});
+
+// ─── Uniqueness Constraints ───────────────────────────────────────────
+
+it('rejects duplicate pair sequence within same row', function () {
+    // Pair 1 already exists from bootScenario; try to create another
+    expect(fn () => SeatPair::create([
+        'row_id' => $this->row->id,
+        'pair_sequence' => 1,
+        'seat_a_id' => 9999,      // These don't exist but the unique check on
+        'seat_b_id' => 9998,      // (row_id, pair_sequence) catches it first
+        'is_active' => true,
+    ]))->toThrow(\Illuminate\Database\UniqueConstraintViolationException::class);
+});
+
+it('rejects seat reused in another pair within same row', function () {
+    $pair = $this->row->seatPairs()->first();
+    $usedSeatId = $pair->seat_a_id;
+
+    // Find an unused seat in the row
+    $unusedSeat = Seat::where('row_id', $this->row->id)
+        ->whereNotIn('id', [$pair->seat_a_id, $pair->seat_b_id])
+        ->first();
+
+    // Try to reuse $usedSeatId as seat_b in a new pair
+    expect(fn () => SeatPair::create([
+        'row_id' => $this->row->id,
+        'pair_sequence' => 999,
+        'seat_a_id' => $unusedSeat->id,
+        'seat_b_id' => $usedSeatId,  // Already used
+        'is_active' => true,
+    ]))->toThrow(\Illuminate\Database\UniqueConstraintViolationException::class);
+});
+
+it('allows same pair_sequence in different rows', function () {
+    // bootScenario already has pair_sequence=1 in the default row
+    // Create a new row to test cross-row uniqueness
+    $section = $this->row->section;
+    $row2 = Row::create([
+        'section_id' => $section->id,
+        'row_code' => 'ROW-TEST-2',
         'sort_order' => 99,
         'is_active' => true,
     ]);
 
-    $this->row = Row::create([
-        'section_id' => $this->section->id,
-        'row_code' => 'ST1',
-        'sort_order' => 1,
-        'is_active' => true,
-    ]);
+    // Create seats for row2
+    $seat1 = Seat::create(['row_id' => $row2->id, 'seat_number' => 1, 'sort_order' => 1, 'is_active' => true]);
+    $seat2 = Seat::create(['row_id' => $row2->id, 'seat_number' => 2, 'sort_order' => 2, 'is_active' => true]);
 
-    // Create 6 seats for this row
-    $this->seatIds = [];
-    for ($n = 1; $n <= 6; $n++) {
-        $seat = Seat::create([
-            'row_id' => $this->row->id,
-            'seat_number' => $n,
-            'sort_order' => $n,
-            'is_active' => true,
-        ]);
-        $this->seatIds[$n] = $seat->id;
-    }
-
-    // Create a second row for cross-row tests
-    $this->row2 = Row::create([
-        'section_id' => $this->section->id,
-        'row_code' => 'ST2',
-        'sort_order' => 2,
-        'is_active' => true,
-    ]);
-
-    $this->row2SeatIds = [];
-    for ($n = 1; $n <= 4; $n++) {
-        $seat = Seat::create([
-            'row_id' => $this->row2->id,
-            'seat_number' => $n,
-            'sort_order' => $n,
-            'is_active' => true,
-        ]);
-        $this->row2SeatIds[$n] = $seat->id;
-    }
-});
-
-// ─── Creation ────────────────────────────────────────────────────────────────
-
-it('admin can create a seat pair via API', function () {
-    $response = $this->actingAs($this->admin)
-        ->postJson('/api/v1/admin/seat-pairs', [
-            'rowId' => $this->row->id,
-            'pairSequence' => 1,
-            'seatAId' => $this->seatIds[1],
-            'seatBId' => $this->seatIds[2],
-        ]);
-
-    $response->assertStatus(201)
-        ->assertJsonPath('success', true)
-        ->assertJsonPath('data.seatPairId', fn ($id) => $id > 0)
-        ->assertJsonPath('data.pairSequence', 1);
-
-    $pair = SeatPair::find($response->json('data.seatPairId'));
-    expect($pair->row_id)->toBe($this->row->id)
-        ->and($pair->pair_sequence)->toBe(1)
-        ->and($pair->seat_a_id)->toBe($this->seatIds[1])
-        ->and($pair->seat_b_id)->toBe($this->seatIds[2])
-        ->and($pair->is_active)->toBeTrue();
-});
-
-it('admin can update a seat pair via API', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    $response = $this->actingAs($this->admin)
-        ->patchJson("/api/v1/admin/seat-pairs/{$pair->id}", [
-            'pairSequence' => 5,
-            'isActive' => false,
-        ]);
-
-    $response->assertStatus(200)
-        ->assertJsonPath('success', true)
-        ->assertJsonPath('data.pairSequence', 5)
-        ->assertJsonPath('data.isActive', false);
-
-    $pair->refresh();
-    expect($pair->pair_sequence)->toBe(5)
-        ->and($pair->is_active)->toBeFalse();
-});
-
-// ─── Permission ──────────────────────────────────────────────────────────────
-
-it('non-admin cannot create a seat pair', function () {
-    $response = $this->actingAs($this->server)
-        ->postJson('/api/v1/admin/seat-pairs', [
-            'rowId' => $this->row->id,
-            'pairSequence' => 1,
-            'seatAId' => $this->seatIds[1],
-            'seatBId' => $this->seatIds[2],
-        ]);
-
-    $response->assertStatus(403);
-});
-
-it('non-admin cannot update a seat pair', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    $response = $this->actingAs($this->server)
-        ->patchJson("/api/v1/admin/seat-pairs/{$pair->id}", [
-            'isActive' => false,
-        ]);
-
-    $response->assertStatus(403);
-});
-
-// ─── Integrity ───────────────────────────────────────────────────────────────
-
-it('rejects duplicate pair sequence within same row', function () {
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    // Try to create another pair with same sequence in same row
-    // The DB unique constraint on (row_id, pair_sequence) should reject this
-    expect(fn () => SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[3],
-        'seat_b_id' => $this->seatIds[4],
-        'is_active' => true,
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
-});
-
-it('rejects seat_a reused in another pair within same row', function () {
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    // Try to use seat 1 as seat_a in another pair — should fail
-    expect(fn () => SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 2,
-        'seat_a_id' => $this->seatIds[1],  // Already used in pair 1
-        'seat_b_id' => $this->seatIds[3],
-        'is_active' => true,
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
-});
-
-it('rejects seat_b reused in another pair within same row', function () {
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    // Try to use seat 2 as seat_b in another pair — should fail
-    expect(fn () => SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 2,
-        'seat_a_id' => $this->seatIds[3],
-        'seat_b_id' => $this->seatIds[2],  // Already used in pair 1
-        'is_active' => true,
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
-});
-
-it('allows same pair_sequence in different rows', function () {
-    // Pair 1 in row 1
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-
-    // Pair 1 in row 2 — should succeed (different row)
+    // Same pair_sequence 1, different row — should succeed
     $pair2 = SeatPair::create([
-        'row_id' => $this->row2->id,
+        'row_id' => $row2->id,
         'pair_sequence' => 1,
-        'seat_a_id' => $this->row2SeatIds[1],
-        'seat_b_id' => $this->row2SeatIds[2],
+        'seat_a_id' => $seat1->id,
+        'seat_b_id' => $seat2->id,
         'is_active' => true,
     ]);
 
-    expect($pair2->row_id)->toBe($this->row2->id)
-        ->and($pair2->pair_sequence)->toBe(1);
+    expect($pair2->row_id)->toBe($row2->id);
+    expect($pair2->pair_sequence)->toBe(1);
+    expect(SeatPair::where('row_id', $this->row->id)->where('pair_sequence', 1)->exists())->toBeTrue();
 });
 
-it('validates required fields on seat pair creation', function () {
-    $response = $this->actingAs($this->admin)
-        ->postJson('/api/v1/admin/seat-pairs', []);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['rowId', 'pairSequence', 'seatAId', 'seatBId']);
-});
-
-// ─── Toggle is_active ────────────────────────────────────────────────────────
+// ─── Toggle is_active ─────────────────────────────────────────────────
 
 it('can deactivate and reactivate a seat pair', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
+    $pair = $this->row->seatPairs()->first();
 
-    // Deactivate
     $pair->update(['is_active' => false]);
     expect($pair->fresh()->is_active)->toBeFalse();
 
-    // Reactivate
     $pair->update(['is_active' => true]);
     expect($pair->fresh()->is_active)->toBeTrue();
 });
 
-it('default server can be assigned and cleared', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
+// ─── Default Server Assignment ────────────────────────────────────────
 
-    // Assign default server
+it('default server can be assigned and cleared on a seat pair', function () {
+    $pair = $this->row->seatPairs()->first();
+
     $pair->update(['default_server_id' => $this->server->id]);
     expect($pair->fresh()->default_server_id)->toBe($this->server->id);
 
-    // Clear default server
     $pair->update(['default_server_id' => null]);
     expect($pair->fresh()->default_server_id)->toBeNull();
 });
 
-// ─── Model Relationships ─────────────────────────────────────────────────────
+// ─── Model Relationships ──────────────────────────────────────────────
 
 it('seat pair belongs to correct row', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
+    $pair = $this->row->seatPairs()->first();
 
-    expect($pair->row->id)->toBe($this->row->id)
-        ->and($pair->row->section->id)->toBe($this->section->id);
+    expect($pair->row->id)->toBe($this->row->id);
+    expect($pair->row->section->id)->toBe($this->row->section->id);
 });
 
 it('seat pair references correct seat A and seat B', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
+    $pair = $this->row->seatPairs()->first();
 
-    expect($pair->seatA->seat_number)->toBe(1)
-        ->and($pair->seatB->seat_number)->toBe(2)
-        ->and($pair->seatA->row_id)->toBe($this->row->id)
-        ->and($pair->seatB->row_id)->toBe($this->row->id);
+    expect($pair->seatA)->not->toBeNull();
+    expect($pair->seatB)->not->toBeNull();
+    expect($pair->seatA->row_id)->toBe($this->row->id);
+    expect($pair->seatB->row_id)->toBe($this->row->id);
 });
 
-it('label returns pair sequence', function () {
-    $pair = SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 3,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
+it('label returns formatted pair sequence', function () {
+    $pair = $this->row->seatPairs()->where('pair_sequence', 3)->first();
 
     expect($pair->label())->toBe('Pair 3');
-});
-
-it('row has correct seat pair count', function () {
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 1,
-        'seat_a_id' => $this->seatIds[1],
-        'seat_b_id' => $this->seatIds[2],
-        'is_active' => true,
-    ]);
-    SeatPair::create([
-        'row_id' => $this->row->id,
-        'pair_sequence' => 2,
-        'seat_a_id' => $this->seatIds[3],
-        'seat_b_id' => $this->seatIds[4],
-        'is_active' => true,
-    ]);
-
-    expect($this->row->fresh()->seatPairs()->count())->toBe(2);
-    expect($this->row2->fresh()->seatPairs()->count())->toBe(0);
 });

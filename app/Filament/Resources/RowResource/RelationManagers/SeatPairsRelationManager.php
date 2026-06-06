@@ -7,11 +7,13 @@ use App\Models\SeatPair;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class SeatPairsRelationManager extends RelationManager
 {
@@ -108,12 +110,92 @@ class SeatPairsRelationManager extends RelationManager
                     ->beforeFormValidated(function () {
                         $this->validateSeatNotReused();
                     }),
+                Actions\Action::make('batchCreatePairs')
+                    ->label(__('app.batch_create_pairs'))
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\TextInput::make('pair_count')
+                            ->label(__('app.number_of_pairs'))
+                            ->required()
+                            ->integer()
+                            ->minValue(1)
+                            ->maxValue(100),
+                        Forms\Components\TextInput::make('start_pair_sequence')
+                            ->label(__('app.pair_sequence'))
+                            ->required()
+                            ->integer()
+                            ->minValue(1)
+                            ->default(fn () => ($this->getOwnerRecord()->seatPairs()->max('pair_sequence') ?? 0) + 1),
+                        Forms\Components\Select::make('default_server_id')
+                            ->label(__('app.default_server'))
+                            ->options(User::role('SERVER')->orderBy('name')->pluck('name', 'id'))
+                            ->nullable()
+                            ->searchable(),
+                    ])
+                    ->action(function (array $data): void {
+                        $row = $this->getOwnerRecord();
+                        $startSeq = (int) $data['start_pair_sequence'];
+                        $count = (int) $data['pair_count'];
+                        $defaultServerId = $data['default_server_id'] ?? null;
+
+                        // Check for existing sequences
+                        $exists = $row->seatPairs()
+                            ->whereBetween('pair_sequence', [$startSeq, $startSeq + $count - 1])
+                            ->exists();
+
+                        if ($exists) {
+                            Notification::make()
+                                ->title(__('app.pair_sequence_exists'))
+                                ->danger()
+                                ->send();
+
+                            $this->halt();
+
+                            return;
+                        }
+
+                        DB::transaction(function () use ($row, $startSeq, $count, $defaultServerId): void {
+                            for ($i = 0; $i < $count; $i++) {
+                                $seq = $startSeq + $i;
+
+                                $seatA = Seat::create([
+                                    'row_id' => $row->id,
+                                    'seat_number' => $seq * 2 - 1,
+                                    'sort_order' => $seq * 2 - 1,
+                                    'is_active' => true,
+                                ]);
+
+                                $seatB = Seat::create([
+                                    'row_id' => $row->id,
+                                    'seat_number' => $seq * 2,
+                                    'sort_order' => $seq * 2,
+                                    'is_active' => true,
+                                ]);
+
+                                SeatPair::create([
+                                    'row_id' => $row->id,
+                                    'pair_sequence' => $seq,
+                                    'seat_a_id' => $seatA->id,
+                                    'seat_b_id' => $seatB->id,
+                                    'default_server_id' => $defaultServerId,
+                                    'is_active' => true,
+                                ]);
+                            }
+                        });
+
+                        Notification::make()
+                            ->title(__('app.pairs_created', ['count' => $count]))
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->actions([
                 Actions\EditAction::make()
                     ->beforeFormValidated(function () {
                         $this->validateSeatNotReused();
                     }),
+                Actions\DeleteAction::make(),
                 Actions\Action::make('toggleActive')
                     ->label(fn (SeatPair $record) => $record->is_active
                         ? __('app.deactivate')
@@ -126,6 +208,9 @@ class SeatPairsRelationManager extends RelationManager
                     ->action(function (SeatPair $record) {
                         $record->update(['is_active' => ! $record->is_active]);
                     }),
+            ])
+            ->bulkActions([
+                Actions\DeleteBulkAction::make(),
             ]);
     }
 

@@ -11,6 +11,16 @@ class SeatPair extends Model
 
     protected $casts = ['is_active' => 'boolean'];
 
+    protected static function booted(): void
+    {
+        static::deleted(function (SeatPair $seatPair): void {
+            // After the seat_pair row is gone (FK references removed),
+            // clean up the orphaned seat records.
+            $seatPair->seatA?->delete();
+            $seatPair->seatB?->delete();
+        });
+    }
+
     public function row(): BelongsTo
     {
         return $this->belongsTo(Row::class);
