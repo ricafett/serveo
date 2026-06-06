@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use UnitEnum;
 
 class BackupResource extends BaseResource
@@ -112,7 +113,9 @@ class BackupResource extends BaseResource
                 Action::make('download')
                     ->label(__('app.download'))
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->visible(fn (Backup $record) => $record->backup_status === 'COMPLETED' && $record->file_name)
+                    ->visible(fn (Backup $record) => $record->backup_status === 'COMPLETED'
+                    && $record->file_name
+                    && Storage::disk('local')->exists($record->file_name))
                     ->url(fn (Backup $record) => route('backup.download', $record))
                     ->openUrlInNewTab(),
                 DeleteAction::make()
