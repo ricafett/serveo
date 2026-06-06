@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('serveo:health-check-printers')->everyMinute();
+Schedule::command('serveo:recover-stuck-print-jobs')->everyTwoMinutes();

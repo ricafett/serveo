@@ -95,8 +95,7 @@ class HealthCheckPrinters extends Command
     {
         // Tier 1: Lightweight probe via adapter (no cut, no feed)
         try {
-            $adapter = $registry->for($printer);
-            $result = $adapter->probe($printer);
+            $result = $registry->probe($printer);
 
             if ($result->success) {
                 $printer->update([

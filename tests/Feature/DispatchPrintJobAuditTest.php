@@ -1,10 +1,8 @@
 <?php
 
 use App\Domain\Floor\BillingGroupService;
-use App\Domain\Printing\Contracts\PrinterAdapter;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Domain\Printing\PrintResult;
-use App\Domain\Printing\TicketRenderer;
 use App\Jobs\DispatchPrintJob;
 use App\Models\AuditEvent;
 use App\Models\BillingDocument;
@@ -12,7 +10,6 @@ use App\Models\Printer;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use Illuminate\Support\Facades\Auth;
-use Tests\Traits\DelegatesProbeToSend;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -42,32 +39,15 @@ it('emits PRODUCTION_TICKET_PRINTED on successful production ticket print', func
         'printer_id' => $printer->id,
         'status' => PrintJob::STATUS_PENDING,
         'attempts' => 0,
-        'max_attempts' => 3,
+        'max_attempts' => 4,
         'requested_by_user_id' => $this->server->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter
-    {
-        use DelegatesProbeToSend;
-        public function supports(Printer $printer): bool
-        {
-            return true;
-        }
-
-        public function send(Printer $printer, string $payload): PrintResult
-        {
-            return new PrintResult(true, 'OK');
-        }
-    };
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
-
-    $renderer = Mockery::mock(TicketRenderer::class);
-    $renderer->shouldReceive('renderProductionTicket')->andReturn('test-payload');
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
 
     $dispatchJob = new DispatchPrintJob($job->id);
-    $dispatchJob->handle($registry, $renderer);
+    $dispatchJob->handle($registry);
 
     $event = AuditEvent::where('event_type', 'PRODUCTION_TICKET_PRINTED')
         ->where('production_ticket_id', $ticket->id)
@@ -104,32 +84,15 @@ it('emits BILL_PRINTED on successful bill print', function () {
         'printer_id' => $printer->id,
         'status' => PrintJob::STATUS_PENDING,
         'attempts' => 0,
-        'max_attempts' => 3,
+        'max_attempts' => 4,
         'requested_by_user_id' => $this->cashier->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter
-    {
-        use DelegatesProbeToSend;
-        public function supports(Printer $printer): bool
-        {
-            return true;
-        }
-
-        public function send(Printer $printer, string $payload): PrintResult
-        {
-            return new PrintResult(true, 'OK');
-        }
-    };
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
-
-    $renderer = Mockery::mock(TicketRenderer::class);
-    $renderer->shouldReceive('renderBill')->andReturn('test-payload');
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
 
     $dispatchJob = new DispatchPrintJob($job->id);
-    $dispatchJob->handle($registry, $renderer);
+    $dispatchJob->handle($registry);
 
     $event = AuditEvent::where('event_type', 'BILL_PRINTED')
         ->where('billing_document_id', $bill->id)
@@ -156,40 +119,23 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
         'created_by_user_id' => $this->server->id,
     ]);
 
-    // Set attempts=2 so this becomes the final attempt (incremented to 3 = max_attempts)
+    // attempts=3, max=4 → claim sets attempts=4 → 4 >= 4 → final attempt
     $job = PrintJob::create([
         'job_kind' => PrintJob::KIND_PRODUCTION_TICKET,
         'printable_type' => ProductionTicket::class,
         'printable_id' => $ticket->id,
         'printer_id' => $printer->id,
         'status' => PrintJob::STATUS_PENDING,
-        'attempts' => 2,
-        'max_attempts' => 3,
+        'attempts' => 3,
+        'max_attempts' => 4,
         'requested_by_user_id' => $this->server->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter
-    {
-        use DelegatesProbeToSend;
-        public function supports(Printer $printer): bool
-        {
-            return true;
-        }
-
-        public function send(Printer $printer, string $payload): PrintResult
-        {
-            return new PrintResult(false, 'Printer unreachable');
-        }
-    };
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
-
-    $renderer = Mockery::mock(TicketRenderer::class);
-    $renderer->shouldReceive('renderProductionTicket')->andReturn('test-payload');
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::fail('Printer unreachable'));
 
     $dispatchJob = new DispatchPrintJob($job->id);
-    $dispatchJob->handle($registry, $renderer);
+    $dispatchJob->handle($registry);
 
     // On final attempt failure, PRODUCTION_TICKET_FAILED is emitted
     $event = AuditEvent::where('event_type', 'PRODUCTION_TICKET_FAILED')

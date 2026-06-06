@@ -16,88 +16,83 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * Sends one queued PrintJob to its target printer using the configured adapter.
+ * Sends one queued PrintJob to its target printer.
  *
- * Implements automatic retry with exponential backoff:
- *   - On transient failure, re-dispatches itself after a delay.
- *   - After max_attempts, marks the job permanently FAILED and emits an audit event.
- *   - The idempotency guard (STATUS_PRINTED / STATUS_CANCELED) prevents double-printing
- *     if a job is re-queued after the adapter succeeded but the DB update failed.
+ * Concurrency model (two locks, two purposes):
  *
- * Failure semantics:
- *   - Transport errors update the PrintJob row (status FAILED, last_error set,
- *     attempts++, next_attempt_at), keeping the job visible and retryable.
- *   - Production tickets are only marked FAILED on the final attempt.
- *   - We do not throw on transport failures; the job is considered handled and
- *     self-retries via re-dispatch.
+ *   1. Atomic claim (DB):  UPDATE print_jobs SET status='IN_PROGRESS'
+ *      WHERE id=? AND status='PENDING'. Only ONE worker can claim a
+ *      given PrintJob. Prevents double-processing of the same job.
+ *
+ *   2. Per-printer lock (Redis, non-blocking): Cache::lock("printer:{id}").
+ *      Only ONE worker can write to a given physical printer at a time.
+ *      On contention → revert PrintJob to PENDING → re-dispatch with
+ *      backoff → worker picks up next job immediately (no blocking).
+ *
+ * Attempt counting:
+ *   - Lock contention does NOT count as a transport attempt. The attempt
+ *     counter is decremented on contention revert.
+ *   - max_attempts (default 4) counts genuine transport failures only.
+ *
+ * Backoff systems:
+ *   - Contention backoff (jittered):  1s → 2s → 4s → 8s → 10s (capped)
+ *   - Transport backoff (jittered):   3s → 6s → 10s (capped)
+ *
+ * Recovery:
+ *   - serveo:recover-stuck-print-jobs (scheduled every 2min) reverts
+ *     IN_PROGRESS jobs whose lock has expired.
+ *   - The failed() method handles unhandled exceptions (worker killed).
  */
 class DispatchPrintJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 1; // we manage retries via PrintJob.attempts
+    /** Laravel won't retry — we manage retries via self-dispatch. */
+    public int $tries = 1;
 
-    public function __construct(public int $printJobId) {}
+    public function __construct(
+        public int $printJobId,
+        public int $lockContentionAttempt = 0,
+    ) {}
 
+    /**
+     * @throws Throwable Only for truly unexpected errors that failed() should catch.
+     */
     public function handle(PrinterAdapterRegistry $registry): void
     {
+        // ── 1. Atomic claim: only if claimable AND under max_attempts ──
+        //     Accepts PENDING (fresh) or FAILED (retry after transport failure).
+        //     Rejects PRINTED, CANCELED, or attempts >= max_attempts.
+        $claimed = PrintJob::where('id', $this->printJobId)
+            ->whereIn('status', [PrintJob::STATUS_PENDING, PrintJob::STATUS_FAILED])
+            ->where('attempts', '<', DB::raw('max_attempts'))
+            ->update([
+                'status' => PrintJob::STATUS_IN_PROGRESS,
+                'attempts' => DB::raw('attempts + 1'),
+            ]);
+
+        if (! $claimed) {
+            // Not claimable: PRINTED, CANCELED, max_attempts exhausted, or
+            // already claimed by another worker.
+            return;
+        }
+
+        // ── 2. Fresh load after claim ──
         /** @var PrintJob|null $job */
         $job = PrintJob::with(['printer', 'printable'])->find($this->printJobId);
+
         if (! $job) {
             return;
         }
 
-        // Restore the locale that was active when the print job was created,
-        // so printed output uses the correct language regardless of queue worker defaults.
+        // Restore locale from job creation time
         if ($job->locale) {
             app()->setLocale($job->locale);
         }
-
-        // Idempotency guard: already done or canceled
-        if ($job->status === PrintJob::STATUS_PRINTED || $job->status === PrintJob::STATUS_CANCELED) {
-            return;
-        }
-
-        // Restore the locale that was active when the print job was created,
-        // so printed output uses the correct language regardless of queue worker defaults.
-        if ($job->locale) {
-            app()->setLocale($job->locale);
-        }
-        if ($job->status === PrintJob::STATUS_PRINTED || $job->status === PrintJob::STATUS_CANCELED) {
-            return;
-        }
-
-        // Guard: max attempts exceeded → permanently FAILED
-        if ($job->attempts >= $job->max_attempts) {
-            $job->update([
-                'status' => PrintJob::STATUS_FAILED,
-                'last_error' => 'Max attempts reached',
-            ]);
-
-            if ($job->printable instanceof ProductionTicket) {
-                $job->printable->update(['ticket_status' => 'FAILED']);
-            }
-
-            Audit::record(
-                'PRINT_JOB_MAX_ATTEMPTS',
-                "PrintJob #{$job->id} reached max attempts ({$job->max_attempts})",
-                ['printer_id' => $job->printer_id, 'job_id' => $job->id],
-                [
-                    'actor_user_id' => $job->requested_by_user_id,
-                    'production_ticket_id' => $job->printable instanceof ProductionTicket ? $job->printable->id : null,
-                ],
-            );
-
-            return;
-        }
-
-        $job->update([
-            'status' => PrintJob::STATUS_IN_PROGRESS,
-            'attempts' => $job->attempts + 1,
-        ]);
 
         $printer = $job->printer;
         $printable = $job->printable;
@@ -111,7 +106,7 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
-        // Create TicketRenderer with printer-specific configuration
+        // ── 3. Render ESC/POS payload ──
         $renderer = new TicketRenderer(
             charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
@@ -124,20 +119,38 @@ class DispatchPrintJob implements ShouldQueue
                 $printable instanceof ProductionTicket => $renderer->renderProductionTicket($printable),
                 $printable instanceof BillingDocument => $renderer->renderBill($printable),
                 $printable instanceof SaleDocument => $renderer->renderSaleDocument($printable),
-                default => throw new \LogicException('Unsupported printable: '.$printable::class),
+                default => throw new \LogicException('Unsupported printable: ' . $printable::class),
             };
         } catch (Throwable $e) {
             $job->update([
                 'status' => PrintJob::STATUS_FAILED,
-                'last_error' => 'Render failure: '.$e->getMessage(),
+                'last_error' => 'Render failure: ' . $e->getMessage(),
             ]);
 
             return;
         }
 
-        $adapter = $registry->for($printer);
-        $result = $adapter->send($printer, $payload);
+        // ── 5. Send via registry (non-blocking per-printer lock) ──
+        $result = $registry->send($printer, $payload);
 
+        // ── 6. Lock contention → revert and re-dispatch ──
+        if ($result->contended) {
+            PrintJob::where('id', $job->id)
+                ->where('status', PrintJob::STATUS_IN_PROGRESS)
+                ->update([
+                    'status' => PrintJob::STATUS_PENDING,
+                    'attempts' => max(0, $job->attempts - 1),
+                    'last_error' => $result->message,
+                ]);
+
+            static::dispatch($this->printJobId, $this->lockContentionAttempt + 1)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($this->contentionBackoff()));
+
+            return;
+        }
+
+        // ── 7. Success ──
         if ($result->success) {
             $job->update([
                 'status' => PrintJob::STATUS_PRINTED,
@@ -194,9 +207,9 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
-        // --- Transport failure ---
+        // ── 8. Transport failure ──
         $isFinalAttempt = $job->attempts >= $job->max_attempts;
-        $backoffSeconds = $this->calculateBackoff($job->attempts);
+        $backoffSeconds = $this->transportBackoff($job->attempts);
 
         $job->update([
             'status' => PrintJob::STATUS_FAILED,
@@ -221,25 +234,86 @@ class DispatchPrintJob implements ShouldQueue
             );
         }
 
-        // Auto-retry: re-dispatch with exponential backoff delay
+        if ($isFinalAttempt) {
+            Audit::record(
+                'PRINT_JOB_MAX_ATTEMPTS',
+                "PrintJob #{$job->id} reached max attempts ({$job->max_attempts})",
+                ['printer_id' => $job->printer_id, 'job_id' => $job->id],
+                [
+                    'actor_user_id' => $job->requested_by_user_id,
+                    'production_ticket_id' => $printable instanceof ProductionTicket ? $printable->id : null,
+                ],
+            );
+        }
+
+        // Auto-retry: re-dispatch with transport backoff delay
         if (! $isFinalAttempt) {
-            static::dispatch($job->id)
+            static::dispatch($this->printJobId, $this->lockContentionAttempt)
                 ->onQueue('prints')
                 ->delay(now()->addSeconds($backoffSeconds));
         }
     }
 
     /**
-     * Calculate exponential backoff delay for a given attempt number.
+     * Called by Laravel when the job fails with an unhandled exception
+     * (e.g. worker killed by --timeout, fatal PHP error, SIGKILL).
      *
-     * Sequence: 3s, 6s, 10s (capped at 10s).
+     * Reverts the PrintJob from IN_PROGRESS to FAILED so it doesn't
+     * remain stuck forever.
+     */
+    public function failed(Throwable $e): void
+    {
+        PrintJob::where('id', $this->printJobId)
+            ->where('status', PrintJob::STATUS_IN_PROGRESS)
+            ->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'Worker failure: ' . ($e->getMessage() ?: 'process terminated'),
+            ]);
+    }
+
+    /**
+     * Calculate contention backoff delay with ±20% jitter.
+     *
+     * Sequence: ~1s → ~2s → ~4s → ~8s → ~10s (capped at 10s).
+     *
+     * @return int Delay in seconds
+     */
+    private function contentionBackoff(): int
+    {
+        $base = match (true) {
+            $this->lockContentionAttempt <= 0 => 1,
+            $this->lockContentionAttempt === 1 => 2,
+            $this->lockContentionAttempt === 2 => 4,
+            $this->lockContentionAttempt === 3 => 8,
+            default => 10,
+        };
+
+        return $this->applyJitter($base);
+    }
+
+    /**
+     * Calculate transport failure backoff delay with ±20% jitter.
+     *
+     * Sequence: ~3s → ~6s → ~10s (capped at 10s).
      *
      * @param  int  $attempt  Current attempt number (1-based, AFTER increment)
      * @return int  Delay in seconds
      */
-    private function calculateBackoff(int $attempt): int
+    private function transportBackoff(int $attempt): int
     {
-        return min(3 * (int) pow(2, $attempt - 1), 10);
+        $base = min(3 * (int) pow(2, $attempt - 1), 10);
+
+        return $this->applyJitter($base);
+    }
+
+    /**
+     * Apply ±20% random jitter to a base delay to prevent thundering herd.
+     */
+    private function applyJitter(int $base): int
+    {
+        $jitter = (int) round($base * 0.2);
+
+        return max(1, $base + mt_rand(-$jitter, $jitter));
     }
 
     /**

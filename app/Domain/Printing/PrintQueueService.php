@@ -20,7 +20,7 @@ class PrintQueueService
             'printer_id' => $ticket->printer_id,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
-            'max_attempts' => 3,
+            'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
             'locale' => app()->getLocale(),
         ]);
@@ -39,7 +39,7 @@ class PrintQueueService
             'printer_id' => $bill->printer_id,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
-            'max_attempts' => 3,
+            'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
             'locale' => app()->getLocale(),
         ]);
@@ -58,7 +58,7 @@ class PrintQueueService
             'printer_id' => $document->printer_id,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
-            'max_attempts' => 3,
+            'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
             'locale' => app()->getLocale(),
         ]);
@@ -77,7 +77,7 @@ class PrintQueueService
             'printer_id' => $document->printer_id,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
-            'max_attempts' => 3,
+            'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
             'locale' => app()->getLocale(),
         ]);

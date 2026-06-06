@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Printing\Contracts\PrinterAdapter;
 use App\Domain\Printing\PrintResult;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Jobs\DispatchPrintJob;
@@ -14,7 +13,6 @@ use App\Models\SaleDocument;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use Illuminate\Support\Facades\Auth;
-use Tests\Traits\DelegatesProbeToSend;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -79,27 +77,12 @@ it('emits SALE_VOUCHER_PRINTED on successful sale voucher print', function () {
         'printer_id' => $this->printer->id,
         'status' => PrintJob::STATUS_PENDING,
         'attempts' => 0,
-        'max_attempts' => 3,
+        'max_attempts' => 4,
         'requested_by_user_id' => $this->cashier->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter
-    {
-        use DelegatesProbeToSend;
-
-        public function supports(Printer $printer): bool
-        {
-            return true;
-        }
-
-        public function send(Printer $printer, string $payload): PrintResult
-        {
-            return new PrintResult(true, 'OK');
-        }
-    };
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
 
     (new DispatchPrintJob($job->id))->handle($registry);
 
@@ -128,27 +111,12 @@ it('emits SALE_RECEIPT_PRINTED on successful sale receipt print', function () {
         'printer_id' => $this->printer->id,
         'status' => PrintJob::STATUS_PENDING,
         'attempts' => 0,
-        'max_attempts' => 3,
+        'max_attempts' => 4,
         'requested_by_user_id' => $this->cashier->id,
     ]);
 
-    $adapter = new class implements PrinterAdapter
-    {
-        use DelegatesProbeToSend;
-
-        public function supports(Printer $printer): bool
-        {
-            return true;
-        }
-
-        public function send(Printer $printer, string $payload): PrintResult
-        {
-            return new PrintResult(true, 'OK');
-        }
-    };
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
 
     (new DispatchPrintJob($job->id))->handle($registry);
 

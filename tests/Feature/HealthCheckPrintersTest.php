@@ -1,7 +1,6 @@
 <?php
 
 use App\Console\Commands\HealthCheckPrinters;
-use App\Domain\Printing\Contracts\PrinterAdapter;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Domain\Printing\PrintResult;
 use App\Models\Printer;
@@ -35,12 +34,8 @@ it('sets health_status to OK when adapter probe succeeds', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('probe')->andReturn(PrintResult::ok('Sent 4 bytes'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::ok('Sent 4 bytes'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -75,12 +70,8 @@ it('sets health_status to REACHABLE when probe fails but TCP ping succeeds', fun
     ]);
 
     // Adapter probe fails
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Printer busy'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::fail('Printer busy'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -111,12 +102,8 @@ it('sets health_status to UNREACHABLE when both probe and ping fail', function (
         'health_status' => 'OK',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Connection refused'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::fail('Connection refused'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -150,13 +137,9 @@ it('skips inactive printers', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    // Should only be called once (for the active printer)
-    $adapter->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    // Only called once for the active printer
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -184,12 +167,8 @@ it('handles adapter exception gracefully and falls back to ping', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('probe')->andThrow(new RuntimeException('Adapter exploded'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andThrow(new RuntimeException('Adapter exploded'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -214,12 +193,8 @@ it('outputs summary after probing', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    $adapter->shouldReceive('probe')->andReturn(PrintResult::fail('Down'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::fail('Down'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -244,7 +219,6 @@ it('handles no active printers gracefully', function () {
 // ─── 90-second cache mutex ─────────────────────────────────────────────
 
 it('skips run when mutex cache key exists', function () {
-    // Pre-set the mutex
     Cache::put('health_check_printers_last_run', now()->timestamp, 90);
 
     $printer = Printer::create([
@@ -257,14 +231,8 @@ it('skips run when mutex cache key exists', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    // send() should NEVER be called because the mutex blocks execution
-    $adapter->shouldReceive('probe')->never();
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    // for() should NEVER be called
-    $registry->shouldReceive('for')->never();
+    $registry->shouldReceive('probe')->never();
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
@@ -274,13 +242,11 @@ it('skips run when mutex cache key exists', function () {
     expect($exitCode)->toBe(0)
         ->and($output)->toContain('Skipping health check');
 
-    // Printer status should remain unchanged
     $printer->refresh();
     expect($printer->health_status)->toBe('UNKNOWN');
 });
 
 it('--force bypasses the mutex even when cache key exists', function () {
-    // Pre-set the mutex
     Cache::put('health_check_printers_last_run', now()->timestamp, 90);
 
     $printer = Printer::create([
@@ -293,13 +259,8 @@ it('--force bypasses the mutex even when cache key exists', function () {
         'health_status' => 'UNKNOWN',
     ]);
 
-    $adapter = Mockery::mock(PrinterAdapter::class);
-    $adapter->shouldReceive('supports')->andReturn(true);
-    // send() SHOULD be called because --force bypasses the mutex
-    $adapter->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
-
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('for')->andReturn($adapter);
+    $registry->shouldReceive('probe')->once()->andReturn(PrintResult::ok('OK'));
 
     $this->app->instance(PrinterAdapterRegistry::class, $registry);
 
