@@ -4,12 +4,18 @@ set -e
 # ── Shared setup (all containers) ──────────────────────────────────────
 
 # Ensure .env exists so artisan key:generate has a file to write to.
+# .env is excluded from the Docker image by .dockerignore,
+# but .env.example IS included.
 if [ ! -f .env ]; then
     echo "[entrypoint] Creating .env from .env.example..."
     cp .env.example .env
 fi
 
 # Generate APP_KEY before anything that boots Laravel.
+# key:generate writes to .env — it doesn't need the database.
+# Docker compose may pass APP_KEY= as an empty string, which overrides
+# the .env value (Laravel uses immutable dotenv). We must export the
+# newly generated key so this shell process uses it.
 if [ -z "$APP_KEY" ]; then
     echo "[entrypoint] APP_KEY is empty, generating..."
     php artisan key:generate --force
@@ -60,6 +66,10 @@ echo "[entrypoint] Caching config, routes and views..."
 php artisan optimize
 
 # Sync public/ assets from backup when the volume is stale.
+# Named volumes survive image updates and hide the image's public/ files.
+# cp -au copies only newer/missing files — existing volume files (like
+# debug.php) are preserved. This handles ALL public/ content: build
+# assets, Filament assets, icons, manifest, service worker, etc.
 if [ -d /var/www/public-backup ]; then
     echo "[entrypoint] Syncing public/ assets from backup..."
     cp -au /var/www/public-backup/. /var/www/html/public/
@@ -77,6 +87,8 @@ if [ "$APP_DEBUG" = "true" ]; then
     echo "  .env exists: $(test -f .env && echo yes || echo no)"
     echo "[entrypoint] ====="
 
+    # Write debug.php for diagnostic access when debugging is on.
+    echo "[entrypoint] Writing debug.php (APP_DEBUG=true)..."
     cat > public/debug.php << 'DEBUGEOPHP'
 <?php
 header('Content-Type: text/plain; charset=utf-8');
@@ -107,6 +119,7 @@ echo "public-backup/:   " . (is_dir('/var/www/public-backup') ? 'YES' : 'MISSING
 DEBUGEOPHP
     echo "[entrypoint] debug.php written."
 else
+    # In production, ensure debug.php is absent.
     rm -f public/debug.php 2>/dev/null || true
 fi
 
