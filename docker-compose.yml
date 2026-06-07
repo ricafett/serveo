@@ -74,7 +74,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-serveo}
       TZ: ${APP_TIMEZONE:-UTC}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${DB_USERNAME:-serveo} -d $${DB_DATABASE:-serveo}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-serveo} -d ${DB_DATABASE:-serveo}"]
       interval: 10s
       timeout: 5s
       retries: 5
