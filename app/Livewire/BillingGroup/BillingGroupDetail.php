@@ -411,6 +411,38 @@ class BillingGroupDetail extends Component
     }
 
     // ------------------------------------------------------------------
+    // Close
+    // ------------------------------------------------------------------
+
+    public function closeGroup(): void
+    {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        if (! Auth::user()?->can('billing_group.set_status')) {
+            $this->errorMessage = __('Unauthorized to close groups.');
+
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            app(BillingGroupService::class)->close($this->group, Auth::user());
+            $this->successMessage = __('Group closed.');
+            $this->loadGroup();
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Orders
     // ------------------------------------------------------------------
 

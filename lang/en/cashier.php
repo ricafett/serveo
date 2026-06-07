@@ -14,6 +14,7 @@ return [
     'reprint' => 'Reprint',
     'reopen' => 'Reopen',
     'reopen_confirm' => 'Reopen group',
+    'close_group' => 'Close Group',
     'record_payment' => 'Record Payment',
     'payment_group' => 'Group',
     'payment_amount' => 'Amount (€)',
