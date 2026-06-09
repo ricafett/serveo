@@ -18,6 +18,7 @@ class PrintJob extends Model
     protected $casts = [
         'next_attempt_at' => 'datetime',
         'completed_at' => 'datetime',
+        'payload' => 'array',
     ];
 
     public const KIND_PRODUCTION_TICKET = 'PRODUCTION_TICKET';
@@ -27,6 +28,8 @@ class PrintJob extends Model
     public const KIND_SALE_VOUCHER = 'SALE_VOUCHER';
 
     public const KIND_SALE_RECEIPT = 'SALE_RECEIPT';
+
+    public const KIND_SALE_VOUCHER_BATCH = 'SALE_VOUCHER_BATCH';
 
     public const STATUS_PENDING = 'PENDING';
 

@@ -136,6 +136,8 @@ class VoucherSaleService
                 ['group_items' => false, 'ignore_variants' => true, 'ignore_modifiers' => true, 'is_active' => true],
             );
 
+            $allVoucherIds = [];
+
             foreach ($saleItems as $saleItem) {
                 if ($voucherConfig->group_items) {
                     $documents = collect([
@@ -168,7 +170,7 @@ class VoucherSaleService
                 }
 
                 foreach ($documents as $document) {
-                    $this->printQueue->enqueueSaleVoucher($document, $cashier);
+                    $allVoucherIds[] = $document->id;
 
                     Audit::record(
                         'SALE_VOUCHER_QUEUED',
@@ -182,6 +184,11 @@ class VoucherSaleService
                         ],
                     );
                 }
+            }
+
+            // Batch all vouchers into a single PrintJob to prevent interleaving
+            if (! empty($allVoucherIds)) {
+                $this->printQueue->enqueueSaleVoucherBatch($printer->id, $allVoucherIds, $cashier);
             }
 
             if ($printReceipt) {

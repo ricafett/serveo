@@ -88,6 +88,33 @@ class PrintQueueService
     }
 
     /**
+     * Batch-enqueue all vouchers for a single sale into one PrintJob.
+     * All document IDs are stored in the payload column and rendered
+     * sequentially within a single per-printer lock, preventing interleaving.
+     *
+     * @param  int[]  $documentIds
+     */
+    public function enqueueSaleVoucherBatch(int $printerId, array $documentIds, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind' => PrintJob::KIND_SALE_VOUCHER_BATCH,
+            'printable_type' => null,
+            'printable_id' => null,
+            'printer_id' => $printerId,
+            'status' => PrintJob::STATUS_PENDING,
+            'attempts' => 0,
+            'max_attempts' => 4,
+            'requested_by_user_id' => $actor?->id,
+            'locale' => config('app.locale', 'pt-PT'),
+            'payload' => ['document_ids' => $documentIds],
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    /**
      * Re-queue a failed job (manual admin retry). Resets the attempt counter
      * so the auto-retry loop gets a fresh start. Returns true if a dispatch
      * was scheduled.

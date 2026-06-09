@@ -97,6 +97,12 @@ class DispatchPrintJob implements ShouldQueue
         $printer = $job->printer;
         $printable = $job->printable;
 
+        // Voucher batch: render and send all vouchers in one job
+        if ($job->job_kind === PrintJob::KIND_SALE_VOUCHER_BATCH) {
+            $this->handleVoucherBatch($job, $printer, $registry);
+            return;
+        }
+
         if (! $printer || ! $printable) {
             $job->update([
                 'status' => PrintJob::STATUS_FAILED,
@@ -259,6 +265,90 @@ class DispatchPrintJob implements ShouldQueue
         // Auto-retry: re-dispatch with transport backoff delay
         if (! $isFinalAttempt) {
             static::dispatch($this->printJobId, $this->lockContentionAttempt)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($backoffSeconds));
+        }
+    }
+
+    /**
+     * Handle a batch of sale vouchers: render each document and send via
+     * sendBatch for lock-coherent, non-interleaving output.
+     */
+    private function handleVoucherBatch(PrintJob $job, Printer $printer, PrinterAdapterRegistry $registry): void
+    {
+        $documentIds = $job->payload['document_ids'] ?? [];
+        if (empty($documentIds)) {
+            $job->update(['status' => PrintJob::STATUS_FAILED, 'last_error' => 'No document IDs in batch payload']);
+            return;
+        }
+
+        $documents = SaleDocument::whereIn('id', $documentIds)->get();
+        $payload = '';
+        $renderer = new TicketRenderer(
+            charWidth: $printer->print_char_width ?? 48,
+            beginSpace: $printer->print_begin_space ?? 0,
+            endSpace: 2,
+        );
+
+        foreach ($documents as $document) {
+            try {
+                $payload .= $renderer->renderSaleDocument($document);
+            } catch (Throwable $e) {
+                $job->update([
+                    'status' => PrintJob::STATUS_FAILED,
+                    'last_error' => 'Render failure for doc #'.$document->id.': '.$e->getMessage(),
+                ]);
+                return;
+            }
+        }
+
+        $copiesToSend = count($documents);
+        $result = $copiesToSend > 1
+            ? $registry->sendBatch($printer, $payload, $copiesToSend)
+            : $registry->send($printer, $payload);
+
+        if ($result->contended) {
+            PrintJob::where('id', $job->id)
+                ->where('status', PrintJob::STATUS_IN_PROGRESS)
+                ->update([
+                    'status' => PrintJob::STATUS_PENDING,
+                    'attempts' => max(0, $job->attempts - 1),
+                    'last_error' => $result->message,
+                ]);
+
+            static::dispatch($job->id, $this->lockContentionAttempt + 1)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($this->contentionBackoff()));
+            return;
+        }
+
+        if ($result->success) {
+            $job->update([
+                'status' => PrintJob::STATUS_PRINTED,
+                'completed_at' => now(),
+                'last_error' => null,
+            ]);
+            $printer->update(['health_status' => 'OK', 'last_seen_at' => now(), 'last_error' => null]);
+
+            foreach ($documents as $document) {
+                $document->update(['document_status' => 'PRINTED', 'printed_at' => now()]);
+            }
+            return;
+        }
+
+        // Transport failure
+        $isFinalAttempt = $job->attempts >= $job->max_attempts;
+        $backoffSeconds = $this->transportBackoff($job->attempts);
+
+        $job->update([
+            'status' => PrintJob::STATUS_FAILED,
+            'last_error' => $result->message,
+            'next_attempt_at' => now()->addSeconds($backoffSeconds),
+        ]);
+        $printer->update(['health_status' => 'UNREACHABLE', 'last_error' => $result->message]);
+
+        if (! $isFinalAttempt) {
+            static::dispatch($job->id, $this->lockContentionAttempt)
                 ->onQueue('prints')
                 ->delay(now()->addSeconds($backoffSeconds));
         }
