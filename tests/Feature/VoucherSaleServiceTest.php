@@ -45,7 +45,7 @@ it('completes a sale with vouchers, payment, print jobs, and audit events', func
 
     expect($sale->documents()->where('document_type', SaleDocument::TYPE_VOUCHER)->count())->toBe(2)
         ->and($sale->documents()->where('document_type', SaleDocument::TYPE_RECEIPT)->count())->toBe(1)
-        ->and(PrintJob::where('printable_type', SaleDocument::class)->count())->toBe(3);
+        ->and(PrintJob::where('printable_type', SaleDocument::class)->count())->toBe(2); // 1 batch voucher + 1 receipt
 
     expect(AuditEvent::where('event_type', 'SALE_COMPLETED')->where('sale_id', $sale->id)->exists())->toBeTrue()
         ->and(AuditEvent::where('event_type', 'SALE_PAYMENT_RECORDED')->where('sale_id', $sale->id)->exists())->toBeTrue()
