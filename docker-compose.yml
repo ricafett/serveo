@@ -25,7 +25,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-serveo}
       DB_USERNAME: ${DB_USERNAME:-serveo}
       DB_PASSWORD: ${DB_PASSWORD:-serveo}
-      DB_TIMEZONE: ${DB_TIMEZONE:-UTC}
+      TZ: ${APP_TIMEZONE:-UTC}
       SESSION_DRIVER: ${SESSION_DRIVER:-redis}
       SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
       QUEUE_CONNECTION: redis
@@ -54,6 +54,8 @@ services:
     image: ghcr.io/ricafett/serveo-web:latest
     container_name: serveo-web
     restart: unless-stopped
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
     ports:
       - "${APP_PORT:-8080}:80"
     volumes:
@@ -90,6 +92,8 @@ services:
     image: redis:7-alpine
     container_name: serveo-redis
     restart: unless-stopped
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

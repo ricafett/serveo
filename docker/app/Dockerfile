@@ -6,7 +6,7 @@ ARG WWWGROUP=1000
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set timezone
-ENV TZ=Europe/Lisbon
+ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install prerequisites for pg_dump 16 repository setup
