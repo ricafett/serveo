@@ -190,6 +190,8 @@ return [
     'print_begin_space_help' => 'Blank lines fed before content (0–10, default 0)',
     'print_end_space' => 'End feed lines',
     'print_end_space_help' => 'Blank lines fed after content, before cut (0–10, default 0)',
+    'copies' => 'Extra copies',
+    'copies_help' => 'Number of additional copies printed alongside the original (0–10). Void slips always print exactly once.',
     'retry_selected' => 'Retry selected',
     'retry_batch_result' => ':success retried, :skipped skipped',
     'retry_batch_success' => 'Retried',

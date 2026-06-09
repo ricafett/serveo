@@ -20,6 +20,7 @@ class DocumentPrintConfig extends Model
         'ignore_item_notes',
         'is_active', 'branding_header',
         'print_begin_space', 'print_end_space',
+        'copies',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class DocumentPrintConfig extends Model
         'ignore_modifiers' => 'boolean',
         'ignore_item_notes' => 'boolean',
         'is_active' => 'boolean',
+        'copies' => 'integer',
     ];
 
     public function scopeActive($query)

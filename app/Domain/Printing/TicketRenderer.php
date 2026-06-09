@@ -92,8 +92,6 @@ class TicketRenderer
 
         $lines[] = str_repeat('-', $this->width());
 
-        $this->appendItemsHeader($lines);
-
         $shouldGroup = $this->documentConfig?->group_items ?? true;
         $ignoreNotes = $this->documentConfig?->ignore_item_notes ?? false;
 
@@ -102,12 +100,8 @@ class TicketRenderer
             $name = $this->buildItemName($item);
             if ($shouldGroup) {
                 $qty = $item->quantity;
-                $lines[] = $this->formatItemLine(
-                    $qty,
-                    $name,
-                    $qty >= 2 ? (float) $item->unit_price : null,
-                    (float) $item->line_subtotal,
-                );
+                $left = sprintf('%2dx %s', $qty, $name);
+                $lines[] = mb_strimwidth($left, 0, $this->width());
             } else {
                 for ($i = 0; $i < $item->quantity; $i++) {
                     $left = sprintf(' 1x %s', $name);
@@ -388,6 +382,7 @@ class TicketRenderer
         $right = $unitHdr.'  '.$valueHdr;
 
         $lines[] = $this->row($left, $right);
+        $lines[] = str_repeat('-', $this->width());
     }
 
     /**

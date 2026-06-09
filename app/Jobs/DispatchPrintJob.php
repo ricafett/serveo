@@ -107,11 +107,12 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         // ── 3. Render ESC/POS payload ──
+        $documentConfig = $this->resolveDocumentConfig($printable);
         $renderer = new TicketRenderer(
             charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
             endSpace: $printer->print_end_space ?? 3,
-            documentConfig: $this->resolveDocumentConfig($printable),
+            documentConfig: $documentConfig,
         );
 
         try {
@@ -131,7 +132,16 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         // ── 5. Send via registry (non-blocking per-printer lock) ──
-        $result = $registry->send($printer, $payload);
+        // Determine copies: void slips always print exactly once.
+        $copiesToSend = 1;
+        $isVoidSlip = $printable instanceof ProductionTicket && $printable->is_void_slip;
+        if ($documentConfig && $documentConfig->copies > 0 && ! $isVoidSlip) {
+            $copiesToSend = $documentConfig->copies + 1; // original + extra copies
+        }
+
+        $result = $copiesToSend > 1
+            ? $registry->sendBatch($printer, $payload, $copiesToSend)
+            : $registry->send($printer, $payload);
 
         // ── 6. Lock contention → revert and re-dispatch ──
         if ($result->contended) {

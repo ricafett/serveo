@@ -114,6 +114,61 @@ class PrinterAdapterRegistry
     }
 
     /**
+     * Send a payload multiple times to a printer, holding the per-printer
+     * lock for the entire batch to prevent interleaving with other jobs.
+     * Returns failure on the first copy that fails, success if all succeed.
+     */
+    public function sendBatch(Printer $printer, string $payload, int $times): PrintResult
+    {
+        if ($times < 1) {
+            return PrintResult::ok('No copies requested');
+        }
+
+        $lockKey = self::lockKey($printer);
+
+        try {
+            $lock = Cache::lock($lockKey, self::LOCK_TTL);
+
+            if (! $lock->get()) {
+                return PrintResult::contended("Printer {$printer->id} busy — lock held by another worker");
+            }
+
+            try {
+                $adapter = $this->for($printer);
+
+                for ($i = 0; $i < $times; $i++) {
+                    $result = $adapter->send($printer, $payload);
+
+                    if (! $result->success) {
+                        return PrintResult::fail("Batch copy {$i} of {$times} failed: ".$result->message);
+                    }
+                }
+
+                return PrintResult::ok("Sent {$times} copies to printer {$printer->id}");
+            } finally {
+                $lock->release();
+            }
+        } catch (Throwable $e) {
+            Log::warning('Printer lock unavailable during batch, printing unlocked', [
+                'printer_id' => $printer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $adapter = $this->for($printer);
+
+            for ($i = 0; $i < $times; $i++) {
+                $result = $adapter->send($printer, $payload);
+
+                if (! $result->success) {
+                    return PrintResult::fail("Batch copy {$i} of {$times} failed: ".$result->message);
+                }
+            }
+
+            return PrintResult::ok("Sent {$times} copies to printer {$printer->id}");
+        }
+    }
+
+    /**
      * The lock key used for per-printer serialization. Public so
      * the stuck-job recovery command can check lock existence.
      */

@@ -22,7 +22,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
-            'locale' => app()->getLocale(),
+            'locale' => config('app.locale', 'pt-PT'),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
@@ -41,7 +41,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
-            'locale' => app()->getLocale(),
+            'locale' => config('app.locale', 'pt-PT'),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
@@ -60,7 +60,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
-            'locale' => app()->getLocale(),
+            'locale' => config('app.locale', 'pt-PT'),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
@@ -79,7 +79,7 @@ class PrintQueueService
             'attempts' => 0,
             'max_attempts' => 4,
             'requested_by_user_id' => $actor?->id,
-            'locale' => app()->getLocale(),
+            'locale' => config('app.locale', 'pt-PT'),
         ]);
 
         DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
