@@ -65,36 +65,27 @@ class DatabaseTranslationLoader extends FileLoader
             }
 
             try {
-                $query = TranslationKey::where('language_code', $locale)
-                    ->where('is_active', true);
-
-                if ($group === '*') {
-                    // Raw string / JSON-style translations (e.g. __('Hello'))
-                    $query->where('translation_namespace', '*');
-                    $rows = $query->get();
-
-                    $translations = [];
-                    foreach ($rows as $row) {
-                        $translations[$row->translation_key] = $row->translation_value;
-                    }
-
-                    return $translations;
-                }
-
-                if ($ns === '*') {
-                    // Default namespace: in our data model the group name IS the namespace
-                    $query->where('translation_namespace', $group);
-                } else {
-                    // Explicit namespace: look for namespaced keys with group prefix
-                    $query->where('translation_namespace', $ns)
-                        ->where('translation_key', 'like', "{$group}.%");
-                }
-
-                $rows = $query->get();
+                // Load fallback locale results first so exact locale can override
+                $shortLocale = explode('_', str_replace('-', '_', $locale))[0];
+                $hasFallback = $shortLocale !== $locale;
 
                 $translations = [];
-                foreach ($rows as $row) {
-                    data_set($translations, $row->translation_key, $row->translation_value);
+
+                if ($hasFallback) {
+                    $fallbackQuery = TranslationKey::where('language_code', $shortLocale)
+                        ->where('is_active', true);
+                    $this->applyQueryFilters($fallbackQuery, $group, $ns);
+                    foreach ($fallbackQuery->get() as $row) {
+                        $this->mergeRow($translations, $row, $group);
+                    }
+                }
+
+                // Exact locale overrides fallback
+                $exactQuery = TranslationKey::where('language_code', $locale)
+                    ->where('is_active', true);
+                $this->applyQueryFilters($exactQuery, $group, $ns);
+                foreach ($exactQuery->get() as $row) {
+                    $this->mergeRow($translations, $row, $group);
                 }
 
                 return $translations;
@@ -102,6 +93,34 @@ class DatabaseTranslationLoader extends FileLoader
                 return [];
             }
         });
+    }
+
+    /**
+     * Apply namespace/group filters to a translation query.
+     */
+    private function applyQueryFilters($query, string $group, string $ns): void
+    {
+        if ($group === '*') {
+            $query->where('translation_namespace', '*');
+        } elseif ($ns === '*') {
+            $query->where('translation_namespace', $group);
+        } else {
+            $query->where('translation_namespace', $ns)
+                ->where('translation_key', 'like', "{$group}.%");
+        }
+    }
+
+    /**
+     * Merge a translation row into the translations array.
+     * For JSON-style groups (*), keys are flat. For namespaced groups, dots are nested.
+     */
+    private function mergeRow(array &$translations, $row, string $group): void
+    {
+        if ($group === '*') {
+            $translations[$row->translation_key] = $row->translation_value;
+        } else {
+            data_set($translations, $row->translation_key, $row->translation_value);
+        }
     }
 
     public function addNamespace($namespace, $hint): void

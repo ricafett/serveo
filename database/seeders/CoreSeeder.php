@@ -762,6 +762,7 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'cashier', 'unauthorized', 'Não autorizado'],
             ['pt-PT', 'cashier', 'last_updated', 'Última atualização'],
             ['pt-PT', 'cashier', 'refresh', 'Atualizar'],
+            ['pt-PT', 'cashier', 'close_group', 'Fechar conta'],
 
             ['en-US', 'cashier', 'title', 'Checkout'],
             ['en-US', 'cashier', 'no_session', 'No open service session.'],
@@ -803,6 +804,7 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashier', 'unauthorized', 'Unauthorized'],
             ['en-US', 'cashier', 'last_updated', 'Last updated'],
             ['en-US', 'cashier', 'refresh', 'Refresh'],
+            ['en-US', 'cashier', 'close_group', 'Close group'],
 
             // ---------- dashboard ----------
             ['pt-PT', 'dashboard', 'title', 'Painel principal'],
