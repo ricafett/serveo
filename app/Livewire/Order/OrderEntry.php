@@ -216,11 +216,6 @@ class OrderEntry extends Component
         }
     }
 
-    public function goBack(): void
-    {
-        $this->redirect(route('billing-groups.detail', ['id' => $this->billingGroupId]), navigate: true);
-    }
-
     public function render()
     {
         return view('livewire.order.order-entry')

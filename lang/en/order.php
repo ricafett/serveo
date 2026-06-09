@@ -37,4 +37,7 @@ return [
     'note_for' => 'Note -',
     'item_note_label' => 'Item note',
     'item_note_placeholder' => 'e.g. no onion, well done',
+    'unsaved_cart_title' => 'Unsaved Order',
+    'unsaved_cart_body' => 'You have :count items in your cart. Leave without saving?',
+    'discard' => 'Discard',
 ];

@@ -121,7 +121,7 @@ class BillingGroupDetail extends Page
                 ->icon('heroicon-o-shopping-cart')
                 ->color('primary')
                 ->visible(fn () => ! $this->group?->is_closed && Auth::user()?->can('order.create'))
-                ->url(fn () => OrderEntry::getUrl(['record' => $this->group->id])),
+                ->url(fn () => url("/orders/new/{$this->group->id}")),
 
             Action::make('generateBill')
                 ->label(__('billing.print_bill'))

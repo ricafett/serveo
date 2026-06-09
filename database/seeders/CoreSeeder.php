@@ -531,6 +531,9 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'order', 'order_tab', 'Pedido'],
             ['pt-PT', 'order', 'delivery', 'Entrega'],
             ['pt-PT', 'order', 'no_items', 'Sem items nesta categoria.'],
+            ['pt-PT', 'order', 'unsaved_cart_title', 'Pedido Não Guardado'],
+            ['pt-PT', 'order', 'unsaved_cart_body', 'Tem :count itens no carrinho. Sair sem guardar?'],
+            ['pt-PT', 'order', 'discard', 'Descartar'],
 
             ['en-US', 'order', 'title', 'Order'],
             ['en-US', 'order', 'new_order', 'New Order'],
@@ -555,6 +558,9 @@ class CoreSeeder extends Seeder
             ['en-US', 'order', 'order_tab', 'Order'],
             ['en-US', 'order', 'delivery', 'Delivery'],
             ['en-US', 'order', 'no_items', 'No items in this category.'],
+            ['en-US', 'order', 'unsaved_cart_title', 'Unsaved Order'],
+            ['en-US', 'order', 'unsaved_cart_body', 'You have :count items in your cart. Leave without saving?'],
+            ['en-US', 'order', 'discard', 'Discard'],
 
             // ---------- billing ----------
             ['pt-PT', 'billing', 'group_title', 'Conta'],
@@ -971,6 +977,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'print_begin_space_help', 'Linhas em branco antes do conteúdo (0–10, padrão 0)'],
             ['pt-PT', 'app', 'print_end_space', 'Linhas de avanço final'],
             ['pt-PT', 'app', 'print_end_space_help', 'Linhas em branco após o conteúdo, antes do corte (0–10, padrão 0)'],
+            ['pt-PT', 'app', 'copies', 'Cópias extra'],
+            ['pt-PT', 'app', 'copies_help', 'Número de cópias adicionais impressas juntamente com o original (0–10). Anulações imprimem sempre exatamente uma vez.'],
             ['pt-PT', 'app', 'retry_selected', 'Reenviar selecionados'],
             ['pt-PT', 'app', 'retry_batch_result', ':success reenviado(s), :skipped ignorado(s)'],
             ['pt-PT', 'app', 'retry_batch_success', 'Reenviado(s)'],
@@ -1022,6 +1030,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'print_begin_space_help', 'Blank lines fed before content (0–10, default 0)'],
             ['en-US', 'app', 'print_end_space', 'End feed lines'],
             ['en-US', 'app', 'print_end_space_help', 'Blank lines fed after content, before cut (0–10, default 0)'],
+            ['en-US', 'app', 'copies', 'Extra copies'],
+            ['en-US', 'app', 'copies_help', 'Number of additional copies printed alongside the original (0–10). Void slips always print exactly once.'],
             ['en-US', 'app', 'retry_selected', 'Retry selected'],
             ['en-US', 'app', 'retry_batch_result', ':success retried, :skipped skipped'],
             ['en-US', 'app', 'retry_batch_success', 'Retried'],

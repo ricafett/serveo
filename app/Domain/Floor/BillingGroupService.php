@@ -110,11 +110,8 @@ class BillingGroupService
             $update['closed_at'] = now();
         }
 
-        DB::transaction(function () use ($group, $update, $statusCode) {
+        DB::transaction(function () use ($group, $update) {
             $group->update($update);
-            if ($statusCode === BillingStatus::CLOSED) {
-                $group->openOccupiedZones()->update(['is_open' => false, 'released_at' => now()]);
-            }
         });
 
         Audit::record(
@@ -154,7 +151,6 @@ class BillingGroupService
                 'billing_status_id' => BillingStatus::where('code', BillingStatus::CLOSED)->value('id'),
                 'version_number' => $group->version_number + 1,
             ]);
-            $group->openOccupiedZones()->update(['is_open' => false, 'released_at' => now()]);
         });
 
         Audit::record(
