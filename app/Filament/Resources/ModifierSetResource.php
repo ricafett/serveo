@@ -68,7 +68,11 @@ class ModifierSetResource extends BaseResource
                 ->helperText(__('app.assume_default_help')),
             Forms\Components\Select::make('default_modifier_set_item_id')
                 ->label(__('app.default_modifier_item'))
-                ->relationship('items', 'display_name', fn ($q) => $q->where('is_active', true))
+                ->options(fn (?ModifierSet $record) => $record
+                    ?->items()
+                    ->where('is_active', true)
+                    ->pluck('display_name', 'id')
+                )
                 ->nullable()
                 ->placeholder(__('app.none'))
                 ->helperText(__('app.is_default_help')),
