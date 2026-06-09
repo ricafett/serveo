@@ -51,6 +51,7 @@ class Audit
         'BACKUP_RESTORE_STARTED',
         'BACKUP_RESTORE_COMPLETED',
         'BACKUP_RESTORE_FAILED',
+        'CASH_MOVEMENT_RECORDED',
     ];
 
     /**

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AuthController;
 use App\Livewire\BillingGroup\BillingGroupDetail;
 use App\Livewire\BillingGroup\BillingGroupLookup;
+use App\Livewire\Cashier\CashDrawerIndex;
 use App\Livewire\Cashier\ReprintPanel;
 use App\Livewire\Cashier\SalesIndex;
 use App\Livewire\Floor\FloorIndex;
@@ -57,6 +58,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/lookup', BillingGroupLookup::class)->name('lookup');
         Route::get('/reprint/{billingGroupId}', ReprintPanel::class)->name('reprint.group');
         Route::get('/sales', SalesIndex::class)->name('sales');
+        Route::get('/cash-drawer', CashDrawerIndex::class)->name('cash-drawer');
     });
 });
 
