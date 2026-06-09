@@ -98,8 +98,8 @@ class PrintQueueService
     {
         $job = PrintJob::create([
             'job_kind' => PrintJob::KIND_SALE_VOUCHER_BATCH,
-            'printable_type' => null,
-            'printable_id' => null,
+            'printable_type' => SaleDocument::class,
+            'printable_id' => 0, // batch job — real document IDs are in payload
             'printer_id' => $printerId,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
