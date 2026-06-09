@@ -26,6 +26,7 @@ abstract class DuskTestCase extends BaseTestCase
         'audit_events',
         'billing_documents',
         'billing_groups',
+        'cash_movements',
         'cashier_printer_assignments',
         'fulfillment_routes',
         'occupied_zones',
