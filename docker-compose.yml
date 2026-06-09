@@ -37,7 +37,7 @@ services:
       SERVEO_PRINT_AGENT_URL: ${SERVEO_PRINT_AGENT_URL:-}
       SERVEO_PRINT_AGENT_TOKEN: ${SERVEO_PRINT_AGENT_TOKEN:-}
     healthcheck:
-      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      test: ["CMD", "pgrep", "php-fpm"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -76,7 +76,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-serveo}
       TZ: ${APP_TIMEZONE:-UTC}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-serveo} -d ${DB_DATABASE:-serveo}"]
+      test: ["CMD-SHELL", "pg_isready -q -U ${DB_USERNAME:-serveo} -d ${DB_DATABASE:-serveo}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -118,7 +118,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work.*prints' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "artisan queue:work.*prints"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -142,7 +142,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work.*prints' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "artisan queue:work.*prints"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -166,7 +166,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work.*prints' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "artisan queue:work.*prints"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -190,7 +190,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work.*prints' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "artisan queue:work.*prints"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -217,7 +217,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work.*default' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "artisan queue:work.*default"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -243,7 +243,7 @@ services:
     environment:
       <<: *worker-env
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'schedule:run' || pgrep -f 'sleep 60' || exit 1"]
+      test: ["CMD", "pgrep", "-f", "sleep 60"]
       interval: 60s
       timeout: 5s
       retries: 3
