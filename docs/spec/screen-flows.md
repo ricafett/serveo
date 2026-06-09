@@ -26,7 +26,7 @@ Recommended top-level navigation by role:
 | Role | Primary screens |
 |---|---|
 | Server | Floor, Billing Group Detail, Order Entry, Bill Preview/Request, Menu, Reopen if permitted |
-| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Sales, Reprint, Menu, Reopen |
+| Cashier | Billing Group Lookup, Billing Group Detail, Checkout, Sales, Cash Drawer, Reprint, Menu, Reopen |
 | Admin | Venue Setup, Printer Setup, User/Roles, Status Setup, Event Log, Export |
 
 On small screens, the app should behave like a task-first PWA, with the current screen optimized for one main job at a time. On larger screens, related panels may be shown side by side, but the flow logic should remain the same.[cite:152]
@@ -42,9 +42,10 @@ The MVP screen set should contain at least these screens:
 5. Order Entry screen or drawer.
 6. Billing Group Lookup screen.
 7. Checkout screen.
-8. Sales / Vendas screen.
-9. Reprint / document actions panel.
-10. Menu catalog screen.
+ 8. Sales / Vendas screen.
+ 9. Cash Drawer screen.
+10. Reprint / document actions panel.
+11. Menu catalog screen.
 11. Venue Setup screen.
 12. Printer Setup screen.
 13. User and Role Management screen.
@@ -276,6 +277,30 @@ The MVP screen set should contain at least these screens:
 - Sales are created only after payment succeeds.
 - Voucher printing follows configured quantity grouping rules.
 - Sale vouchers and receipts use the cashier's assigned printer and must be audit-logged.
+
+### 8A. Cash Drawer screen
+
+**Users:** cashier, admin.
+
+**Purpose:** view and manage the cash drawer balance per session.
+
+**Key content:**
+- Current open session indicator.
+- Cash drawer balance.
+- Chronological list of cash movements (Cash In / Cash Out) and payment inflows (billing group payments, sale payments).
+- Form to record new cash movements.
+
+**Key actions:**
+- View current balance.
+- Record Cash In movement (e.g. opening float, top-up).
+- Record Cash Out movement (e.g. cash removal, bank deposit).
+- Refresh transaction history.
+
+**Flow rules:**
+- Requires an open service session to record movements.
+- Cash Out cannot exceed current balance.
+- Movements are append-only and audited.
+- Cashiers see only their own drawer; admin can view all via Filament.
 
 ### 9. Menu catalog screen
 

@@ -419,6 +419,8 @@ This section maps roles to the MVP screens defined elsewhere.
 | Order Entry | Allow | Allow | Allow |
 | Billing Group Lookup | Conditional | Allow | Allow |
 | Checkout | Deny | Allow | Allow |
+| Sales / Vendas | Deny | Allow | Allow |
+| Cash Drawer | Deny | Allow | Allow |
 | Reprint / document actions | Deny | Allow | Allow |
 | Menu catalog | Allow | Allow | Allow |
 | Venue Setup | Deny | Deny | Allow |
@@ -457,6 +459,9 @@ Suggested permission codes:
 - `bill.print`
 - `bill.reprint`
 - `payment.record`
+- `cash_drawer.view`
+- `cash_drawer.create_movement`
+- `cash_drawer.view_all`
 - `event_log.view_limited`
 - `event_log.view_full`
 - `printer.configure`
