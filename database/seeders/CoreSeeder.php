@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 14;
+    private const SEED_VERSION = 15;
 
     public function run(): void
     {
@@ -1117,6 +1117,33 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'file_name', 'Nome do ficheiro'],
             ['pt-PT', 'app', 'file_size', 'Tamanho'],
             ['pt-PT', 'app', 'requested_at', 'Solicitado em'],
+            ['pt-PT', 'app', 'navigation_label_cash_movements', 'Movimentos de caixa'],
+            ['pt-PT', 'app', 'model_label_cash_movement', 'Movimento'],
+            ['pt-PT', 'app', 'plural_model_label_cash_movements', 'Movimentos de caixa'],
+            ['pt-PT', 'cashdrawer', 'title', 'Gaveta'],
+            ['pt-PT', 'cashdrawer', 'no_session', 'Nenhuma sessão de serviço aberta. A gaveta requer uma sessão ativa.'],
+            ['pt-PT', 'cashdrawer', 'current_balance', 'Saldo atual'],
+            ['pt-PT', 'cashdrawer', 'session_balance', 'Saldo da sessão'],
+            ['pt-PT', 'cashdrawer', 'record_movement', 'Registar movimento'],
+            ['pt-PT', 'cashdrawer', 'new_movement', 'Novo movimento'],
+            ['pt-PT', 'cashdrawer', 'movement_type', 'Tipo de movimento'],
+            ['pt-PT', 'cashdrawer', 'cash_in', 'Entrada'],
+            ['pt-PT', 'cashdrawer', 'cash_out', 'Saída'],
+            ['pt-PT', 'cashdrawer', 'amount', 'Montante'],
+            ['pt-PT', 'cashdrawer', 'label', 'Descrição'],
+            ['pt-PT', 'cashdrawer', 'label_required', 'A descrição é obrigatória.'],
+            ['pt-PT', 'cashdrawer', 'notes', 'Notas'],
+            ['pt-PT', 'cashdrawer', 'cash_in_examples', 'ex: Fundo de caixa, Reforço'],
+            ['pt-PT', 'cashdrawer', 'cash_out_examples', 'ex: Retirada, Depósito bancário'],
+            ['pt-PT', 'cashdrawer', 'available_balance', 'Saldo disponível'],
+            ['pt-PT', 'cashdrawer', 'record_cash_in', 'Registar entrada'],
+            ['pt-PT', 'cashdrawer', 'record_cash_out', 'Registar saída'],
+            ['pt-PT', 'cashdrawer', 'history', 'Histórico'],
+            ['pt-PT', 'cashdrawer', 'no_movements', 'Sem movimentos. Registe uma entrada para iniciar a gaveta.'],
+            ['pt-PT', 'cashdrawer', 'movement_recorded', 'Movimento registado com sucesso.'],
+            ['pt-PT', 'cashdrawer', 'amount_positive', 'O montante deve ser superior a zero.'],
+            ['pt-PT', 'cashdrawer', 'invalid_type', 'Tipo de movimento inválido.'],
+            ['pt-PT', 'cashdrawer', 'insufficient_balance', 'Saldo insuficiente para esta saída. Disponível: :balance €.'],
 
             ['en-US', 'app', 'navigation_group_system', 'System'],
             ['en-US', 'app', 'navigation_label_backups', 'Backups'],
@@ -1145,6 +1172,33 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'file_name', 'File Name'],
             ['en-US', 'app', 'file_size', 'File Size'],
             ['en-US', 'app', 'requested_at', 'Requested At'],
+            ['en-US', 'app', 'navigation_label_cash_movements', 'Cash Movements'],
+            ['en-US', 'app', 'model_label_cash_movement', 'Cash Movement'],
+            ['en-US', 'app', 'plural_model_label_cash_movements', 'Cash Movements'],
+            ['en-US', 'cashdrawer', 'title', 'Cash Drawer'],
+            ['en-US', 'cashdrawer', 'no_session', 'No open service session. A cash drawer requires an active service session.'],
+            ['en-US', 'cashdrawer', 'current_balance', 'Current Balance'],
+            ['en-US', 'cashdrawer', 'session_balance', 'Session balance'],
+            ['en-US', 'cashdrawer', 'record_movement', 'Record Movement'],
+            ['en-US', 'cashdrawer', 'new_movement', 'New Movement'],
+            ['en-US', 'cashdrawer', 'movement_type', 'Movement Type'],
+            ['en-US', 'cashdrawer', 'cash_in', 'Cash In'],
+            ['en-US', 'cashdrawer', 'cash_out', 'Cash Out'],
+            ['en-US', 'cashdrawer', 'amount', 'Amount'],
+            ['en-US', 'cashdrawer', 'label', 'Label'],
+            ['en-US', 'cashdrawer', 'label_required', 'A label is required.'],
+            ['en-US', 'cashdrawer', 'notes', 'Notes'],
+            ['en-US', 'cashdrawer', 'cash_in_examples', 'e.g. Opening Float, Cash Top-up'],
+            ['en-US', 'cashdrawer', 'cash_out_examples', 'e.g. Cash Removal, Bank Deposit'],
+            ['en-US', 'cashdrawer', 'available_balance', 'Available balance'],
+            ['en-US', 'cashdrawer', 'record_cash_in', 'Record Cash In'],
+            ['en-US', 'cashdrawer', 'record_cash_out', 'Record Cash Out'],
+            ['en-US', 'cashdrawer', 'history', 'History'],
+            ['en-US', 'cashdrawer', 'no_movements', 'No movements yet. Record a Cash In to start your drawer.'],
+            ['en-US', 'cashdrawer', 'movement_recorded', 'Movement recorded successfully.'],
+            ['en-US', 'cashdrawer', 'amount_positive', 'Amount must be greater than zero.'],
+            ['en-US', 'cashdrawer', 'invalid_type', 'Invalid movement type.'],
+            ['en-US', 'cashdrawer', 'insufficient_balance', 'Insufficient balance for this cash out. Available: :balance €.'],
         ];
         foreach ($translations as [$lang, $ns, $key, $val]) {
             TranslationKey::updateOrCreate(

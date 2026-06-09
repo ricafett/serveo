@@ -244,4 +244,7 @@ return [
     'file_name' => 'File Name',
     'file_size' => 'File Size',
     'requested_at' => 'Requested At',
+    'navigation_label_cash_movements' => 'Cash Movements',
+    'model_label_cash_movement' => 'Cash Movement',
+    'plural_model_label_cash_movements' => 'Cash Movements',
 ];
