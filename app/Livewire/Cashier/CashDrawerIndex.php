@@ -52,12 +52,6 @@ class CashDrawerIndex extends Component
             return;
         }
 
-        if (empty(trim($this->movementLabel))) {
-            $this->errorMessage = __('cashdrawer.label_required');
-
-            return;
-        }
-
         try {
             $this->isSubmitting = true;
 

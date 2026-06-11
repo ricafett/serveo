@@ -98,7 +98,7 @@ class CashDrawerService
     /**
      * Record a cash movement (CASH_IN or CASH_OUT) for a cashier in a session.
      */
-    public function recordMovement(User $cashier, ServiceSession $session, string $type, float $amount, string $label, ?string $notes = null): CashMovement
+    public function recordMovement(User $cashier, ServiceSession $session, string $type, float $amount, ?string $label = null, ?string $notes = null): CashMovement
     {
         if (! $session->isOpen()) {
             throw new RuntimeException(__('cashdrawer.no_session'));
