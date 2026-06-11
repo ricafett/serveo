@@ -290,16 +290,17 @@
                                                             style="display: none;"
                                                         >
                                                             <div class="py-1">
-                                                                <button
-                                                                    type="button"
-                                                                    @click="$dispatch('open-note-modal', { index }); open = false"
-                                                                    class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
-                                                                    x-text="item.note ? '{{ __('order.edit_note') }}' : '{{ __('order.add_note') }}'"
-                                                                ></button>
+                                                <button
+                                                    type="button"
+                                                    dusk="add-note-btn"
+                                                    @click="$dispatch('open-note-modal', { index })"
+                                                    class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
+                                                    x-text="item.note ? '{{ __('order.edit_note') }}' : '{{ __('order.add_note') }}'"
+                                                ></button>
                                                                 <template x-if="item.note">
                                                                     <button
                                                                         type="button"
-                                                                        @click="$dispatch('delete-note', { index }); open = false"
+                                                                        @click="$dispatch('delete-note', { index })"
                                                                         class="block w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
                                                                     >{{ __('order.delete_note') }}</button>
                                                                 </template>
@@ -897,11 +898,17 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         },
 
         openNoteModal(index) {
+            console.log('[DEBUG] openNoteModal called, index:', index, 'cart length:', this.cart.length, 'showNoteModal before:', this.showNoteModal);
             var item = this.cart[index];
+            if (!item) {
+                console.error('[DEBUG] openNoteModal: no item at index', index);
+                return;
+            }
             this.noteModalItemIndex = index;
             this.noteModalText = item.note || '';
             this.noteModalItemName = item.display_name;
             this.showNoteModal = true;
+            console.log('[DEBUG] showNoteModal set to true, item:', item.display_name, 'note:', item.note);
         },
 
         closeNoteModal() {
