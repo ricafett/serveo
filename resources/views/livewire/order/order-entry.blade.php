@@ -548,6 +548,7 @@
         </div>
     {{-- Note Modal --}}
     <div
+        wire:ignore
         x-show="showNoteModal"
         x-cloak
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
