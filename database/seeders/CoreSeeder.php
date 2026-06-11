@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 15;
+    private const SEED_VERSION = 16;
 
     public function run(): void
     {
@@ -816,6 +816,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'dashboard', 'sales_description', 'Criar vendas pagas de senhas e imprimir documentos'],
             ['pt-PT', 'dashboard', 'reprint_tile', 'Reimpressão'],
             ['pt-PT', 'dashboard', 'reprint_description', 'Reimprimir contas e documentos'],
+            ['pt-PT', 'dashboard', 'cash_drawer_tile', 'Gaveta'],
+            ['pt-PT', 'dashboard', 'cash_drawer_description', 'Registar movimentos de caixa e ver saldo'],
             ['pt-PT', 'dashboard', 'admin_panel_tile', 'Painel de administração'],
             ['pt-PT', 'dashboard', 'admin_panel_description', 'Configuração e definições do sistema'],
             ['pt-PT', 'dashboard', 'active_session', 'Sessão ativa'],
@@ -831,6 +833,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'dashboard', 'sales_description', 'Create paid voucher sales and print documents'],
             ['en-US', 'dashboard', 'reprint_tile', 'Reprint'],
             ['en-US', 'dashboard', 'reprint_description', 'Reprint bills and documents'],
+            ['en-US', 'dashboard', 'cash_drawer_tile', 'Cash Drawer'],
+            ['en-US', 'dashboard', 'cash_drawer_description', 'Record cash movements and view balance'],
             ['en-US', 'dashboard', 'admin_panel_tile', 'Admin Panel'],
             ['en-US', 'dashboard', 'admin_panel_description', 'Configuration and system settings'],
             ['en-US', 'dashboard', 'active_session', 'Active session'],

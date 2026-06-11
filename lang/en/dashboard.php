@@ -10,6 +10,8 @@ return [
     'sales_description' => 'Create paid voucher sales and print documents',
     'reprint_tile' => 'Reprint',
     'reprint_description' => 'Reprint bills and documents',
+    'cash_drawer_tile' => 'Cash Drawer',
+    'cash_drawer_description' => 'Record cash movements and view balance',
     'admin_panel_tile' => 'Admin Panel',
     'admin_panel_description' => 'Configuration and system settings',
     'active_session' => 'Active session',
