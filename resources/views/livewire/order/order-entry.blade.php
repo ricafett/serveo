@@ -292,7 +292,6 @@
                                                             <div class="py-1">
                                                 <button
                                                     type="button"
-                                                    dusk="add-note-btn"
                                                     @click="$dispatch('open-note-modal', { index })"
                                                     class="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[40px]"
                                                     x-text="item.note ? '{{ __('order.edit_note') }}' : '{{ __('order.add_note') }}'"
@@ -547,82 +546,72 @@
             </div>
         </div>
     {{-- Note Modal --}}
-    <div
-        wire:ignore
-        x-show="showNoteModal"
-        x-cloak
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-        style="display: none;"
-    >
+    <template x-if="showNoteModal">
         <div
-            x-show="showNoteModal"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-black/50 dark:bg-black/70"
-            @click="closeNoteModal()"
-        ></div>
-
-        <div
-            x-show="showNoteModal"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
-            x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
-            x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
-            class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
+            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         >
-            <div class="p-4 sm:p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        {{ __('order.note_for') }} <span x-text="noteModalItemName"></span>
-                    </h3>
-                    <button
-                        type="button"
-                        @click="closeNoteModal()"
-                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                    >
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
+            <div
+                class="fixed inset-0 bg-black/50 dark:bg-black/70"
+                @click="closeNoteModal()"
+            ></div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.item_note_label') }}</label>
-                    <textarea
-                        id="note-modal-text"
-                        x-model="noteModalText"
-                        rows="4"
-                        maxlength="200"
-                        class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"
-                        placeholder="{{ __('order.item_note_placeholder') }}"
-                    ></textarea>
-                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500" x-text="noteModalText.length + ' / 200'"></p>
-                </div>
+            <div
+                class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
+            >
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ __('order.note_for') }} <span x-text="noteModalItemName"></span>
+                        </h3>
+                        <button
+                            type="button"
+                            @click="closeNoteModal()"
+                            class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        >
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
 
-                <div class="flex gap-3">
-                    <button
-                        type="button"
-                        @click="closeNoteModal()"
-                        class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
-                    >
-                        {{ __('app.cancel') }}
-                    </button>
-                    <button
-                        type="button"
-                        dusk="save-note"
-                        @click="$dispatch('save-note')"
-                        class="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-primary-500 min-h-[44px] transition-colors"
-                    >
-                        {{ __('app.save') }}
-                    </button>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('order.item_note_label') }}</label>
+                        <textarea
+                            id="note-modal-text"
+                            x-model="noteModalText"
+                            rows="4"
+                            maxlength="200"
+                            class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"
+                            placeholder="{{ __('order.item_note_placeholder') }}"
+                        ></textarea>
+                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500" x-text="noteModalText.length + ' / 200'"></p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            @click="closeNoteModal()"
+                            class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
+                        >
+                            {{ __('app.cancel') }}
+                        </button>
+                        <button
+                            type="button"
+                            dusk="save-note"
+                            @click="$dispatch('save-note')"
+                            class="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-primary-500 min-h-[44px] transition-colors"
+                        >
+                            {{ __('app.save') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
     {{-- Leave Confirmation Modal --}}
     <div
@@ -899,17 +888,12 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
         },
 
         openNoteModal(index) {
-            console.log('[DEBUG] openNoteModal called, index:', index, 'cart length:', this.cart.length, 'showNoteModal before:', this.showNoteModal);
             var item = this.cart[index];
-            if (!item) {
-                console.error('[DEBUG] openNoteModal: no item at index', index);
-                return;
-            }
+            if (!item) return;
             this.noteModalItemIndex = index;
             this.noteModalText = item.note || '';
             this.noteModalItemName = item.display_name;
             this.showNoteModal = true;
-            console.log('[DEBUG] showNoteModal set to true, item:', item.display_name, 'note:', item.note);
         },
 
         closeNoteModal() {
