@@ -550,18 +550,34 @@
     {{-- Note Modal (teleported to body to avoid CSS containment from parent transforms/overflow) --}}
     <template x-teleport="body">
         <div
+            x-show="showNoteModal"
+            x-cloak
             id="note-modal"
             dusk="note-modal"
             class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
             style="display: none;"
         >
             <div
+                x-show="showNoteModal"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
                 dusk="note-modal-backdrop"
                 class="fixed inset-0 bg-black/50 dark:bg-black/70"
                 @click="closeNoteModal()"
             ></div>
 
             <div
+                x-show="showNoteModal"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+                x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
+                x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
                 class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
             >
                 <div class="p-4 sm:p-6">
@@ -893,36 +909,14 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             this.noteModalItemIndex = index;
             this.noteModalText = item.note || '';
             this.noteModalItemName = item.display_name;
-
-            // Direct DOM via getElementById — bypasses all Alpine/Livewire rendering
-            var modal = document.getElementById('note-modal');
-            if (!modal) return;
-
-            modal.style.display = 'flex';
-            modal.style.opacity = '0';
-            // Force reflow then animate
-            modal.offsetHeight;
-            modal.style.transition = 'opacity 200ms ease-out';
-            modal.style.opacity = '1';
+            this.showNoteModal = true;
         },
 
         closeNoteModal() {
-            var modal = document.getElementById('note-modal');
-            if (modal) {
-                modal.style.transition = 'opacity 150ms ease-in';
-                modal.style.opacity = '0';
-                var self = this;
-                setTimeout(function () {
-                    modal.style.display = 'none';
-                    self.noteModalItemIndex = null;
-                    self.noteModalText = '';
-                    self.noteModalItemName = '';
-                }, 150);
-            } else {
-                this.noteModalItemIndex = null;
-                this.noteModalText = '';
-                this.noteModalItemName = '';
-            }
+            this.showNoteModal = false;
+            this.noteModalItemIndex = null;
+            this.noteModalText = '';
+            this.noteModalItemName = '';
         },
 
         saveNote() {

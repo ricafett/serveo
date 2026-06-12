@@ -76,9 +76,9 @@ test('note modal display toggles via Add note and close', function () {
         // Open note modal via dropdown
         openNoteModal($browser);
 
-        // Verify modal is visible
+        // Verify modal is visible (x-show sets display to '' when showing)
         $display = $browser->script("return document.getElementById('note-modal').style.display");
-        expect($display[0])->toBe('flex');
+        expect($display[0])->toBe('');
 
         // Close via save-note dispatch (triggers closeNoteModal)
         $browser->script("document.querySelector('[dusk=\"save-note\"]').click()");
