@@ -115,6 +115,30 @@ class PrintQueueService
     }
 
     /**
+     * Enqueue a cashier totals print job. The totals data is stored in the
+     * payload column; no persistent document model is created.
+     */
+    public function enqueueCashierTotals(int $printerId, array $totals, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind'       => PrintJob::KIND_CASHIER_TOTALS,
+            'printable_type' => PrintJob::class,
+            'printable_id'   => 0,
+            'printer_id'     => $printerId,
+            'status'         => PrintJob::STATUS_PENDING,
+            'attempts'       => 0,
+            'max_attempts'   => 4,
+            'requested_by_user_id' => $actor?->id,
+            'locale'         => config('app.locale', 'pt-PT'),
+            'payload'        => ['totals' => $totals],
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    /**
      * Re-queue a failed job (manual admin retry). Resets the attempt counter
      * so the auto-retry loop gets a fresh start. Returns true if a dispatch
      * was scheduled.

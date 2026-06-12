@@ -347,6 +347,46 @@ class TicketRenderer
         return $this->wrap(implode("\n", $lines)."\n");
     }
 
+    public function renderCashierTotals(array $data): string
+    {
+        $lines = [];
+
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
+        $lines[] = $this->center(__('ticket.cashier_totals'));
+        $lines[] = str_repeat('=', $this->width());
+
+        if (! empty($data['cashier_name'])) {
+            $lines[] = __('ticket.server').': '.$data['cashier_name'];
+        }
+        if (! empty($data['session_label'])) {
+            $lines[] = __('ticket.session').': '.$data['session_label'];
+        }
+        $lines[] = __('ticket.time').':  '.$this->localTime(now());
+
+        $lines[] = '';
+        $lines[] = $this->center(__('ticket.totals_balance'));
+        $lines[] = $this->center(number_format((float) $data['balance'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = '';
+
+        $lines[] = str_repeat('-', $this->width());
+        $lines[] = $this->row(__('ticket.totals_in'), number_format((float) $data['cash_in'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_out'), number_format((float) $data['cash_out'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = str_repeat('-', $this->width());
+
+        $lines[] = $this->row(__('ticket.totals_bill_payments'), number_format((float) $data['bill_payments'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_sale_payments'), number_format((float) $data['sale_payments'], 2, ',', ' ').' '.__('ticket.currency'));
+
+        $totalPayments = (float) $data['bill_payments'] + (float) $data['sale_payments'];
+        $lines[] = $this->row(__('ticket.totals_total_payments'), number_format($totalPayments, 2, ',', ' ').' '.__('ticket.currency'));
+
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->center(__('ticket.no_fiscal'));
+
+        return $this->wrap(implode("\n", $lines)."\n");
+    }
+
     /**
      * Build the display name for an order item, respecting
      * DocumentPrintConfig ignore_variants / ignore_modifiers settings.
