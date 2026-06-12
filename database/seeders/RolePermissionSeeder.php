@@ -80,6 +80,7 @@ class RolePermissionSeeder extends Seeder
             'cash_drawer.view',
             'cash_drawer.create_movement',
             'cash_drawer.view_all',
+            'cash_drawer.open',
         ];
 
         foreach ($permissions as $perm) {
@@ -129,6 +130,7 @@ class RolePermissionSeeder extends Seeder
             'print_job.retry',
             'cash_drawer.view',
             'cash_drawer.create_movement',
+            'cash_drawer.open',
             'audit.view',
             'event_log.view_limited',
         ]);

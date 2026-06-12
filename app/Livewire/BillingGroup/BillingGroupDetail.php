@@ -7,8 +7,10 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Domain\Orders\OrderService;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
+use App\Models\CashierPrinterAssignment;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
 use App\Models\OrderItem;
@@ -64,6 +66,8 @@ class BillingGroupDetail extends Component
     public ?string $voidReason = null;
 
     public bool $isSubmitting = false;
+
+    public bool $isOpeningDrawer = false;
 
     public function mount(int $id): void
     {
@@ -709,6 +713,38 @@ class BillingGroupDetail extends Component
         $this->loadGroup();
         $this->errorMessage = null;
         $this->successMessage = null;
+    }
+
+    public function openDrawer(): void
+    {
+        if ($this->isOpeningDrawer) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        $user = Auth::user();
+        $assignment = CashierPrinterAssignment::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $assignment) {
+            $this->errorMessage = __('cashdrawer.no_printer');
+
+            return;
+        }
+
+        try {
+            $this->isOpeningDrawer = true;
+            OpenCashDrawerJob::dispatch($assignment->printer_id, $user->id)
+                ->onQueue('prints');
+            $this->successMessage = __('cashdrawer.drawer_opening');
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isOpeningDrawer = false;
+        }
     }
 
     public function render()

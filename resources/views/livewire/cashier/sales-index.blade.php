@@ -100,7 +100,20 @@
         </div>
 
         <div class="sm:static sm:mt-4 sm:bg-transparent sm:border-0 sm:p-0 fixed bottom-14 left-0 right-0 px-4 py-3 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 z-30">
-            <button
+            <div class="flex gap-2">
+                <button
+                    type="button"
+                    wire:click="openDrawer"
+                    wire:target="openDrawer"
+                    wire:loading.attr="disabled"
+                    class="rounded-lg p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/10 transition-colors disabled:opacity-50 min-h-[48px] min-w-[48px] flex items-center justify-center shrink-0"
+                    title="{{ __('cashdrawer.open_drawer') }}"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                    </svg>
+                </button>
+                <button
                 type="button"
                 @click="cart.length && $wire.call('completeSale', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity }; }))"
                 :disabled="cart.length === 0"
@@ -115,7 +128,6 @@
             </button>
         </div>
     </div>
-</div>
 
 <script>
     function salesEntry(menuItems, menuCategories, defaultCategoryId) {

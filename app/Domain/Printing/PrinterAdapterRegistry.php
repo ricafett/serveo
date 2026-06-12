@@ -169,6 +169,37 @@ class PrinterAdapterRegistry
     }
 
     /**
+     * Send a cash-drawer kick pulse to a printer, serializing access via
+     * the same per-printer lock used by send(). If the lock is held,
+     * returns a contended result immediately so the caller can re-dispatch.
+     */
+    public function openCashDrawer(Printer $printer): PrintResult
+    {
+        $lockKey = self::lockKey($printer);
+
+        try {
+            $lock = Cache::lock($lockKey, self::LOCK_TTL);
+
+            if (! $lock->get()) {
+                return PrintResult::contended("Printer {$printer->id} busy — lock held by another worker");
+            }
+
+            try {
+                return $this->for($printer)->openCashDrawer($printer);
+            } finally {
+                $lock->release();
+            }
+        } catch (Throwable $e) {
+            Log::warning('Printer lock unavailable during drawer kick, proceeding unlocked', [
+                'printer_id' => $printer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->for($printer)->openCashDrawer($printer);
+        }
+    }
+
+    /**
      * The lock key used for per-printer serialization. Public so
      * the stuck-job recovery command can check lock existence.
      */

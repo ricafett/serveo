@@ -65,7 +65,9 @@ class DocumentPrintConfigResource extends BaseResource
                 ->helperText(__('app.helper_text_ignore_variants')),
             Forms\Components\Toggle::make('ignore_modifiers')
                 ->helperText(__('app.helper_text_ignore_modifiers')),
-                Forms\Components\Toggle::make('is_active')->default(true),
+                Forms\Components\Toggle::make('trigger_cash_drawer')
+                ->helperText(__('app.helper_text_trigger_cash_drawer')),
+            Forms\Components\Toggle::make('is_active')->default(true),
                 Forms\Components\Textarea::make('branding_header')
                     ->label(__('app.branding_header'))
                     ->helperText(__('app.helper_text_branding_header'))
@@ -114,6 +116,7 @@ class DocumentPrintConfigResource extends BaseResource
                 Tables\Columns\IconColumn::make('group_items')->boolean(),
                 Tables\Columns\IconColumn::make('ignore_variants')->boolean(),
                 Tables\Columns\IconColumn::make('ignore_modifiers')->boolean(),
+                Tables\Columns\IconColumn::make('trigger_cash_drawer')->boolean(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->actions([Actions\EditAction::make()]);

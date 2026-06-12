@@ -3,6 +3,8 @@
 namespace App\Livewire\Cashier;
 
 use App\Domain\CashDrawer\CashDrawerService;
+use App\Jobs\OpenCashDrawerJob;
+use App\Models\CashierPrinterAssignment;
 use App\Models\CashMovement;
 use App\Models\ServiceSession;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +23,8 @@ class CashDrawerIndex extends Component
     public ?string $errorMessage = null;
     public ?string $successMessage = null;
     public bool $isSubmitting = false;
+
+    public bool $isOpeningDrawer = false;
 
     public function mount(): void
     {
@@ -91,6 +95,38 @@ class CashDrawerIndex extends Component
         $service = app(CashDrawerService::class);
         $this->balance = $service->getBalance(Auth::user(), $this->session);
         $this->timeline = $service->getTimeline(Auth::user(), $this->session);
+    }
+
+    public function openDrawer(): void
+    {
+        if ($this->isOpeningDrawer) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        $user = Auth::user();
+        $assignment = CashierPrinterAssignment::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $assignment) {
+            $this->errorMessage = __('cashdrawer.no_printer');
+
+            return;
+        }
+
+        try {
+            $this->isOpeningDrawer = true;
+            OpenCashDrawerJob::dispatch($assignment->printer_id, $user->id)
+                ->onQueue('prints');
+            $this->successMessage = __('cashdrawer.drawer_opening');
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isOpeningDrawer = false;
+        }
     }
 
     public function render()

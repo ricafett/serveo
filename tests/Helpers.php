@@ -39,7 +39,7 @@ function bootScenario(): ServiceSession
         'user.manage', 'role.manage', 'translation.manage',
         'audit.view', 'event_log.view_limited', 'event_log.view_full',
         'accounting_export.generate',
-        'cash_drawer.view', 'cash_drawer.create_movement', 'cash_drawer.view_all',
+        'cash_drawer.view', 'cash_drawer.create_movement', 'cash_drawer.view_all', 'cash_drawer.open',
         'config.users', 'config.layout', 'config.menu', 'config.printers',
         'config.billing_statuses', 'config.translations', 'export.create',
     ] as $perm) {
@@ -64,7 +64,7 @@ function bootScenario(): ServiceSession
         'payment.record', 'payment.void',
         'sale.create', 'sale.view', 'sale.print', 'sale.receipt', 'sale_payment.record',
         'print_job.view', 'print_job.retry',
-        'cash_drawer.view', 'cash_drawer.create_movement',
+        'cash_drawer.view', 'cash_drawer.create_movement', 'cash_drawer.open',
         'audit.view',
     ]);
     app(PermissionRegistrar::class)->forgetCachedPermissions();

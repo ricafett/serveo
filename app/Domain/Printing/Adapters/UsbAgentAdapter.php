@@ -51,6 +51,35 @@ class UsbAgentAdapter implements PrinterAdapter
     }
 
     /**
+     * Send a cash-drawer kick pulse through the USB print agent.
+     */
+    public function openCashDrawer(Printer $printer): PrintResult
+    {
+        $endpoint = rtrim($printer->agent_endpoint, '/').'/drawer';
+        $token = (string) config('services.print_agent.token');
+
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders(array_filter([
+                    'X-Agent-Token' => $token ?: null,
+                    'Accept' => 'application/json',
+                ]))
+                ->asJson()
+                ->post($endpoint, [
+                    'printer_id' => $printer->agent_printer_id,
+                ]);
+        } catch (Throwable $e) {
+            return PrintResult::fail("USB agent {$endpoint} unreachable for drawer kick: {$e->getMessage()}");
+        }
+
+        if (! $response->successful()) {
+            return PrintResult::fail("USB agent {$endpoint} drawer returned HTTP {$response->status()}: {$response->body()}");
+        }
+
+        return PrintResult::ok('Drawer kick sent via USB agent');
+    }
+
+    /**
      * Lightweight probe — same transport as send() but with a minimal
      * payload so the agent can distinguish health checks from real prints.
      */

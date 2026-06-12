@@ -33,4 +33,13 @@ interface PrinterAdapter
      * don't need to distinguish probe from print.
      */
     public function probe(Printer $printer): PrintResult;
+
+    /**
+     * Send a cash-drawer kick pulse to the printer. The adapter MUST NOT
+     * wrap this with init sequences, charset selection, or cut commands —
+     * it is a raw hardware pulse only.
+     *
+     * MUST NOT throw on transport errors; return PrintResult::fail.
+     */
+    public function openCashDrawer(Printer $printer): PrintResult;
 }

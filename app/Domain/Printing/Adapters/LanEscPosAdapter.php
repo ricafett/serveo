@@ -98,6 +98,47 @@ class LanEscPosAdapter implements PrinterAdapter
     }
 
     /**
+     * Send a raw cash-drawer kick pulse to the printer via TCP.
+     *
+     * Opens a raw socket, sends the ESC/POS drawer kick command
+     * (ESC p 0 25 250 — pin 2, 25ms on, 250ms off), then closes.
+     * No init, charset, or cut sequences are prepended — this is a
+     * raw hardware pulse only.
+     */
+    public function openCashDrawer(Printer $printer): PrintResult
+    {
+        $host = $printer->address;
+        $port = $printer->port ?: 9100;
+
+        $errno = 0;
+        $errstr = '';
+
+        $socket = @fsockopen($host, $port, $errno, $errstr, self::CONNECT_TIMEOUT);
+        if ($socket === false) {
+            return PrintResult::fail("LAN printer {$host}:{$port} unreachable for drawer kick: {$errstr}");
+        }
+
+        try {
+            // ESC p 0 25 250 — standard drawer kick pulse on pin 2
+            // \x1B\x70 = ESC p command
+            // \x00     = drawer pin 2 (0=pin 2)
+            // \x19     = pulse on time (25 × 2ms = 50ms)
+            // \xFA     = pulse off time (250 × 2ms = 500ms)
+            $pulse = "\x1B\x70\x00\x19\xFA";
+
+            $bytes = @fwrite($socket, $pulse);
+
+            if ($bytes === false || $bytes === 0) {
+                return PrintResult::fail("LAN printer {$host}:{$port} drawer kick: accepted no bytes");
+            }
+
+            return PrintResult::ok("Drawer kick sent to {$host}:{$port}");
+        } finally {
+            @fclose($socket);
+        }
+    }
+
+    /**
      * Lightweight connectivity probe — no paper feed, no cut.
      *
      * Opens a TCP socket, sends ESC @ (init) + GS r 1 (status query),

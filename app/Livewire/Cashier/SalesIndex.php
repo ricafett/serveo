@@ -3,6 +3,8 @@
 namespace App\Livewire\Cashier;
 
 use App\Domain\Sales\VoucherSaleService;
+use App\Jobs\OpenCashDrawerJob;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Sale;
@@ -33,6 +35,8 @@ class SalesIndex extends Component
     public ?string $successMessage = null;
 
     public bool $isSubmitting = false;
+
+    public bool $isOpeningDrawer = false;
 
     public function mount(): void
     {
@@ -131,5 +135,37 @@ class SalesIndex extends Component
     {
         return view('livewire.cashier.sales-index')
             ->layout('layouts.operational');
+    }
+
+    public function openDrawer(): void
+    {
+        if ($this->isOpeningDrawer) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        $user = Auth::user();
+        $assignment = CashierPrinterAssignment::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $assignment) {
+            $this->errorMessage = __('cashdrawer.no_printer');
+
+            return;
+        }
+
+        try {
+            $this->isOpeningDrawer = true;
+            OpenCashDrawerJob::dispatch($assignment->printer_id, $user->id)
+                ->onQueue('prints');
+            $this->successMessage = __('cashdrawer.drawer_opening');
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isOpeningDrawer = false;
+        }
     }
 }

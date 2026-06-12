@@ -5,7 +5,9 @@ namespace App\Jobs;
 use App\Domain\Audit\Audit;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Domain\Printing\TicketRenderer;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
+use App\Models\CashierPrinterAssignment;
 use App\Models\DocumentPrintConfig;
 use App\Models\PrintJob;
 use App\Models\PrinterRoute;
@@ -174,6 +176,17 @@ class DispatchPrintJob implements ShouldQueue
                 'last_error' => null,
             ]);
             $printer->update(['health_status' => 'OK', 'last_seen_at' => now(), 'last_error' => null]);
+
+            // ── Auto-trigger cash drawer if configured ──
+            if ($documentConfig?->trigger_cash_drawer && $job->requested_by_user_id) {
+                $cashierAssignment = CashierPrinterAssignment::where('user_id', $job->requested_by_user_id)
+                    ->where('is_active', true)
+                    ->first();
+                if ($cashierAssignment) {
+                    OpenCashDrawerJob::dispatch($cashierAssignment->printer_id, $job->requested_by_user_id)
+                        ->onQueue('prints');
+                }
+            }
 
             if ($printable instanceof ProductionTicket) {
                 $printable->update(['ticket_status' => 'PRINTED', 'printed_at' => now()]);

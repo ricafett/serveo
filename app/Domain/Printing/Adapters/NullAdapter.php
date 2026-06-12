@@ -34,6 +34,14 @@ class NullAdapter implements PrinterAdapter
     }
 
     /**
+     * Null adapter drawer kick — always succeeds (no physical drawer).
+     */
+    public function openCashDrawer(Printer $printer): PrintResult
+    {
+        return PrintResult::ok('Null adapter — drawer kick simulated');
+    }
+
+    /**
      * Null adapter always reports healthy — there is no physical printer to probe.
      */
     public function probe(Printer $printer): PrintResult

@@ -985,6 +985,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'print_end_space_help', 'Linhas em branco após o conteúdo, antes do corte (0–10, padrão 0)'],
             ['pt-PT', 'app', 'copies', 'Cópias extra'],
             ['pt-PT', 'app', 'copies_help', 'Número de cópias adicionais impressas juntamente com o original (0–10). Anulações imprimem sempre exatamente uma vez.'],
+            ['pt-PT', 'app', 'trigger_cash_drawer', 'Abrir gaveta ao imprimir'],
+            ['pt-PT', 'app', 'helper_text_trigger_cash_drawer', 'Quando ativo, a impressão deste tipo de documento abre automaticamente a gaveta de dinheiro da impressora do operador de caixa.'],
             ['pt-PT', 'app', 'retry_selected', 'Reenviar selecionados'],
             ['pt-PT', 'app', 'retry_batch_result', ':success reenviado(s), :skipped ignorado(s)'],
             ['pt-PT', 'app', 'retry_batch_success', 'Reenviado(s)'],
@@ -1038,6 +1040,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'print_end_space_help', 'Blank lines fed after content, before cut (0–10, default 0)'],
             ['en-US', 'app', 'copies', 'Extra copies'],
             ['en-US', 'app', 'copies_help', 'Number of additional copies printed alongside the original (0–10). Void slips always print exactly once.'],
+            ['en-US', 'app', 'trigger_cash_drawer', 'Open drawer on print'],
+            ['en-US', 'app', 'helper_text_trigger_cash_drawer', 'When enabled, printing this document type automatically opens the cash drawer on the operator\'s assigned printer.'],
             ['en-US', 'app', 'retry_selected', 'Retry selected'],
             ['en-US', 'app', 'retry_batch_result', ':success retried, :skipped skipped'],
             ['en-US', 'app', 'retry_batch_success', 'Retried'],
@@ -1160,6 +1164,9 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'cashdrawer', 'amount_positive', 'O montante deve ser superior a zero.'],
             ['pt-PT', 'cashdrawer', 'invalid_type', 'Tipo de movimento inválido.'],
             ['pt-PT', 'cashdrawer', 'insufficient_balance', 'Saldo insuficiente para esta saída. Disponível: :balance €.'],
+            ['pt-PT', 'cashdrawer', 'open_drawer', 'Abrir Gaveta'],
+            ['pt-PT', 'cashdrawer', 'drawer_opening', 'A abrir gaveta...'],
+            ['pt-PT', 'cashdrawer', 'no_printer', 'Nenhuma impressora atribuída. Configure uma impressora para a sua gaveta no painel de administração.'],
 
             ['en-US', 'app', 'navigation_group_system', 'System'],
             ['en-US', 'app', 'navigation_label_backups', 'Backups'],
@@ -1215,6 +1222,9 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashdrawer', 'amount_positive', 'Amount must be greater than zero.'],
             ['en-US', 'cashdrawer', 'invalid_type', 'Invalid movement type.'],
             ['en-US', 'cashdrawer', 'insufficient_balance', 'Insufficient balance for this cash out. Available: :balance €.'],
+            ['en-US', 'cashdrawer', 'open_drawer', 'Open Cash Drawer'],
+            ['en-US', 'cashdrawer', 'drawer_opening', 'Cash drawer opening...'],
+            ['en-US', 'cashdrawer', 'no_printer', 'No printer assigned. Configure a printer for your cash drawer in admin settings.'],
         ];
         foreach ($translations as [$lang, $ns, $key, $val]) {
             TranslationKey::updateOrCreate(
