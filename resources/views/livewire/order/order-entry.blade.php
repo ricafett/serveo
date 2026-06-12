@@ -6,7 +6,7 @@
     @delete-note.window="deleteNote($event.detail.index)"
     class="p-4 sm:p-6 lg:p-8"
 >
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         {{-- Header --}}
         <div class="mb-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -71,7 +71,7 @@
             {{-- ======================================== --}}
             {{-- Menu Panel --}}
             {{-- ======================================== --}}
-            <div x-show="activeTab === 'menu'" class="lg:!block lg:flex-1 lg:min-w-0 pb-20 sm:pb-6 lg:pb-0">
+            <div x-show="activeTab === 'menu'" class="lg:!block lg:flex-[2] lg:min-w-0 pb-20 sm:pb-6 lg:pb-0">
                 {{-- Menu Categories --}}
                 <div class="mb-4">
                     <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-0 lg:px-0">
@@ -142,7 +142,7 @@
             {{-- ======================================== --}}
             {{-- Order Panel --}}
             {{-- ======================================== --}}
-            <div x-show="activeTab === 'order'" class="lg:!block lg:w-80 lg:shrink-0 pb-20 sm:pb-6 lg:pb-0">
+            <div x-show="activeTab === 'order'" class="lg:!block lg:flex-[1] lg:min-w-80 lg:max-w-md pb-20 sm:pb-6 lg:pb-0">
                 <div class="lg:sticky lg:top-4">
 
                     {{-- Delivery (collapsible single line) --}}

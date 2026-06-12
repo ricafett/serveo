@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto p-4 sm:p-6">
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ __('menu.title') }}</h1>
         <p class="mt-1 text-base text-gray-500 dark:text-gray-400">{{ __('menu.subtitle') }}</p>

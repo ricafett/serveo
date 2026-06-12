@@ -3,7 +3,7 @@
     @sale-completed.window="cart = []; activeTab = 'menu'"
     class="p-4 sm:p-6 lg:p-8"
 >
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         @if($errorMessage)
             <div class="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-base text-red-600 dark:text-red-400">{{ $errorMessage }}</div>
         @endif
