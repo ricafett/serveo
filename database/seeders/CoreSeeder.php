@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 16;
+    private const SEED_VERSION = 17;
 
     public function run(): void
     {
@@ -156,10 +156,12 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'job_kind_bill', 'Conta'],
             ['pt-PT', 'app', 'job_kind_sale_voucher', 'Senha'],
             ['pt-PT', 'app', 'job_kind_sale_receipt', 'Talão de venda'],
+            ['pt-PT', 'app', 'job_kind_cashier_totals', 'Totais de caixa'],
             ['pt-PT', 'app', 'document_type_production_ticket', 'Ticket de produção'],
             ['pt-PT', 'app', 'document_type_void_slip', 'Anulação'],
             ['pt-PT', 'app', 'document_type_sale_voucher', 'Senha'],
             ['pt-PT', 'app', 'document_type_sale_receipt', 'Talão de venda'],
+            ['pt-PT', 'app', 'document_type_cashier_totals', 'Totais de caixa'],
             ['pt-PT', 'app', 'helper_text_production_only', 'Aplica-se apenas a tickets de produção e anulações'],
             ['pt-PT', 'app', 'session_type_lunch', 'Almoço'],
             ['pt-PT', 'app', 'language_pt', 'Português (PT)'],
@@ -335,10 +337,12 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'job_kind_bill', 'Bill'],
             ['en-US', 'app', 'job_kind_sale_voucher', 'Sale Voucher'],
             ['en-US', 'app', 'job_kind_sale_receipt', 'Sale Receipt'],
+            ['en-US', 'app', 'job_kind_cashier_totals', 'Cashier Totals'],
             ['en-US', 'app', 'document_type_production_ticket', 'Production Ticket'],
             ['en-US', 'app', 'document_type_void_slip', 'Void Slip'],
             ['en-US', 'app', 'document_type_sale_voucher', 'Sale Voucher'],
             ['en-US', 'app', 'document_type_sale_receipt', 'Sale Receipt'],
+            ['en-US', 'app', 'document_type_cashier_totals', 'Cashier Totals'],
             ['en-US', 'app', 'helper_text_production_only', 'Applies only to production tickets and void slips'],
             ['en-US', 'app', 'session_type_lunch', 'Lunch'],
             ['en-US', 'app', 'language_pt', 'Portuguese (PT)'],
@@ -1225,6 +1229,30 @@ class CoreSeeder extends Seeder
             ['en-US', 'cashdrawer', 'open_drawer', 'Open Cash Drawer'],
             ['en-US', 'cashdrawer', 'drawer_opening', 'Cash drawer opening...'],
             ['en-US', 'cashdrawer', 'no_printer', 'No printer assigned. Configure a printer for your cash drawer in admin settings.'],
+            ['en-US', 'cashdrawer', 'print_totals', 'Print Totals'],
+            ['en-US', 'cashdrawer', 'totals_queued', 'Cashier totals sent to printer.'],
+
+            ['pt-PT', 'cashdrawer', 'print_totals', 'Imprimir totais'],
+            ['pt-PT', 'cashdrawer', 'totals_queued', 'Totais de caixa enviados para a impressora.'],
+
+            // ticket — cashier totals
+            ['en-US', 'ticket', 'cashier_totals', 'CASHIER TOTALS'],
+            ['en-US', 'ticket', 'session', 'Session'],
+            ['en-US', 'ticket', 'totals_balance', 'Cash Drawer Balance'],
+            ['en-US', 'ticket', 'totals_in', 'IN moves'],
+            ['en-US', 'ticket', 'totals_out', 'OUT moves'],
+            ['en-US', 'ticket', 'totals_bill_payments', 'Bill payments'],
+            ['en-US', 'ticket', 'totals_sale_payments', 'Sale payments'],
+            ['en-US', 'ticket', 'totals_total_payments', 'Total payments'],
+
+            ['pt-PT', 'ticket', 'cashier_totals', 'TOTAIS DE CAIXA'],
+            ['pt-PT', 'ticket', 'session', 'Sessão'],
+            ['pt-PT', 'ticket', 'totals_balance', 'Saldo de caixa'],
+            ['pt-PT', 'ticket', 'totals_in', 'Entradas'],
+            ['pt-PT', 'ticket', 'totals_out', 'Saídas'],
+            ['pt-PT', 'ticket', 'totals_bill_payments', 'Pagamentos de contas'],
+            ['pt-PT', 'ticket', 'totals_sale_payments', 'Pagamentos de vendas'],
+            ['pt-PT', 'ticket', 'totals_total_payments', 'Total de pagamentos'],
         ];
         foreach ($translations as [$lang, $ns, $key, $val]) {
             TranslationKey::updateOrCreate(

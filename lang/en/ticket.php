@@ -34,4 +34,12 @@ return [
     'items_item' => 'Item',
     'items_unit_price' => 'Un. price',
     'items_value' => 'Value',
+    'cashier_totals' => 'CASHIER TOTALS',
+    'session' => 'Session',
+    'totals_balance' => 'Cash Drawer Balance',
+    'totals_in' => 'IN moves',
+    'totals_out' => 'OUT moves',
+    'totals_bill_payments' => 'Bill payments',
+    'totals_sale_payments' => 'Sale payments',
+    'totals_total_payments' => 'Total payments',
 ];

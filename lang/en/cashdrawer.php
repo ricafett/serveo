@@ -29,4 +29,6 @@ return [
     'open_drawer' => 'Open Cash Drawer',
     'drawer_opening' => 'Cash drawer opening...',
     'no_printer' => 'No printer assigned. Configure a printer for your cash drawer in admin settings.',
+    'print_totals' => 'Print Totals',
+    'totals_queued' => 'Cashier totals sent to printer.',
 ];
