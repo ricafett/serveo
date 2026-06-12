@@ -12,7 +12,7 @@
             <div class="flex items-center gap-3">
                 <button
                     type="button"
-                    @click="cart.length ? showLeaveConfirm = true : window.history.back()"
+                    @click="handleBack()"
                     class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
@@ -440,7 +440,7 @@
                         <template x-if="modalItem.modifier_set.selection_mode === 'single'">
                             <div class="space-y-1">
                                 <label class="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[44px] cursor-pointer transition-colors"
-                                    :class="modalSelectedModifiers.length === 0 ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
+                                    :class="!modalSelectedModifierSingle ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-300 dark:ring-primary-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'"
                                 >
                                     <input
                                         type="radio"
@@ -629,8 +629,9 @@
         </div>
     </template>
 
-    {{-- Leave Confirmation Modal --}}
-    <div
+    {{-- Leave Confirmation Modal (teleported to body to avoid Livewire DOM interference) --}}
+    <template x-teleport="body">
+        <div
         x-show="showLeaveConfirm"
         x-cloak
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -692,6 +693,7 @@
                 </div>
             </div>
         </div>
+    </template>
     </div>
 </div>
 
@@ -750,6 +752,14 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             this.leaveCleanupDone = true;
         },
 
+        handleBack() {
+            if (this.cart.length > 0) {
+                this.showLeaveConfirm = true;
+            } else {
+                window.history.back();
+            }
+        },
+
         discardAndLeave() {
             this.cleanupLeaveGuards();
             window.history.back();
@@ -795,8 +805,8 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             this.modalSelectedModifierSingle = '';
             this.modalSelectedModifiers = [];
 
-            // Pre-select default modifier when assume_default is true
-            if (menuItem.modifier_set && menuItem.modifier_set.assume_default && menuItem.modifier_set.default_modifier_display_name) {
+            // Pre-select default modifier when one is set
+            if (menuItem.modifier_set && menuItem.modifier_set.default_modifier_display_name) {
                 if (menuItem.modifier_set.selection_mode === 'single') {
                     this.modalSelectedModifierSingle = menuItem.modifier_set.default_modifier_display_name;
                 } else {
