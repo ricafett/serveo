@@ -3,6 +3,7 @@
 namespace App\Livewire\Cashier;
 
 use App\Domain\CashDrawer\CashDrawerService;
+use App\Domain\Printing\PrintQueueService;
 use App\Jobs\OpenCashDrawerJob;
 use App\Models\CashierPrinterAssignment;
 use App\Models\CashMovement;
@@ -25,6 +26,8 @@ class CashDrawerIndex extends Component
     public bool $isSubmitting = false;
 
     public bool $isOpeningDrawer = false;
+
+    public bool $isPrintingTotals = false;
 
     public function mount(): void
     {
@@ -126,6 +129,55 @@ class CashDrawerIndex extends Component
             $this->errorMessage = $e->getMessage();
         } finally {
             $this->isOpeningDrawer = false;
+        }
+    }
+
+    public function printTotals(): void
+    {
+        if ($this->isPrintingTotals) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        if (! $this->session?->isOpen()) {
+            $this->errorMessage = __('cashdrawer.no_session');
+
+            return;
+        }
+
+        $user = Auth::user();
+        $assignment = CashierPrinterAssignment::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $assignment) {
+            $this->errorMessage = __('cashdrawer.no_printer');
+
+            return;
+        }
+
+        try {
+            $this->isPrintingTotals = true;
+
+            /** @var CashDrawerService $cashDrawer */
+            $cashDrawer = app(CashDrawerService::class);
+            $totals = $cashDrawer->getTotals($user, $this->session);
+
+            // Add context for ticket rendering
+            $totals['cashier_name'] = $user->name;
+            $totals['session_label'] = $this->session->session_label;
+
+            /** @var PrintQueueService $printQueue */
+            $printQueue = app(PrintQueueService::class);
+            $printQueue->enqueueCashierTotals($assignment->printer_id, $totals, $user);
+
+            $this->successMessage = __('cashdrawer.totals_queued');
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isPrintingTotals = false;
         }
     }
 
