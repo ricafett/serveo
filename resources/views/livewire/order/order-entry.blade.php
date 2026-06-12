@@ -227,7 +227,7 @@
                     @endif
 
                     {{-- Order Items --}}
-                    <div class="mb-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                    <div class="mb-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
                         <template x-if="cart.length > 0">
                             <div>
                                 <div class="divide-y divide-gray-200 dark:divide-gray-800">
