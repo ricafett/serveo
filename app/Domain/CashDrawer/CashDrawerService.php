@@ -150,6 +150,42 @@ class CashDrawerService
     }
 
     /**
+     * Get aggregate totals for a cashier in a session.
+     *
+     * Returns: balance, cash_in, cash_out, bill_payments, sale_payments
+     */
+    public function getTotals(User $cashier, ServiceSession $session): array
+    {
+        $cashIn = (float) CashMovement::where('cashier_user_id', $cashier->id)
+            ->where('service_session_id', $session->id)
+            ->where('movement_type', CashMovement::TYPE_CASH_IN)
+            ->sum('amount');
+
+        $cashOut = (float) CashMovement::where('cashier_user_id', $cashier->id)
+            ->where('service_session_id', $session->id)
+            ->where('movement_type', CashMovement::TYPE_CASH_OUT)
+            ->sum('amount');
+
+        $billPayments = (float) PaymentRecord::where('recorded_by_user_id', $cashier->id)
+            ->where('is_voided', false)
+            ->whereHas('billingGroup', fn ($q) => $q->where('service_session_id', $session->id))
+            ->sum('amount');
+
+        $salePayments = (float) SalePayment::where('recorded_by_user_id', $cashier->id)
+            ->where('is_voided', false)
+            ->whereHas('sale', fn ($q) => $q->where('service_session_id', $session->id))
+            ->sum('amount');
+
+        return [
+            'balance'       => round($cashIn + $billPayments + $salePayments - $cashOut, 2),
+            'cash_in'       => round($cashIn, 2),
+            'cash_out'      => round($cashOut, 2),
+            'bill_payments' => round($billPayments, 2),
+            'sale_payments' => round($salePayments, 2),
+        ];
+    }
+
+    /**
      * Build a combined timeline of cash movements and payment inflows,
      * sorted by recorded_at desc.
      */
