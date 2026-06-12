@@ -14,6 +14,8 @@ class DocumentPrintConfig extends Model
 
     public const DOC_SALE_RECEIPT = 'SALE_RECEIPT';
 
+    public const DOC_CASHIER_TOTALS = 'CASHIER_TOTALS';
+
     protected $fillable = [
         'document_type', 'fulfillment_route',
         'group_items', 'ignore_variants', 'ignore_modifiers',

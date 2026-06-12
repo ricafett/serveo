@@ -31,6 +31,8 @@ class PrintJob extends Model
 
     public const KIND_SALE_VOUCHER_BATCH = 'SALE_VOUCHER_BATCH';
 
+    public const KIND_CASHIER_TOTALS = 'CASHIER_TOTALS';
+
     public const STATUS_PENDING = 'PENDING';
 
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
