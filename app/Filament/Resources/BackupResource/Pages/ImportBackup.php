@@ -36,7 +36,10 @@ class ImportBackup extends Page
             ->schema([
                 Forms\Components\FileUpload::make('backup_file')
                     ->label(__('app.backup_file'))
-                    ->acceptedFileTypes(['application/octet-stream', 'application/gzip', 'application/x-gzip', 'application/sql', 'text/plain'])
+                    ->rules(['file', 'extensions:dump,sql,backup,gz', 'max:512000'])
+                    ->extraInputAttributes([
+                        'accept' => '.dump,.sql,.backup,.gz,application/octet-stream,application/gzip,application/x-gzip,application/sql,text/plain',
+                    ])
                     ->maxSize(512000) // 500 MB
                     ->directory('backups/upload')
                     ->disk('local')
