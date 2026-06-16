@@ -25,10 +25,10 @@ fi
 
 # ── Determine container role ─────────────────────────────────────────
 #   Workers (queue:work) → skip DB setup, exec immediately.
-#   Scheduler (schedule:run) → full DB setup → exec scheduler loop.
+#   Scheduler ("scheduler") → full DB setup → native scheduler loop.
 #   App (no args) → full DB setup → php-fpm.
 
-SCHEDULER_CMD=""
+SCHEDULER_MODE=""
 
 case "$*" in
     *queue:work*)
@@ -36,9 +36,9 @@ case "$*" in
         echo "[entrypoint] Executing: $*"
         exec "$@"
         ;;
-    *schedule:run*)
+    *scheduler*)
         echo "[entrypoint] Scheduler container detected — running DB setup first."
-        SCHEDULER_CMD="$*"
+        SCHEDULER_MODE="1"
         ;;
 esac
 
@@ -130,9 +130,12 @@ else
     rm -f public/debug.php 2>/dev/null || true
 fi
 
-if [ -n "$SCHEDULER_CMD" ]; then
+if [ -n "$SCHEDULER_MODE" ]; then
     echo "[entrypoint] Starting scheduler loop..."
-    exec $SCHEDULER_CMD
+    while true; do
+        php artisan schedule:run --no-interaction
+        sleep 60
+    done
 else
     echo "[entrypoint] Starting php-fpm..."
     exec php-fpm

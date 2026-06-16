@@ -237,7 +237,7 @@ services:
     container_name: serveo-scheduler
     restart: unless-stopped
     working_dir: /var/www/html
-    command: ["sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    command: ["scheduler"]
     volumes:
       - ${STORAGE_DATA_PATH:-./data/storage}:/var/www/html/storage/app/private
     environment:
