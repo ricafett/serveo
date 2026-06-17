@@ -37,6 +37,7 @@ class ImportBackup extends Page
                 Forms\Components\FileUpload::make('backup_file')
                     ->label(__('app.backup_file'))
                     ->rules(['file', 'extensions:dump,sql,backup,gz', 'max:512000'])
+                    ->storeFileNamesIn('backup_file_name')
                     ->extraInputAttributes([
                         'accept' => '.dump,.sql,.backup,.gz,application/octet-stream,application/gzip,application/x-gzip,application/sql,text/plain',
                     ])
@@ -64,7 +65,8 @@ class ImportBackup extends Page
         // Detect backup type from filename or let user specify
         // For uploaded files, we detect: if filename contains 'config' → config, else → full
         $fileName = $state['backup_file'];
-        $backupType = str_contains(basename($fileName), '_config_') ? 'config' : 'full';
+        $originalFileName = $state['backup_file_name'] ?? basename($fileName);
+        $backupType = str_contains(basename($originalFileName), '_config_') ? 'config' : 'full';
 
         // Move file from temp upload to backups directory
         $targetPath = 'backups/import_' . now()->format('Ymd_His') . '_' . basename($fileName);

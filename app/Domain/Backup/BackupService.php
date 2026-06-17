@@ -156,10 +156,10 @@ class BackupService
             ->run($cmd);
 
         if (! $result->successful()) {
-            $error = $result->errorOutput();
-            if (str_contains($error, 'ERROR:') || str_contains($error, 'FATAL:')) {
-                throw new RuntimeException("Restore failed: {$error}");
-            }
+            $error = trim($result->errorOutput());
+            $output = trim($result->output());
+
+            throw new RuntimeException('Restore failed: ' . ($error !== '' ? $error : ($output !== '' ? $output : 'restore command returned a non-zero exit code.')));
         }
     }
 
@@ -171,15 +171,17 @@ class BackupService
     {
         DB::statement('SET session_replication_role = \'replica\'');
 
-        foreach (self::CONFIG_TABLES as $table) {
-            try {
-                DB::statement("TRUNCATE TABLE \"{$table}\" CASCADE");
-            } catch (\Throwable $e) {
-                // Table might not exist in this deployment; skip silently
+        try {
+            foreach (self::CONFIG_TABLES as $table) {
+                try {
+                    DB::statement("DELETE FROM \"{$table}\"");
+                } catch (\Throwable $e) {
+                    // Table might not exist in this deployment; skip silently
+                }
             }
+        } finally {
+            DB::statement('SET session_replication_role = \'origin\'');
         }
-
-        DB::statement('SET session_replication_role = \'origin\'');
     }
 
     protected function buildFileName(Backup $backup): string
