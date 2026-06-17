@@ -391,6 +391,100 @@ class TicketRenderer
      * Build the display name for an order item, respecting
      * DocumentPrintConfig ignore_variants / ignore_modifiers settings.
      */
+    /**
+     * Render a session totals document (all cashiers, summary).
+     */
+    public function renderSessionTotals(array $data): string
+    {
+        $lines = [];
+
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
+        $lines[] = $this->center(__('ticket.session_totals'));
+        $lines[] = str_repeat('=', $this->width());
+
+        if (! empty($data['session_label'])) {
+            $lines[] = __('ticket.session') . ': ' . $data['session_label'];
+        }
+        $lines[] = __('ticket.time') . ':  ' . $this->localTime(now());
+
+        $lines[] = '';
+        $lines[] = $this->center(__('ticket.cashier_breakdown'));
+        $lines[] = str_repeat('=', $this->width());
+
+        foreach ($data['cashiers'] ?? [] as $cashier) {
+            $lines[] = $cashier['user_name'];
+            $lines[] = $this->row('  ' . __('ticket.totals_in'), number_format((float) $cashier['cash_in'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = $this->row('  ' . __('ticket.totals_out'), number_format((float) $cashier['cash_out'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = $this->row('  ' . __('ticket.totals_bill_payments'), number_format((float) $cashier['bill_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = $this->row('  ' . __('ticket.totals_sale_payments'), number_format((float) $cashier['sale_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = str_repeat('-', $this->width());
+            $lines[] = $this->row('  ' . __('ticket.totals_net'), number_format((float) $cashier['net'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = '';
+        }
+
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->center(__('ticket.session_summary'));
+        $lines[] = $this->row(__('ticket.totals_in'), number_format((float) $data['summary']['cash_in'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_out'), number_format((float) $data['summary']['cash_out'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_net_cash'), number_format((float) $data['summary']['net_cash_movement'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_bill_payments'), number_format((float) $data['summary']['bill_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_sale_payments'), number_format((float) $data['summary']['sale_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_total_payments'), number_format((float) $data['summary']['total_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->row(__('ticket.totals_overall_balance'), number_format((float) $data['summary']['overall_balance'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->center(__('ticket.no_fiscal'));
+
+        return $this->wrap(implode("\n", $lines) . "\n");
+    }
+
+    /**
+     * Render an inventory movements document: items sold (grouped by item + variant,
+     * modifiers ignored), sorted by quantity descending.
+     */
+    public function renderInventoryMovements(array $data): string
+    {
+        $lines = [];
+
+        // --- Branding header ---
+        $this->appendBrandingHeader($lines);
+
+        $lines[] = $this->center(__('ticket.inventory_movements'));
+        $lines[] = str_repeat('=', $this->width());
+
+        if (! empty($data['session_label'])) {
+            $lines[] = __('ticket.session') . ': ' . $data['session_label'];
+        }
+        $lines[] = __('ticket.time') . ':  ' . $this->localTime(now());
+
+        $lines[] = '';
+        $lines[] = $this->center(__('ticket.items_sold_excl_modifiers'));
+        $lines[] = str_repeat('=', $this->width());
+
+        foreach ($data['items'] ?? [] as $item) {
+            $qty = (int) $item['total_qty'];
+            $name = $item['menu_item_name'];
+            if (! empty($item['variant_name'])) {
+                $name .= ' - ' . $item['variant_name'];
+            }
+            $left = sprintf('%3dx  %s', $qty, mb_strimwidth($name, 0, 36));
+            $lines[] = $left;
+        }
+
+        $totalUnique = count($data['items'] ?? []);
+        $totalUnits = array_sum(array_column($data['items'] ?? [], 'total_qty'));
+
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->row(__('ticket.total_unique_items'), (string) $totalUnique);
+        $lines[] = $this->row(__('ticket.total_units_sold'), (string) $totalUnits);
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = $this->center(__('ticket.no_fiscal'));
+
+        return $this->wrap(implode("\n", $lines) . "\n");
+    }
+
     private function buildItemName(OrderItem $item): string
     {
         $name = $item->menuItem?->display_name ?? __('ticket.unknown_item', ['id' => $item->menu_item_id]);

@@ -81,6 +81,8 @@ class RolePermissionSeeder extends Seeder
             'cash_drawer.create_movement',
             'cash_drawer.view_all',
             'cash_drawer.open',
+            // Session totals
+            'session_totals.view',
         ];
 
         foreach ($permissions as $perm) {

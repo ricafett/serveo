@@ -139,6 +139,54 @@ class PrintQueueService
     }
 
     /**
+     * Enqueue a session totals print job. The totals data is stored in the
+     * payload column; no persistent document model is created.
+     */
+    public function enqueueSessionTotals(int $printerId, array $totals, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind'       => PrintJob::KIND_SESSION_TOTALS,
+            'printable_type' => PrintJob::class,
+            'printable_id'   => 0,
+            'printer_id'     => $printerId,
+            'status'         => PrintJob::STATUS_PENDING,
+            'attempts'       => 0,
+            'max_attempts'   => 4,
+            'requested_by_user_id' => $actor?->id,
+            'locale'         => config('app.locale', 'pt-PT'),
+            'payload'        => ['totals' => $totals],
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    /**
+     * Enqueue an inventory movements print job. The inventory data is stored
+     * in the payload column; no persistent document model is created.
+     */
+    public function enqueueInventoryMovements(int $printerId, array $data, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind'       => PrintJob::KIND_INVENTORY_MOVEMENTS,
+            'printable_type' => PrintJob::class,
+            'printable_id'   => 0,
+            'printer_id'     => $printerId,
+            'status'         => PrintJob::STATUS_PENDING,
+            'attempts'       => 0,
+            'max_attempts'   => 4,
+            'requested_by_user_id' => $actor?->id,
+            'locale'         => config('app.locale', 'pt-PT'),
+            'payload'        => ['totals' => $data],
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    /**
      * Re-queue a failed job (manual admin retry). Resets the attempt counter
      * so the auto-retry loop gets a fresh start. Returns true if a dispatch
      * was scheduled.

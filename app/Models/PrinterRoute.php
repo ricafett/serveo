@@ -23,6 +23,10 @@ class PrinterRoute extends Model
 
     public const DOC_CASHIER_TOTALS = 'CASHIER_TOTALS';
 
+    public const DOC_SESSION_TOTALS = 'SESSION_TOTALS';
+
+    public const DOC_INVENTORY_MOVEMENTS = 'INVENTORY_MOVEMENTS';
+
     public function printer(): BelongsTo
     {
         return $this->belongsTo(Printer::class);

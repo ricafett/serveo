@@ -42,4 +42,16 @@ return [
     'totals_bill_payments' => 'Bill payments',
     'totals_sale_payments' => 'Sale payments',
     'totals_total_payments' => 'Total payments',
+    // Session totals
+    'session_totals' => 'SESSION TOTALS',
+    'cashier_breakdown' => 'CASHIER BREAKDOWN',
+    'totals_net' => 'Net',
+    'totals_net_cash' => 'Net cash movement',
+    'totals_overall_balance' => 'Overall balance',
+    'session_summary' => 'SESSION SUMMARY',
+    // Inventory movements
+    'inventory_movements' => 'INVENTORY MOVEMENTS',
+    'items_sold_excl_modifiers' => 'Items sold (excl. modifiers)',
+    'total_unique_items' => 'Total unique items',
+    'total_units_sold' => 'Total units sold',
 ];

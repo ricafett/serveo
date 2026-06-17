@@ -77,6 +77,9 @@ class PrintJobResource extends BaseResource
                     'BILL' => __('app.job_kind_bill'),
                     'SALE_VOUCHER' => __('app.job_kind_sale_voucher'),
                     'SALE_RECEIPT' => __('app.job_kind_sale_receipt'),
+                    'CASHIER_TOTALS' => __('app.job_kind_cashier_totals'),
+                    'SESSION_TOTALS' => __('app.job_kind_session_totals'),
+                    'INVENTORY_MOVEMENTS' => __('app.job_kind_inventory_movements'),
                 ]),
             ])
             ->actions([

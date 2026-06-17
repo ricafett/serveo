@@ -112,6 +112,18 @@ class DispatchPrintJob implements ShouldQueue
             return;
         }
 
+        // Session totals: render from payload, no printable model needed
+        if ($job->job_kind === PrintJob::KIND_SESSION_TOTALS) {
+            $this->handleSessionTotals($job, $printer, $registry);
+            return;
+        }
+
+        // Inventory movements: render from payload, no printable model needed
+        if ($job->job_kind === PrintJob::KIND_INVENTORY_MOVEMENTS) {
+            $this->handleInventoryMovements($job, $printer, $registry);
+            return;
+        }
+
         if (! $printer || ! $printable) {
             $job->update([
                 'status' => PrintJob::STATUS_FAILED,
@@ -491,6 +503,242 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         // Auto-retry
+        if (! $isFinalAttempt) {
+            static::dispatch($job->id, $this->lockContentionAttempt)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($backoffSeconds));
+        }
+    }
+
+    /**
+     * Handle a session totals print job. Renders from payload data
+     * (no printable model), sends to the assigned printer.
+     */
+    private function handleSessionTotals(PrintJob $job, Printer $printer, PrinterAdapterRegistry $registry): void
+    {
+        $totals = $job->payload['totals'] ?? [];
+
+        if (empty($totals)) {
+            $job->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'No totals data in job payload',
+            ]);
+            return;
+        }
+
+        $documentConfig = DocumentPrintConfig::firstOrCreate(
+            ['document_type' => PrinterRoute::DOC_SESSION_TOTALS, 'fulfillment_route' => null],
+            ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false],
+        );
+
+        $renderer = new TicketRenderer(
+            charWidth: $printer->print_char_width ?? 48,
+            beginSpace: $printer->print_begin_space ?? 0,
+            endSpace: $printer->print_end_space ?? 3,
+            documentConfig: $documentConfig,
+        );
+
+        try {
+            $payload = $renderer->renderSessionTotals($totals);
+        } catch (\Throwable $e) {
+            $job->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'Render failure: ' . $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $copiesToSend = 1;
+        if ($documentConfig && $documentConfig->copies > 0) {
+            $copiesToSend = $documentConfig->copies + 1;
+        }
+
+        $result = $copiesToSend > 1
+            ? $registry->sendBatch($printer, $payload, $copiesToSend)
+            : $registry->send($printer, $payload);
+
+        if ($result->contended) {
+            PrintJob::where('id', $job->id)
+                ->where('status', PrintJob::STATUS_IN_PROGRESS)
+                ->update([
+                    'status' => PrintJob::STATUS_PENDING,
+                    'attempts' => max(0, $job->attempts - 1),
+                    'last_error' => $result->message,
+                ]);
+
+            static::dispatch($job->id, $this->lockContentionAttempt + 1)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($this->contentionBackoff()));
+
+            return;
+        }
+
+        if ($result->success) {
+            $job->update([
+                'status' => PrintJob::STATUS_PRINTED,
+                'completed_at' => now(),
+                'last_error' => null,
+            ]);
+            $printer->update(['health_status' => 'OK', 'last_seen_at' => now(), 'last_error' => null]);
+
+            if ($documentConfig?->trigger_cash_drawer && $job->requested_by_user_id) {
+                $cashierAssignment = CashierPrinterAssignment::where('user_id', $job->requested_by_user_id)
+                    ->where('is_active', true)
+                    ->first();
+                if ($cashierAssignment) {
+                    OpenCashDrawerJob::dispatch($cashierAssignment->printer_id, $job->requested_by_user_id)
+                        ->onQueue('prints');
+                }
+            }
+
+            Audit::record(
+                'SESSION_TOTALS_PRINTED',
+                'Session totals printed successfully',
+                ['printer_id' => $printer->id, 'job_id' => $job->id],
+                ['actor_user_id' => $job->requested_by_user_id],
+            );
+
+            return;
+        }
+
+        // Transport failure
+        $isFinalAttempt = $job->attempts >= $job->max_attempts;
+        $backoffSeconds = $this->transportBackoff($job->attempts);
+
+        $job->update([
+            'status' => PrintJob::STATUS_FAILED,
+            'last_error' => $result->message,
+            'next_attempt_at' => now()->addSeconds($backoffSeconds),
+        ]);
+        $printer->update(['health_status' => 'UNREACHABLE', 'last_error' => $result->message]);
+
+        if ($isFinalAttempt) {
+            Audit::record(
+                'PRINT_JOB_MAX_ATTEMPTS',
+                "PrintJob #{$job->id} reached max attempts ({$job->max_attempts})",
+                ['printer_id' => $job->printer_id, 'job_id' => $job->id],
+                ['actor_user_id' => $job->requested_by_user_id],
+            );
+        }
+
+        if (! $isFinalAttempt) {
+            static::dispatch($job->id, $this->lockContentionAttempt)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($backoffSeconds));
+        }
+    }
+
+    /**
+     * Handle an inventory movements print job. Renders from payload data
+     * (no printable model), sends to the assigned printer.
+     */
+    private function handleInventoryMovements(PrintJob $job, Printer $printer, PrinterAdapterRegistry $registry): void
+    {
+        $totals = $job->payload['totals'] ?? [];
+
+        if (empty($totals)) {
+            $job->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'No inventory data in job payload',
+            ]);
+            return;
+        }
+
+        $documentConfig = DocumentPrintConfig::firstOrCreate(
+            ['document_type' => PrinterRoute::DOC_INVENTORY_MOVEMENTS, 'fulfillment_route' => null],
+            ['group_items' => true, 'ignore_variants' => false, 'ignore_modifiers' => true, 'ignore_item_notes' => true, 'trigger_cash_drawer' => false],
+        );
+
+        $renderer = new TicketRenderer(
+            charWidth: $printer->print_char_width ?? 48,
+            beginSpace: $printer->print_begin_space ?? 0,
+            endSpace: $printer->print_end_space ?? 3,
+            documentConfig: $documentConfig,
+        );
+
+        try {
+            $payload = $renderer->renderInventoryMovements($totals);
+        } catch (\Throwable $e) {
+            $job->update([
+                'status' => PrintJob::STATUS_FAILED,
+                'last_error' => 'Render failure: ' . $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $copiesToSend = 1;
+        if ($documentConfig && $documentConfig->copies > 0) {
+            $copiesToSend = $documentConfig->copies + 1;
+        }
+
+        $result = $copiesToSend > 1
+            ? $registry->sendBatch($printer, $payload, $copiesToSend)
+            : $registry->send($printer, $payload);
+
+        if ($result->contended) {
+            PrintJob::where('id', $job->id)
+                ->where('status', PrintJob::STATUS_IN_PROGRESS)
+                ->update([
+                    'status' => PrintJob::STATUS_PENDING,
+                    'attempts' => max(0, $job->attempts - 1),
+                    'last_error' => $result->message,
+                ]);
+
+            static::dispatch($job->id, $this->lockContentionAttempt + 1)
+                ->onQueue('prints')
+                ->delay(now()->addSeconds($this->contentionBackoff()));
+
+            return;
+        }
+
+        if ($result->success) {
+            $job->update([
+                'status' => PrintJob::STATUS_PRINTED,
+                'completed_at' => now(),
+                'last_error' => null,
+            ]);
+            $printer->update(['health_status' => 'OK', 'last_seen_at' => now(), 'last_error' => null]);
+
+            if ($documentConfig?->trigger_cash_drawer && $job->requested_by_user_id) {
+                $cashierAssignment = CashierPrinterAssignment::where('user_id', $job->requested_by_user_id)
+                    ->where('is_active', true)
+                    ->first();
+                if ($cashierAssignment) {
+                    OpenCashDrawerJob::dispatch($cashierAssignment->printer_id, $job->requested_by_user_id)
+                        ->onQueue('prints');
+                }
+            }
+
+            Audit::record(
+                'INVENTORY_MOVEMENTS_PRINTED',
+                'Inventory movements printed successfully',
+                ['printer_id' => $printer->id, 'job_id' => $job->id],
+                ['actor_user_id' => $job->requested_by_user_id],
+            );
+
+            return;
+        }
+
+        // Transport failure
+        $isFinalAttempt = $job->attempts >= $job->max_attempts;
+        $backoffSeconds = $this->transportBackoff($job->attempts);
+
+        $job->update([
+            'status' => PrintJob::STATUS_FAILED,
+            'last_error' => $result->message,
+            'next_attempt_at' => now()->addSeconds($backoffSeconds),
+        ]);
+        $printer->update(['health_status' => 'UNREACHABLE', 'last_error' => $result->message]);
+
+        if ($isFinalAttempt) {
+            Audit::record(
+                'PRINT_JOB_MAX_ATTEMPTS',
+                "PrintJob #{$job->id} reached max attempts ({$job->max_attempts})",
+                ['printer_id' => $job->printer_id, 'job_id' => $job->id],
+                ['actor_user_id' => $job->requested_by_user_id],
+            );
+        }
+
         if (! $isFinalAttempt) {
             static::dispatch($job->id, $this->lockContentionAttempt)
                 ->onQueue('prints')

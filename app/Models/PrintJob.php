@@ -33,6 +33,10 @@ class PrintJob extends Model
 
     public const KIND_CASHIER_TOTALS = 'CASHIER_TOTALS';
 
+    public const KIND_SESSION_TOTALS = 'SESSION_TOTALS';
+
+    public const KIND_INVENTORY_MOVEMENTS = 'INVENTORY_MOVEMENTS';
+
     public const STATUS_PENDING = 'PENDING';
 
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';

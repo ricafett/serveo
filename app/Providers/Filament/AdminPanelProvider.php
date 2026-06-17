@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 \App\Filament\Pages\AdminDashboard::class,
+                \App\Filament\Pages\SessionTotals::class,
             ])
             ->navigationItems([
                 NavigationItem::make()

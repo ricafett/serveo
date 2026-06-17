@@ -16,6 +16,10 @@ class DocumentPrintConfig extends Model
 
     public const DOC_CASHIER_TOTALS = 'CASHIER_TOTALS';
 
+    public const DOC_SESSION_TOTALS = 'SESSION_TOTALS';
+
+    public const DOC_INVENTORY_MOVEMENTS = 'INVENTORY_MOVEMENTS';
+
     protected $fillable = [
         'document_type', 'fulfillment_route',
         'group_items', 'ignore_variants', 'ignore_modifiers',
