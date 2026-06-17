@@ -36,6 +36,10 @@ class RestoreBackupJob implements ShouldQueue
             throw new \RuntimeException("Backup #{$backup->id} has no file attached");
         }
 
+        $backup->update([
+            'backup_status' => 'RESTORING',
+        ]);
+
         Audit::record(
             'BACKUP_RESTORE_STARTED',
             "Backup restore #{$backup->id} ({$backup->backup_type}) started",

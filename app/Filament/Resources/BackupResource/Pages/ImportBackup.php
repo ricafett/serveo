@@ -77,7 +77,7 @@ class ImportBackup extends Page
             'backup_type' => $backupType,
             'file_name' => $targetPath,
             'file_size' => $fileSize,
-            'backup_status' => 'RESTORING',
+            'backup_status' => 'UPLOADED',
             'requested_by_user_id' => Auth::id(),
             'requested_at' => now(),
         ]);
