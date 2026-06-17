@@ -40,4 +40,8 @@ return [
     'unsaved_cart_title' => 'Unsaved Order',
     'unsaved_cart_body' => 'You have :count items in your cart. Leave without saving?',
     'discard' => 'Discard',
+    'restore_draft_title' => 'Restore Draft Order',
+    'restore_draft_body' => 'You have :count items from your previous visit. Restore them?',
+    'restore_draft' => 'Restore',
+    'start_new' => 'Start new',
 ];

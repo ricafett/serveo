@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 18;
+    private const SEED_VERSION = 19;
 
     public function run(): void
     {
@@ -546,6 +546,10 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'order', 'unsaved_cart_title', 'Pedido Não Guardado'],
             ['pt-PT', 'order', 'unsaved_cart_body', 'Tem :count itens no carrinho. Sair sem guardar?'],
             ['pt-PT', 'order', 'discard', 'Descartar'],
+            ['pt-PT', 'order', 'restore_draft_title', 'Recuperar Pedido Guardado'],
+            ['pt-PT', 'order', 'restore_draft_body', 'Tem :count itens da sua visita anterior. Recuperá-los?'],
+            ['pt-PT', 'order', 'restore_draft', 'Recuperar'],
+            ['pt-PT', 'order', 'start_new', 'Começar novo'],
 
             ['en-US', 'order', 'title', 'Order'],
             ['en-US', 'order', 'new_order', 'New Order'],
@@ -573,6 +577,10 @@ class CoreSeeder extends Seeder
             ['en-US', 'order', 'unsaved_cart_title', 'Unsaved Order'],
             ['en-US', 'order', 'unsaved_cart_body', 'You have :count items in your cart. Leave without saving?'],
             ['en-US', 'order', 'discard', 'Discard'],
+            ['en-US', 'order', 'restore_draft_title', 'Restore Draft Order'],
+            ['en-US', 'order', 'restore_draft_body', 'You have :count items from your previous visit. Restore them?'],
+            ['en-US', 'order', 'restore_draft', 'Restore'],
+            ['en-US', 'order', 'start_new', 'Start new'],
 
             // ---------- billing ----------
             ['pt-PT', 'billing', 'group_title', 'Conta'],
