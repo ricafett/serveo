@@ -10,6 +10,11 @@ use App\Models\Section;
 use App\Models\Venue;
 use Laravel\Dusk\Browser;
 
+function clearWebStorage(Browser $browser): void
+{
+    $browser->script('window.sessionStorage.clear(); window.localStorage.clear();');
+}
+
 beforeEach(function () {
     $this->scenario = $this->scenario();
     $this->server = makeUser('SERVER');
@@ -45,6 +50,8 @@ test('order entry page loads for open billing group', function () {
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
 
+        clearWebStorage($browser);
+
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Order Entry', 5)
             ->assertSee($this->group->display_code);
@@ -63,6 +70,8 @@ test('server can add items and submit order', function () {
             ->type('password', 'secret')
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
+
+        clearWebStorage($browser);
 
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Order Entry', 5);
@@ -100,6 +109,8 @@ test('submitted order appears in billing group detail', function () {
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
 
+        clearWebStorage($browser);
+
         $browser->visit("/billing-groups/{$this->group->id}")
             ->waitForText($menuItem->display_name, 5)
             ->assertSee('Submitted');
@@ -120,7 +131,97 @@ test('order entry blocked for closed billing group', function () {
             ->press('Sign In')
             ->waitForText('Dashboard', 5);
 
+        clearWebStorage($browser);
+
         $browser->visit("/orders/new/{$this->group->id}")
             ->waitForText('Closed', 5);
+    });
+});
+
+test('dirty order shows custom leave modal from header back button', function () {
+    $menuItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $this->browse(function (Browser $browser) use ($menuItem) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearWebStorage($browser);
+
+        $browser->visit("/orders/new/{$this->group->id}")
+            ->waitForText('Order Entry', 5)
+            ->press($menuItem->category->display_name)
+            ->waitForText($menuItem->display_name, 5)
+            ->press($menuItem->display_name)
+            ->pause(500)
+            ->click('@order-back-button')
+            ->waitForText('Unsaved Order', 5)
+            ->assertPathIs("/orders/new/{$this->group->id}");
+
+        $display = $browser->script("return document.querySelector('[dusk=\"leave-confirm-modal\"]').style.display");
+        expect($display[0])->toBe('');
+    });
+});
+
+test('dirty order best effort intercepts browser back and stays on page', function () {
+    $menuItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $this->browse(function (Browser $browser) use ($menuItem) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearWebStorage($browser);
+
+        $browser->visit("/orders/new/{$this->group->id}")
+            ->waitForText('Order Entry', 5)
+            ->press($menuItem->category->display_name)
+            ->waitForText($menuItem->display_name, 5)
+            ->press($menuItem->display_name)
+            ->pause(500);
+
+        $browser->script('window.history.back()');
+
+        $browser->waitForText('Unsaved Order', 5)
+            ->assertPathIs("/orders/new/{$this->group->id}");
+    });
+});
+
+test('order entry can restore a draft cart from session storage', function () {
+    $menuItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $this->browse(function (Browser $browser) use ($menuItem) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearWebStorage($browser);
+
+        $browser->script("window.sessionStorage.setItem('serveo.order-entry.draft.{$this->group->id}', JSON.stringify({ cart: [{ cart_key: 'draft-key', menu_item_id: {$menuItem->id}, display_name: '{$menuItem->display_name}', unit_price: {$menuItem->unit_price}, quantity: 2, route_type: '{$menuItem->category->route_type}', variant_name: null, modifier_name: null, note: null }], savedAt: Date.now() }))");
+
+        $browser->visit("/orders/new/{$this->group->id}")
+            ->waitForText('Order Entry', 5)
+            ->waitForText('Restore Draft Order', 5)
+            ->click('@restore-draft')
+            ->pause(500)
+            ->assertSee($menuItem->display_name);
+
+        $quantity = $browser->script("return document.querySelector('[x-data]')._x_dataStack[0].cart[0].quantity");
+        expect($quantity[0])->toBe(2);
     });
 });

@@ -1,6 +1,6 @@
 <div
-    x-data="orderEntry(@js($menuItemsData), @js($menuCategoriesData), {{ $defaultCategoryId }})"
-    @order-submitted.window="cart = []"
+    x-data="orderEntry(@js($menuItemsData), @js($menuCategoriesData), {{ $defaultCategoryId }}, {{ $billingGroupId }})"
+    @order-submitted.window="handleOrderSubmitted()"
     @open-note-modal.window="openNoteModal($event.detail.index)"
     @save-note.window="saveNote()"
     @delete-note.window="deleteNote($event.detail.index)"
@@ -12,6 +12,7 @@
             <div class="flex items-center gap-3">
                 <button
                     type="button"
+                    dusk="order-back-button"
                     @click="handleBack()"
                     class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
@@ -634,6 +635,7 @@
         <div
         x-show="showLeaveConfirm"
         x-cloak
+        dusk="leave-confirm-modal"
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         style="display: none;"
     >
@@ -646,7 +648,7 @@
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
             class="fixed inset-0 bg-black/50 dark:bg-black/70"
-            @click="showLeaveConfirm = false"
+            @click="cancelLeave()"
         ></div>
 
         <div
@@ -666,7 +668,7 @@
                     </h3>
                     <button
                         type="button"
-                        @click="showLeaveConfirm = false"
+                        @click="cancelLeave()"
                         class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -678,18 +680,81 @@
                 <div class="flex gap-3">
                     <button
                         type="button"
-                        @click="showLeaveConfirm = false"
+                        @click="cancelLeave()"
                         class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
                     >
                         {{ __('app.cancel') }}
                     </button>
                     <button
                         type="button"
+                        dusk="discard-leave"
                         @click="discardAndLeave()"
                         class="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-red-500 min-h-[44px] transition-colors"
                     >
                         {{ __('order.discard') }}
                     </button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-teleport="body">
+        <div
+            x-show="showRestoreDraft"
+            x-cloak
+            dusk="restore-draft-modal"
+            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            style="display: none;"
+        >
+            <div
+                x-show="showRestoreDraft"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/50 dark:bg-black/70"
+            ></div>
+
+            <div
+                x-show="showRestoreDraft"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+                x-transition:enter-end="transform translate-y-0 sm:scale-100 opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="transform translate-y-0 sm:scale-100 opacity-100"
+                x-transition:leave-end="transform translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+                class="relative w-full sm:w-[24rem] max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl"
+            >
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ __('order.restore_draft_title') }}
+                        </h3>
+                    </div>
+
+                    <p class="text-base text-gray-600 dark:text-gray-400 mb-6" x-text="'{{ __('order.restore_draft_body') }}'.replace(':count', restoreDraftItemCount)"></p>
+
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            dusk="discard-draft"
+                            @click="discardDraft()"
+                            class="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px] transition-colors"
+                        >
+                            {{ __('order.start_new') }}
+                        </button>
+                        <button
+                            type="button"
+                            dusk="restore-draft"
+                            @click="restoreDraft()"
+                            class="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-base font-semibold text-white hover:bg-primary-500 min-h-[44px] transition-colors"
+                        >
+                            {{ __('order.restore_draft') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -698,9 +763,10 @@
 </div>
 
 <script>
-function orderEntry(menuItems, menuCategories, defaultCategoryId) {
+function orderEntry(menuItems, menuCategories, defaultCategoryId, billingGroupId) {
     return {
         cart: [],
+        billingGroupId: billingGroupId,
         selectedCategoryId: defaultCategoryId,
         menuItems: menuItems,
         menuCategories: menuCategories,
@@ -721,48 +787,263 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
 
         // Leave confirmation state
         showLeaveConfirm: false,
-        leaveCleanupDone: false,
+        pendingNavigation: null,
+        allowImmediateNavigation: false,
+
+        // Draft restore state
+        showRestoreDraft: false,
+        draftToRestore: null,
 
         init() {
             var self = this;
 
+            this.prepareHistoryGuard();
+
             this.beforeunloadHandler = function(e) {
-                if (self.cart.length > 0) {
-                    e.preventDefault();
+                if (!self.isDirty() || self.allowImmediateNavigation) {
+                    return;
                 }
+
+                self.persistDraft();
+                e.preventDefault();
+                e.returnValue = '';
             };
             window.addEventListener('beforeunload', this.beforeunloadHandler);
 
-            this.navigatingHandler = function(e) {
-                if (self.cart.length > 0) {
-                    e.preventDefault();
-                    self.showLeaveConfirm = true;
+            this.linkClickHandler = function(e) {
+                if (self.allowImmediateNavigation || !self.isDirty()) {
+                    return;
                 }
+
+                if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+                    return;
+                }
+
+                var anchor = e.target.closest('a[href]');
+                if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) {
+                    return;
+                }
+
+                var url = new URL(anchor.href, window.location.href);
+                if (url.origin !== window.location.origin) {
+                    return;
+                }
+
+                if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash === window.location.hash) {
+                    return;
+                }
+
+                e.preventDefault();
+                self.requestLeave({ type: 'url', url: url.toString() });
             };
-            document.addEventListener('livewire:navigating', this.navigatingHandler);
+            document.addEventListener('click', this.linkClickHandler, true);
+
+            this.livewireNavigateHandler = function(e) {
+                if (self.allowImmediateNavigation || !self.isDirty()) {
+                    return;
+                }
+
+                e.preventDefault();
+                self.requestLeave({ type: 'url', url: e.detail.url.toString() });
+            };
+            document.addEventListener('livewire:navigate', this.livewireNavigateHandler);
+
+            this.popstateHandler = function() {
+                if (self.allowImmediateNavigation) {
+                    return;
+                }
+
+                if (!self.isOrderEntryHistoryState(window.history.state)) {
+                    return;
+                }
+
+                if (!self.isDirty()) {
+                    self.allowImmediateNavigation = true;
+                    self.cleanupLeaveGuards();
+                    window.setTimeout(function () {
+                        window.history.back();
+                    }, 0);
+
+                    return;
+                }
+
+                self.prepareHistoryGuard();
+                self.requestLeave({ type: 'history-back', steps: -2 });
+            };
+            window.addEventListener('popstate', this.popstateHandler);
+
+            this.restoreDraftIfAvailable();
+        },
+
+        destroy() {
+            this.cleanupLeaveGuards();
         },
 
         cleanupLeaveGuards() {
             if (this.beforeunloadHandler) {
                 window.removeEventListener('beforeunload', this.beforeunloadHandler);
             }
-            if (this.navigatingHandler) {
-                document.removeEventListener('livewire:navigating', this.navigatingHandler);
+            if (this.linkClickHandler) {
+                document.removeEventListener('click', this.linkClickHandler, true);
             }
-            this.leaveCleanupDone = true;
+            if (this.livewireNavigateHandler) {
+                document.removeEventListener('livewire:navigate', this.livewireNavigateHandler);
+            }
+            if (this.popstateHandler) {
+                window.removeEventListener('popstate', this.popstateHandler);
+            }
+        },
+
+        isDirty() {
+            return this.cart.length > 0;
+        },
+
+        draftStorageKey() {
+            return 'serveo.order-entry.draft.' + this.billingGroupId;
+        },
+
+        persistDraft() {
+            if (!this.isDirty()) {
+                this.clearDraft();
+
+                return;
+            }
+
+            window.sessionStorage.setItem(this.draftStorageKey(), JSON.stringify({
+                cart: this.cart,
+                savedAt: Date.now(),
+            }));
+        },
+
+        clearDraft() {
+            window.sessionStorage.removeItem(this.draftStorageKey());
+        },
+
+        restoreDraftIfAvailable() {
+            var raw = window.sessionStorage.getItem(this.draftStorageKey());
+            if (!raw) {
+                return;
+            }
+
+            try {
+                var parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.cart) || parsed.cart.length === 0) {
+                    this.clearDraft();
+
+                    return;
+                }
+
+                this.draftToRestore = parsed;
+                this.showRestoreDraft = true;
+            } catch (error) {
+                this.clearDraft();
+            }
+        },
+
+        restoreDraft() {
+            if (!this.draftToRestore || !Array.isArray(this.draftToRestore.cart)) {
+                this.showRestoreDraft = false;
+
+                return;
+            }
+
+            this.cart = this.draftToRestore.cart;
+            this.showRestoreDraft = false;
+            this.draftToRestore = null;
+            this.persistDraft();
+        },
+
+        discardDraft() {
+            this.clearDraft();
+            this.draftToRestore = null;
+            this.showRestoreDraft = false;
+        },
+
+        requestLeave(navigation) {
+            this.pendingNavigation = navigation;
+            this.showLeaveConfirm = true;
+        },
+
+        cancelLeave() {
+            this.showLeaveConfirm = false;
+            this.pendingNavigation = null;
+        },
+
+        prepareHistoryGuard() {
+            var currentState = window.history.state || {};
+            if (currentState.__serveoOrderEntryGuard && currentState.billingGroupId === this.billingGroupId) {
+                return;
+            }
+
+            var rootState = Object.assign({}, currentState, {
+                __serveoOrderEntryRoot: true,
+                billingGroupId: this.billingGroupId,
+            });
+
+            window.history.replaceState(rootState, '', window.location.href);
+            window.history.pushState({
+                __serveoOrderEntryGuard: true,
+                billingGroupId: this.billingGroupId,
+            }, '', window.location.href);
+        },
+
+        isOrderEntryHistoryState(state) {
+            return !!(state && state.billingGroupId === this.billingGroupId && (state.__serveoOrderEntryRoot || state.__serveoOrderEntryGuard));
+        },
+
+        continueNavigation() {
+            if (!this.pendingNavigation) {
+                return;
+            }
+
+            var navigation = this.pendingNavigation;
+
+            this.allowImmediateNavigation = true;
+            this.showLeaveConfirm = false;
+            this.pendingNavigation = null;
+            this.clearDraft();
+            this.cleanupLeaveGuards();
+
+            if (navigation.type === 'url') {
+                window.location.assign(navigation.url);
+
+                return;
+            }
+
+            if (navigation.type === 'history-back') {
+                window.history.go(navigation.steps || -1);
+            }
         },
 
         handleBack() {
-            if (this.cart.length > 0) {
-                this.showLeaveConfirm = true;
-            } else {
-                window.history.back();
+            if (this.isDirty()) {
+                this.requestLeave({ type: 'history-back', steps: -2 });
+
+                return;
             }
+
+            this.allowImmediateNavigation = true;
+            this.cleanupLeaveGuards();
+            window.history.go(-2);
         },
 
         discardAndLeave() {
-            this.cleanupLeaveGuards();
-            window.history.back();
+            this.continueNavigation();
+        },
+
+        handleOrderSubmitted() {
+            this.cart = [];
+            this.clearDraft();
+        },
+
+        get restoreDraftItemCount() {
+            if (!this.draftToRestore || !Array.isArray(this.draftToRestore.cart)) {
+                return 0;
+            }
+
+            return this.draftToRestore.cart.reduce(function (sum, item) {
+                return sum + item.quantity;
+            }, 0);
         },
 
         get filteredItems() {
@@ -858,6 +1139,8 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                 });
             }
 
+            this.persistDraft();
+
             this.closeModal();
         },
 
@@ -879,6 +1162,8 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                     note: null,
                 });
             }
+
+            this.persistDraft();
         },
 
         addToCartSimple(menuItem) {
@@ -899,10 +1184,13 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                     note: null,
                 });
             }
+
+            this.persistDraft();
         },
 
         increment(index) {
             this.cart[index].quantity++;
+            this.persistDraft();
         },
 
         decrement(index) {
@@ -911,6 +1199,8 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             } else {
                 this.cart.splice(index, 1);
             }
+
+            this.persistDraft();
         },
 
         openNoteModal(index) {
@@ -947,6 +1237,7 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
             }
 
             this.closeNoteModal();
+            this.persistDraft();
         },
 
         deleteNote(index) {
@@ -965,6 +1256,8 @@ function orderEntry(menuItems, menuCategories, defaultCategoryId) {
                 this.cart[mergeIdx].quantity += item.quantity;
                 this.cart.splice(index, 1);
             }
+
+            this.persistDraft();
         },
 
         selectCategory(id) {
