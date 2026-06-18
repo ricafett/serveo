@@ -276,15 +276,16 @@ it('shows error for negative amount', function () {
     expect(CashMovement::count())->toBe(0);
 });
 
-it('shows error for empty label', function () {
+it('allows recording a movement with an empty label', function () {
     Livewire::test(CashDrawerIndex::class)
         ->set('movementType', 'CASH_IN')
         ->set('movementAmount', 50.00)
         ->set('movementLabel', '')
         ->call('recordMovement')
-        ->assertSet('errorMessage', fn ($v) => $v !== null);
+        ->assertSet('successMessage', 'Movement recorded successfully.');
 
-    expect(CashMovement::count())->toBe(0);
+    expect(CashMovement::count())->toBe(1);
+    expect(CashMovement::first()?->label)->toBe('');
 });
 
 it('prevents duplicate submission via isSubmitting guard', function () {
