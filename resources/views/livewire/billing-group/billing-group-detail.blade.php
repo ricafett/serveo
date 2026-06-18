@@ -4,6 +4,15 @@
         releaseModal: @entangle('showReleaseModal'),
         voidModal: @entangle('showVoidModal'),
     }"
+    x-init="
+        const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+        if (window.__serveoPendingReturnNavigation?.url === currentUrl) {
+            $wire.refreshData();
+            window.__serveoPendingReturnNavigation = null;
+        }
+    "
+    @pageshow.window="if ($event.persisted) { $wire.refreshData() }"
+    @serveo:return-navigation.window="$wire.refreshData()"
     wire:poll.10s="refreshData">
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}

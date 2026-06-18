@@ -32,6 +32,25 @@
 
         // Listen for theme changes from Livewire toggle so the DOM updates immediately
         document.addEventListener('livewire:init', () => {
+            let lastNavigationContext = null;
+
+            const dispatchReturnNavigation = (reason) => {
+                const url = window.location.pathname + window.location.search + window.location.hash;
+                const now = Date.now();
+                const lastDispatch = window.__serveoLastReturnNavigation ?? null;
+
+                if (lastDispatch && lastDispatch.url === url && (now - lastDispatch.at) < 250) {
+                    return;
+                }
+
+                window.__serveoLastReturnNavigation = { url, at: now };
+                window.__serveoPendingReturnNavigation = { reason, url, at: now };
+
+                window.dispatchEvent(new CustomEvent('serveo:return-navigation', {
+                    detail: { reason, url },
+                }));
+            };
+
             Livewire.on('theme-changed', (event) => {
                 const theme = event.theme;
                 localStorage.setItem('theme', theme);
@@ -42,6 +61,13 @@
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
+            });
+
+            document.addEventListener('livewire:navigate', (event) => {
+                lastNavigationContext = {
+                    history: event.detail.history,
+                    cached: event.detail.cached,
+                };
             });
 
             // Re-apply theme after every wire:navigate SPA navigation.
@@ -55,6 +81,18 @@
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.classList.remove('dark');
+                }
+
+                if (lastNavigationContext?.history) {
+                    dispatchReturnNavigation('history');
+                }
+
+                lastNavigationContext = null;
+            });
+
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    dispatchReturnNavigation('pageshow');
                 }
             });
         });

@@ -1,4 +1,15 @@
-<div class="p-4 sm:p-6 lg:p-8" x-data="{ createModalOpen: @entangle('showCreateModal') }" wire:poll.15s>
+<div class="p-4 sm:p-6 lg:p-8"
+    x-data="{ createModalOpen: @entangle('showCreateModal') }"
+    x-init="
+        const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+        if (window.__serveoPendingReturnNavigation?.url === currentUrl) {
+            $wire.refreshData();
+            window.__serveoPendingReturnNavigation = null;
+        }
+    "
+    @pageshow.window="if ($event.persisted) { $wire.refreshData() }"
+    @serveo:return-navigation.window="$wire.refreshData()"
+    wire:poll.15s>
     <div class="max-w-7xl mx-auto">
         {{-- Header --}}
         <div class="mb-6">
