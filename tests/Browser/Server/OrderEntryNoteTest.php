@@ -35,13 +35,16 @@ beforeEach(function () {
 
 function loginAndOpenOrderEntry(Browser $browser, int $groupId): Browser
 {
-    return $browser->visit('/login')
+    $browser->visit('/login')
         ->waitForText('Sign In', 10)
         ->type('username', test()->server->username)
         ->type('password', 'secret')
         ->press('Sign In')
-        ->waitForText('Dashboard', 10)
-        ->visit("/orders/new/{$groupId}")
+        ->waitForText('Dashboard', 10);
+
+    $browser->script('window.sessionStorage.clear(); window.localStorage.clear();');
+
+    return $browser->visit("/orders/new/{$groupId}")
         ->waitForText('Order Entry', 10);
 }
 
