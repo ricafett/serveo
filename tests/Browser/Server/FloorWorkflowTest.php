@@ -9,6 +9,11 @@ use App\Models\ServiceSession;
 use App\Models\Venue;
 use Laravel\Dusk\Browser;
 
+function clearOperationalStorage(Browser $browser): void
+{
+    $browser->script('window.sessionStorage.clear(); window.localStorage.clear();');
+}
+
 beforeEach(function () {
     $this->scenario = $this->scenario();
     $this->server = makeUser('SERVER');
@@ -163,5 +168,75 @@ test('floor redirects to dashboard when no open session', function () {
             ->waitForText('Dashboard', 5)
             ->visit('/floor')
             ->waitForText('No open service session', 5);
+    });
+});
+
+test('billing group detail refreshes immediately on history return', function () {
+    $group = app(BillingGroupService::class)->open($this->scenario, $this->server);
+    app(OccupancyService::class)->assignZone($group, $this->row, 1, 5, $this->server);
+    $cashier = makeUser('CASHIER');
+
+    $this->browse(function (Browser $browser) use ($group, $cashier) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearOperationalStorage($browser);
+
+        $browser->visit("/billing-groups/{$group->id}")
+            ->waitForText('Add Order', 5)
+            ->visit("/orders/new/{$group->id}")
+            ->waitForText('Order Entry', 5);
+
+        app(BillingGroupService::class)->close($group->fresh(), $cashier);
+
+        $browser->script('window.history.back()');
+
+        $browser->waitForText('Closed', 5)
+            ->assertDontSee('Add Order');
+    });
+});
+
+test('floor refreshes immediately on history return', function () {
+    $group = app(BillingGroupService::class)->open($this->scenario, $this->server);
+    app(OccupancyService::class)->assignZone($group, $this->row, 1, 5, $this->server);
+    $cashier = makeUser('CASHIER');
+
+    $this->browse(function (Browser $browser) use ($group, $cashier) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearOperationalStorage($browser);
+
+        $browser->visit('/floor')
+            ->waitForText('Floor', 5)
+            ->assertSee($group->display_code);
+
+        $initialOpenGroupCount = (int) $browser->script("const badge = document.querySelector('div.mt-8 h2 span'); return badge ? badge.textContent.trim() : '0';")[0];
+
+        $browser->visit("/billing-groups/{$group->id}")
+            ->waitForText('Add Order', 5);
+
+        app(BillingGroupService::class)->close($group->fresh(), $cashier);
+
+        $browser->script('window.history.back()');
+
+        $browser->waitForText('Floor', 5)
+            ->waitUsing(5, 100, function () use ($browser, $initialOpenGroupCount) {
+                $currentCount = (int) $browser->script("const badge = document.querySelector('div.mt-8 h2 span'); return badge ? badge.textContent.trim() : '0';")[0];
+
+                return $currentCount === ($initialOpenGroupCount - 1);
+            }, 'Open billing group count did not decrease after return refresh');
     });
 });
