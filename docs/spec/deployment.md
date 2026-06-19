@@ -112,6 +112,61 @@ NULL_PRINTER_DUMP=storage/app/print-jobs   # path used by NullAdapter
 production deployment must use Redis so the `worker` container picks up the
 `prints` queue.
 
+## 4.1 PHP-FPM and Opcache runtime tuning
+
+The production app image ships with an explicit PHP-FPM pool override and
+production-oriented Opcache settings.
+
+### PHP-FPM pool
+
+The `app` container runs PHP-FPM with:
+
+```ini
+pm = dynamic
+pm.max_children = 24
+pm.start_servers = 8
+pm.min_spare_servers = 8
+pm.max_spare_servers = 16
+pm.max_requests = 1000
+```
+
+These values are sized for a dedicated host with moderate concurrent operator
+load and are intended to avoid the stock Docker image defaults becoming the
+bottleneck under Livewire request bursts.
+
+### Opcache
+
+Production uses:
+
+```ini
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+opcache.revalidate_freq=0
+opcache.enable_file_override=1
+zend.assertions=-1
+realpath_cache_size=16384K
+realpath_cache_ttl=600
+```
+
+`opcache.validate_timestamps=0` means code changes are **not** detected
+automatically after the container starts. In production, new code requires a
+container rebuild/redeploy or restart.
+
+### Development override
+
+`docker-compose.dev.yml` mounts a dev-only ini override for the PHP containers
+that restores:
+
+```ini
+opcache.validate_timestamps=1
+opcache.revalidate_freq=0
+```
+
+This keeps local source-code edits visible without rebuilding the image while
+preserving the production runtime defaults in the base image.
+
 ## 5. Migrations, seeding, and assets
 
 ```bash
@@ -249,6 +304,11 @@ docker compose restart worker scheduler
 
 - [ ] Change all seeded passwords; remove unused seed users.
 - [ ] Set `APP_DEBUG=false`, generate fresh `APP_KEY`.
+- [ ] Verify the dedicated host memory budget still supports the baked-in
+      PHP-FPM pool (`pm.max_children = 24`) after any major dependency or
+      workload change.
+- [ ] Redeploy or restart the `app` container after every production code
+      change; Opcache timestamp validation is disabled by design.
 - [ ] Put nginx behind TLS (e.g. Caddy or an upstream LB with Let's Encrypt).
 - [ ] Restrict the Postgres and Redis ports to the internal network
       (`expose:` instead of `ports:` once the app no longer needs host access).
