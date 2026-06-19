@@ -34,6 +34,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY docker/app/php-fpm.conf /usr/local/etc/php-fpm.d/zz-serveo.conf
+COPY docker/app/php.ini /usr/local/etc/php/conf.d/zz-serveo.ini
+
 RUN groupadd -g ${WWWGROUP} serveo \
     && useradd -m -u ${WWWUSER} -g serveo -s /bin/bash serveo
 

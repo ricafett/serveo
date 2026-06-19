@@ -13,13 +13,46 @@ services:
       LOG_LEVEL: debug
     volumes:
       - .:/var/www/html
+      - ./docker/app/php.dev.ini:/usr/local/etc/php/conf.d/zzz-serveo-dev.ini:ro
 
   web:
     volumes:
       - .:/var/www/html
       - ./docker/web:/etc/nginx/conf.d:ro
 
-  worker:
+  worker-default-1:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  worker-prints-1:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  worker-prints-2:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  worker-prints-3:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - .:/var/www/html
+
+  worker-prints-4:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
