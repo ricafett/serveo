@@ -25,10 +25,8 @@ fi
 
 # ── Determine container role ─────────────────────────────────────────
 #   Workers (queue:work) → skip DB setup, exec immediately.
-#   Scheduler ("scheduler") → full DB setup → native scheduler loop.
+#   Scheduler ("scheduler") → skip DB setup → native scheduler loop.
 #   App (no args) → full DB setup → php-fpm.
-
-SCHEDULER_MODE=""
 
 case "$*" in
     *queue:work*)
@@ -37,14 +35,18 @@ case "$*" in
         exec "$@"
         ;;
     *scheduler*)
-        echo "[entrypoint] Scheduler container detected — running DB setup first."
-        SCHEDULER_MODE="1"
+        echo "[entrypoint] Scheduler container detected — waiting for app bootstrap via compose health dependency."
+        echo "[entrypoint] Starting scheduler loop..."
+        while true; do
+            php artisan schedule:run --no-interaction
+            sleep 60
+        done
         ;;
 esac
 
-# ── App / scheduler container: full DB setup ──────────────────────────
+# ── App container: full DB setup ──────────────────────────────────────
 
-echo "[entrypoint] App/scheduler container — running DB setup."
+echo "[entrypoint] App container — running DB setup."
 
 # Wait for PostgreSQL
 echo "[entrypoint] Waiting for database (host=$DB_HOST:$DB_PORT)..."
@@ -61,7 +63,7 @@ done
 echo "[entrypoint] Database is ready."
 
 echo "[entrypoint] Running migrations..."
-php artisan migrate --force
+php artisan migrate --force --isolated
 
 echo "[entrypoint] Seeding permissions and roles..."
 php artisan db:seed --class=RolePermissionSeeder --force
@@ -130,13 +132,5 @@ else
     rm -f public/debug.php 2>/dev/null || true
 fi
 
-if [ -n "$SCHEDULER_MODE" ]; then
-    echo "[entrypoint] Starting scheduler loop..."
-    while true; do
-        php artisan schedule:run --no-interaction
-        sleep 60
-    done
-else
-    echo "[entrypoint] Starting php-fpm..."
-    exec php-fpm
-fi
+echo "[entrypoint] Starting php-fpm..."
+exec php-fpm

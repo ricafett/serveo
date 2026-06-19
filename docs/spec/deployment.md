@@ -15,7 +15,7 @@ ESC/POS printers and a USB print agent.
 | `postgres`  | PostgreSQL 16 — primary data store                  |
 | `redis`     | Redis 7 — queue backend (`prints` queue + default)  |
 | `worker`    | `php artisan queue:work redis` (prints,default)     |
-| `scheduler` | Loops `php artisan schedule:run` every 60 seconds   |
+| `scheduler` | Loops `php artisan schedule:run` every 60 seconds; waits for `app` bootstrap |
 
 The kitchen and bar are non-interactive in MVP: they only receive printed
 production tickets. Customer bills are printed only on cashier-assigned
@@ -62,9 +62,8 @@ docker compose exec app composer install --no-dev --optimize-autoloader
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan storage:link
 
-# 4. Apply migrations and seed reference data
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan db:seed --force
+# 4. Wait for app bootstrap (migrations, seed, optimize) to complete
+docker compose ps
 
 # 5. Visit the admin
 open http://localhost:8080/admin/login
@@ -117,7 +116,7 @@ production deployment must use Redis so the `worker` container picks up the
 
 ```bash
 # Migrations only (no seed) on a managed Postgres
-docker compose exec app php artisan migrate --force
+docker compose exec app php artisan migrate --force --isolated
 
 # Optimise framework caches for production
 docker compose exec app php artisan config:cache
@@ -195,6 +194,9 @@ convenient for QA and is what the test suite exercises.
 
 - **Postgres**: snapshot the `serveo_pgdata` volume daily and retain at least
   7 days. Use `pg_dump -Fc` for off-site copies.
+- **Config backups**: include admin/config reference data only. They must not
+  include the `migrations` table; restore validation should reject any config
+  backup that contains migration bookkeeping or operational tables.
 - **Redis**: durable AOF is enabled; the `serveo_redisdata` volume contains
   ephemeral queue state — losing it loses pending print jobs only (which
   cashiers can re-trigger from the UI).
@@ -217,8 +219,9 @@ docker compose exec app php artisan tinker
 docker compose exec app ./vendor/bin/pest
 
 # Run migrations on a hot deploy
-docker compose exec app php artisan migrate --force \
-  && docker compose restart app worker scheduler
+docker compose exec app php artisan migrate --force --isolated \
+  && docker compose restart app \
+  && docker compose restart worker scheduler
 ```
 
 ### Common incidents
@@ -236,9 +239,10 @@ docker compose exec app php artisan migrate --force \
 git pull
 docker compose build app worker scheduler
 docker compose exec app composer install --no-dev --optimize-autoloader
-docker compose exec app php artisan migrate --force
+docker compose exec app php artisan migrate --force --isolated
 docker compose exec app php artisan config:cache view:cache route:cache
-docker compose restart app worker scheduler
+docker compose restart app
+docker compose restart worker scheduler
 ```
 
 ## 10. Production hardening checklist
