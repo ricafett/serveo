@@ -6,6 +6,7 @@ use App\Models\Backup;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class BackupService
@@ -35,7 +36,6 @@ class BackupService
         'printer_routes',
         'cashier_printer_assignments',
         // Parent tables
-        'migrations',
         'settings',
         'billing_statuses',
         'menu_items',
@@ -130,12 +130,15 @@ class BackupService
      */
     public function restore(string $filePath, string $backupType): void
     {
-        $params = $this->dbConnectionParams();
         $absolutePath = Storage::disk('local')->path($filePath);
 
         if (! file_exists($absolutePath)) {
             throw new RuntimeException("Backup file not found: {$filePath}");
         }
+
+        $this->assertImportCompatible($filePath, $backupType);
+
+        $params = $this->dbConnectionParams();
 
         $isCustomFormat = $this->isCustomFormatDump($absolutePath);
         $env = $this->pgDumpEnv();
@@ -160,6 +163,41 @@ class BackupService
             $output = trim($result->output());
 
             throw new RuntimeException('Restore failed: ' . ($error !== '' ? $error : ($output !== '' ? $output : 'restore command returned a non-zero exit code.')));
+        }
+    }
+
+    /**
+     * Ensure uploaded backups are compatible with the selected restore mode
+     * before changing any live database state.
+     *
+     * @throws RuntimeException
+     */
+    public function assertImportCompatible(string $filePath, string $backupType): void
+    {
+        if ($backupType !== 'config') {
+            return;
+        }
+
+        $absolutePath = Storage::disk('local')->path($filePath);
+
+        if (! file_exists($absolutePath)) {
+            throw new RuntimeException("Backup file not found: {$filePath}");
+        }
+
+        $tables = $this->extractBackupTables($absolutePath);
+
+        if ($tables === []) {
+            throw new RuntimeException('Config backup validation failed: unable to inspect backup table contents before restore.');
+        }
+
+        if (in_array('migrations', $tables, true)) {
+            throw new RuntimeException('Config backup validation failed: this backup contains the migrations table, which is no longer allowed because it can desynchronize live schema bookkeeping.');
+        }
+
+        $unexpectedTables = array_values(array_diff($tables, self::CONFIG_TABLES));
+
+        if ($unexpectedTables !== []) {
+            throw new RuntimeException('Config backup validation failed: this backup contains non-config tables: '.implode(', ', $unexpectedTables).'.');
         }
     }
 
@@ -292,6 +330,66 @@ class BackupService
             '--single-transaction',
             '--set=ON_ERROR_STOP=1',
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function extractBackupTables(string $path): array
+    {
+        if ($this->isCustomFormatDump($path)) {
+            return $this->extractCustomFormatTables($path);
+        }
+
+        return $this->extractPlainSqlTables($path);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function extractCustomFormatTables(string $path): array
+    {
+        $result = Process::timeout(60)->run([
+            'pg_restore',
+            '--list',
+            $path,
+        ]);
+
+        if (! $result->successful()) {
+            throw new RuntimeException('Config backup validation failed: pg_restore --list could not inspect the uploaded backup.');
+        }
+
+        preg_match_all('/TABLE DATA\s+\S+\s+(\S+)/', $result->output(), $matches);
+
+        return $this->normalizeTableNames($matches[1] ?? []);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function extractPlainSqlTables(string $path): array
+    {
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            throw new RuntimeException('Config backup validation failed: unable to read the uploaded backup file.');
+        }
+
+        preg_match_all('/(?:COPY|INSERT\s+INTO)\s+(?:public\.)?"?([a-zA-Z0-9_]+)"?/i', $contents, $matches);
+
+        return $this->normalizeTableNames($matches[1] ?? []);
+    }
+
+    /**
+     * @param array<int, string> $tables
+     * @return list<string>
+     */
+    protected function normalizeTableNames(array $tables): array
+    {
+        return array_values(array_unique(array_map(
+            static fn (string $table): string => Str::of($table)->trim('"')->lower()->value(),
+            array_filter($tables, static fn (string $table): bool => $table !== '')
+        )));
     }
 
     /**

@@ -23,11 +23,12 @@ beforeEach(function () {
 it('stores uploaded backups as uploaded before dispatching restore', function () {
     Queue::fake();
     Storage::disk('local')->put('backups/upload/01JXWXYZABCDEF.dump', 'fake dump content');
+    Process::fake();
 
     Livewire::actingAs($this->admin)
         ->test(ImportBackup::class)
         ->set('data.backup_file', ['backups/upload/01JXWXYZABCDEF.dump'])
-        ->set('data.backup_file_name', 'serveo_config_20260616_225146.dump')
+        ->set('data.backup_file_name', 'serveo_full_20260616_225146.dump')
         ->call('submit');
 
     Queue::assertPushed(RestoreBackupJob::class);
@@ -35,7 +36,7 @@ it('stores uploaded backups as uploaded before dispatching restore', function ()
     $backup = Backup::query()->sole();
 
     expect($backup->backup_status)->toBe('UPLOADED')
-        ->and($backup->backup_type)->toBe('config')
+        ->and($backup->backup_type)->toBe('full')
         ->and($backup->file_name)->toStartWith('backups/import_');
 
     Storage::disk('local')->assertExists($backup->file_name);
@@ -78,4 +79,48 @@ it('throws when restore command exits unsuccessfully without postgres error toke
 
     expect(fn () => app(BackupService::class)->restore('backups/import_test.dump', 'full'))
         ->toThrow(\RuntimeException::class, 'Restore failed: WARNING: errors ignored on restore: 1');
+});
+
+it('config backup generation excludes migrations table', function () {
+    expect(BackupService::CONFIG_TABLES)->not->toContain('migrations');
+});
+
+it('rejects config restore when uploaded dump includes migrations table', function () {
+    Storage::disk('local')->put('backups/import_test.dump', 'PGDMPfake dump');
+
+    Process::fake([
+        '*' => Process::result('123; 0 0 TABLE DATA public migrations serveo\n124; 0 0 TABLE DATA public users serveo\n', '', 0),
+    ]);
+
+    expect(fn () => app(BackupService::class)->restore('backups/import_test.dump', 'config'))
+        ->toThrow(\RuntimeException::class, 'Config backup validation failed: this backup contains the migrations table, which is no longer allowed because it can desynchronize live schema bookkeeping.');
+});
+
+it('rejects config restore when uploaded dump includes non config tables', function () {
+    Storage::disk('local')->put('backups/import_test.dump', 'PGDMPfake dump');
+
+    Process::fake([
+        '*' => Process::result('123; 0 0 TABLE DATA public cash_movements serveo\n124; 0 0 TABLE DATA public users serveo\n', '', 0),
+    ]);
+
+    expect(fn () => app(BackupService::class)->restore('backups/import_test.dump', 'config'))
+        ->toThrow(\RuntimeException::class, 'Config backup validation failed: this backup contains non-config tables: cash_movements.');
+});
+
+it('blocks invalid config backup uploads before dispatching restore', function () {
+    Queue::fake();
+    Storage::disk('local')->put('backups/upload/invalid_config.dump', 'PGDMPfake dump');
+
+    Process::fake([
+        'pg_restore' => Process::result('123; 0 0 TABLE DATA public migrations serveo\n124; 0 0 TABLE DATA public users serveo\n', '', 0),
+    ]);
+
+    Livewire::actingAs($this->admin)
+        ->test(ImportBackup::class)
+        ->set('data.backup_file', ['backups/upload/invalid_config.dump'])
+        ->set('data.backup_file_name', 'serveo_config_20260616_225146.dump')
+        ->call('submit');
+
+    Queue::assertNothingPushed();
+    expect(Backup::count())->toBe(0);
 });

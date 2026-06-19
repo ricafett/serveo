@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BackupResource\Pages;
 
+use App\Domain\Backup\BackupService;
 use App\Filament\Resources\BackupResource;
 use App\Jobs\RestoreBackupJob;
 use App\Models\Backup;
@@ -10,8 +11,10 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ImportBackup extends Page
 {
@@ -71,6 +74,20 @@ class ImportBackup extends Page
         // Move file from temp upload to backups directory
         $targetPath = 'backups/import_' . now()->format('Ymd_His') . '_' . basename($fileName);
         Storage::disk('local')->move($fileName, $targetPath);
+
+        try {
+            App::make(BackupService::class)->assertImportCompatible($targetPath, $backupType);
+        } catch (RuntimeException $e) {
+            Storage::disk('local')->delete($targetPath);
+
+            Notification::make()
+                ->title(__('app.error'))
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         $absolutePath = Storage::disk('local')->path($targetPath);
         $fileSize = file_exists($absolutePath) ? filesize($absolutePath) : null;
