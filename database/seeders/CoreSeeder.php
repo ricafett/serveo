@@ -17,7 +17,7 @@ class CoreSeeder extends Seeder
      * Existing deployments with a lower version will re-run the seeder.
      * Set env CORE_SEED_FRESH=true to force re-seed regardless of version.
      */
-    private const SEED_VERSION = 19;
+    private const SEED_VERSION = 20;
 
     public function run(): void
     {
@@ -1142,8 +1142,8 @@ class CoreSeeder extends Seeder
             ['pt-PT', 'app', 'backup_type_help', 'Cópia de configuração exporta apenas dados de referência configurados pelo admin. Cópia completa exporta tudo.'],
             ['pt-PT', 'app', 'backup_import', 'Importar cópia de segurança'],
             ['pt-PT', 'app', 'backup_file', 'Ficheiro de cópia'],
-            ['pt-PT', 'app', 'backup_file_help', 'Carregue um ficheiro .dump de uma exportação anterior.'],
-            ['pt-PT', 'app', 'backup_import_warning', 'Restaurar uma cópia de segurança irá SOBREPOR os dados existentes. Para cópias de configuração, apenas as tabelas de configuração são afetadas. Para cópias completas, toda a base de dados é substituída. Esta operação não pode ser desfeita.'],
+            ['pt-PT', 'app', 'backup_file_help', 'Carregue um ficheiro .dump de uma exportação anterior. As cópias de configuração têm de vir de uma versão compatível do Serveo e não podem incluir o registo de migrações.'],
+            ['pt-PT', 'app', 'backup_import_warning', 'Restaurar uma cópia de segurança irá SOBREPOR os dados existentes. As cópias de configuração afetam apenas tabelas de configuração e são validadas antes do restauro; cópias que incluam o registo de migrações ou tabelas operacionais são rejeitadas. As cópias completas substituem toda a base de dados. Esta operação não pode ser desfeita.'],
             ['pt-PT', 'app', 'backup_restore_start', 'Restaurar cópia de segurança'],
             ['pt-PT', 'app', 'backup_restore_dispatched', 'Restauro em fila'],
             ['pt-PT', 'app', 'backup_restore_dispatched_body', 'O restauro da cópia de segurança foi colocado em fila e será processado em segundo plano.'],
@@ -1232,8 +1232,8 @@ class CoreSeeder extends Seeder
             ['en-US', 'app', 'backup_type_help', 'Config backup exports only admin-configured reference data. Full backup exports everything.'],
             ['en-US', 'app', 'backup_import', 'Import Backup'],
             ['en-US', 'app', 'backup_file', 'Backup File'],
-            ['en-US', 'app', 'backup_file_help', 'Upload a .dump file from a previous backup export.'],
-            ['en-US', 'app', 'backup_import_warning', 'Restoring a backup will OVERWRITE existing data. For config backups, only configuration tables are affected. For full backups, the entire database is replaced. This operation cannot be undone.'],
+            ['en-US', 'app', 'backup_file_help', 'Upload a .dump file from a previous backup export. Config backups must come from a compatible Serveo version and must not contain migration bookkeeping.'],
+            ['en-US', 'app', 'backup_import_warning', 'Restoring a backup will OVERWRITE existing data. Config backups affect configuration tables only and are validated before restore; backups that contain migration bookkeeping or operational tables are rejected. Full backups replace the entire database. This operation cannot be undone.'],
             ['en-US', 'app', 'backup_restore_start', 'Restore Backup'],
             ['en-US', 'app', 'backup_restore_dispatched', 'Restore queued'],
             ['en-US', 'app', 'backup_restore_dispatched_body', 'The backup restore has been queued and will be processed in the background.'],
