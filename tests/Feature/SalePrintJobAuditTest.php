@@ -124,7 +124,7 @@ it('emits SALE_RECEIPT_PRINTED on successful sale receipt print', function () {
         ->and($document->refresh()->document_status)->toBe('PRINTED');
 });
 
-it('prints a voucher batch once for multiple voucher documents', function () {
+it('prints voucher batch documents individually without using duplicate-copy batching', function () {
     Auth::login($this->cashier);
 
     $documents = collect([
@@ -165,7 +165,15 @@ it('prints a voucher batch once for multiple voucher documents', function () {
     ]);
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
-    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
+    $registry->shouldReceive('sendPayloadBatch')
+        ->once()
+        ->withArgs(function (Printer $printer, array $payloads) use ($documents) {
+            return $printer->is($this->printer)
+                && count($payloads) === $documents->count()
+                && collect($payloads)->every(fn (string $payload) => str_contains($payload, 'Bacalhau'));
+        })
+        ->andReturn(PrintResult::ok('OK'));
+    $registry->shouldReceive('send')->never();
     $registry->shouldReceive('sendBatch')->never();
 
     (new DispatchPrintJob($job->id))->handle($registry);

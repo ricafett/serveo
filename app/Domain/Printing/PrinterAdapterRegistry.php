@@ -169,6 +169,74 @@ class PrinterAdapterRegistry
     }
 
     /**
+     * Send multiple distinct payloads to a printer while holding the
+     * per-printer lock for the whole sequence. Each payload is sent through
+     * the adapter individually so printer-side cut behavior still happens once
+     * per payload, while other jobs cannot interleave between documents.
+     *
+     * @param  array<int, string>  $payloads
+     */
+    public function sendPayloadBatch(Printer $printer, array $payloads): PrintResult
+    {
+        if ($payloads === []) {
+            return PrintResult::ok('No payloads requested');
+        }
+
+        $lockKey = self::lockKey($printer);
+
+        try {
+            $lock = Cache::lock($lockKey, self::LOCK_TTL);
+
+            if (! $lock->get()) {
+                return PrintResult::contended("Printer {$printer->id} busy — lock held by another worker");
+            }
+
+            try {
+                $adapter = $this->for($printer);
+
+                foreach (array_values($payloads) as $index => $payload) {
+                    $result = $adapter->send($printer, $payload);
+
+                    if (! $result->success) {
+                        $position = $index + 1;
+                        $count = count($payloads);
+
+                        return PrintResult::fail("Batch payload {$position} of {$count} failed: ".$result->message);
+                    }
+                }
+
+                $count = count($payloads);
+
+                return PrintResult::ok("Sent {$count} payloads to printer {$printer->id}");
+            } finally {
+                $lock->release();
+            }
+        } catch (Throwable $e) {
+            Log::warning('Printer lock unavailable during multi-payload batch, printing unlocked', [
+                'printer_id' => $printer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $adapter = $this->for($printer);
+
+            foreach (array_values($payloads) as $index => $payload) {
+                $result = $adapter->send($printer, $payload);
+
+                if (! $result->success) {
+                    $position = $index + 1;
+                    $count = count($payloads);
+
+                    return PrintResult::fail("Batch payload {$position} of {$count} failed: ".$result->message);
+                }
+            }
+
+            $count = count($payloads);
+
+            return PrintResult::ok("Sent {$count} payloads to printer {$printer->id}");
+        }
+    }
+
+    /**
      * Send a cash-drawer kick pulse to a printer, serializing access via
      * the same per-printer lock used by send(). If the lock is held,
      * returns a contended result immediately so the caller can re-dispatch.

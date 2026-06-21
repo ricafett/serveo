@@ -315,7 +315,7 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         $documents = SaleDocument::whereIn('id', $documentIds)->get();
-        $payload = '';
+        $payloads = [];
         $renderer = new TicketRenderer(
             charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
@@ -324,7 +324,7 @@ class DispatchPrintJob implements ShouldQueue
 
         foreach ($documents as $document) {
             try {
-                $payload .= $renderer->renderSaleDocument($document);
+                $payloads[] = $renderer->renderSaleDocument($document);
             } catch (Throwable $e) {
                 $job->update([
                     'status' => PrintJob::STATUS_FAILED,
@@ -334,7 +334,7 @@ class DispatchPrintJob implements ShouldQueue
             }
         }
 
-        $result = $registry->send($printer, $payload);
+        $result = $registry->sendPayloadBatch($printer, $payloads);
 
         if ($result->contended) {
             PrintJob::where('id', $job->id)
