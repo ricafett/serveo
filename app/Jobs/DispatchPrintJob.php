@@ -334,10 +334,7 @@ class DispatchPrintJob implements ShouldQueue
             }
         }
 
-        $copiesToSend = count($documents);
-        $result = $copiesToSend > 1
-            ? $registry->sendBatch($printer, $payload, $copiesToSend)
-            : $registry->send($printer, $payload);
+        $result = $registry->send($printer, $payload);
 
         if ($result->contended) {
             PrintJob::where('id', $job->id)

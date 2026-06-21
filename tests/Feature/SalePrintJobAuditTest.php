@@ -123,3 +123,54 @@ it('emits SALE_RECEIPT_PRINTED on successful sale receipt print', function () {
     expect(AuditEvent::where('event_type', 'SALE_RECEIPT_PRINTED')->where('sale_document_id', $document->id)->exists())->toBeTrue()
         ->and($document->refresh()->document_status)->toBe('PRINTED');
 });
+
+it('prints a voucher batch once for multiple voucher documents', function () {
+    Auth::login($this->cashier);
+
+    $documents = collect([
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0002',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0003',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+    ]);
+
+    $job = PrintJob::create([
+        'job_kind' => PrintJob::KIND_SALE_VOUCHER_BATCH,
+        'printable_type' => SaleDocument::class,
+        'printable_id' => 0,
+        'printer_id' => $this->printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 4,
+        'requested_by_user_id' => $this->cashier->id,
+        'payload' => ['document_ids' => $documents->pluck('id')->all()],
+    ]);
+
+    $registry = Mockery::mock(PrinterAdapterRegistry::class);
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
+    $registry->shouldReceive('sendBatch')->never();
+
+    (new DispatchPrintJob($job->id))->handle($registry);
+
+    expect($job->refresh()->status)->toBe(PrintJob::STATUS_PRINTED)
+        ->and($documents->every(fn (SaleDocument $document) => $document->fresh()->document_status === 'PRINTED'))
+        ->toBeTrue();
+});
