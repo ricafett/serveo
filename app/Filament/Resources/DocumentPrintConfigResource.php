@@ -108,6 +108,7 @@ class DocumentPrintConfigResource extends BaseResource
                         'BILL' => __('app.document_type_bill'),
                         'SALE_VOUCHER' => __('app.document_type_sale_voucher'),
                         'SALE_RECEIPT' => __('app.document_type_sale_receipt'),
+                        'SERVER_ORDER' => __('app.document_type_server_order'),
                         default => $state,
                     }),
                 Tables\Columns\TextColumn::make('fulfillment_route')

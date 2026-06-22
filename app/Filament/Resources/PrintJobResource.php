@@ -49,7 +49,19 @@ class PrintJobResource extends BaseResource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('job_kind')->badge(),
+                Tables\Columns\TextColumn::make('job_kind')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'PRODUCTION_TICKET' => __('app.job_kind_production_ticket'),
+                        'BILL' => __('app.job_kind_bill'),
+                        'SALE_VOUCHER' => __('app.job_kind_sale_voucher'),
+                        'SALE_RECEIPT' => __('app.job_kind_sale_receipt'),
+                        'SERVER_ORDER' => __('app.job_kind_server_order'),
+                        'CASHIER_TOTALS' => __('app.job_kind_cashier_totals'),
+                        'SESSION_TOTALS' => __('app.job_kind_session_totals'),
+                        'INVENTORY_MOVEMENTS' => __('app.job_kind_inventory_movements'),
+                        default => $state,
+                    }),
                 Tables\Columns\TextColumn::make('printer.name')->label(__('app.printer')),
                 Tables\Columns\TextColumn::make('status')->badge()->colors([
                     'gray' => 'PENDING',
@@ -77,6 +89,7 @@ class PrintJobResource extends BaseResource
                     'BILL' => __('app.job_kind_bill'),
                     'SALE_VOUCHER' => __('app.job_kind_sale_voucher'),
                     'SALE_RECEIPT' => __('app.job_kind_sale_receipt'),
+                    'SERVER_ORDER' => __('app.job_kind_server_order'),
                     'CASHIER_TOTALS' => __('app.job_kind_cashier_totals'),
                     'SESSION_TOTALS' => __('app.job_kind_session_totals'),
                     'INVENTORY_MOVEMENTS' => __('app.job_kind_inventory_movements'),

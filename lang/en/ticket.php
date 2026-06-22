@@ -31,6 +31,7 @@ return [
     'sale' => 'Sale',
     'voucher' => 'VOUCHER',
     'sale_receipt' => 'SALE RECEIPT',
+    'server_order' => 'SERVER ORDER',
     'items_qty' => 'Qty',
     'items_item' => 'Item',
     'items_unit_price' => 'Un. price',

@@ -6,6 +6,10 @@ use App\Domain\Printing\PrintResult;
 use App\Jobs\DispatchPrintJob;
 use App\Models\AuditEvent;
 use App\Models\BillingDocument;
+use App\Models\CashierPrinterAssignment;
+use App\Models\MenuItem;
+use App\Models\OrderHeader;
+use App\Models\OrderItem;
 use App\Models\Printer;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
@@ -147,4 +151,58 @@ it('emits PRODUCTION_TICKET_FAILED on failed production ticket print', function 
         ->and($event->billing_group_id)->toBe($this->group->id);
 
     expect($ticket->refresh()->ticket_status)->toBe('FAILED');
+});
+
+it('emits SERVER_ORDER_PRINTED on successful server order print', function () {
+    Auth::login($this->cashier);
+
+    $printer = Printer::first();
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->cashier->id, 'printer_id' => $printer->id],
+        ['is_active' => true],
+    );
+
+    $menuItem = MenuItem::where('display_name', 'Bacalhau')->firstOrFail();
+
+    $order = OrderHeader::create([
+        'billing_group_id' => $this->group->id,
+        'ordered_by_user_id' => $this->cashier->id,
+        'ordered_at' => now(),
+        'submission_status' => 'SUBMITTED',
+    ]);
+
+    OrderItem::create([
+        'order_header_id' => $order->id,
+        'menu_item_id' => $menuItem->id,
+        'quantity' => 1,
+        'unit_price' => 12.50,
+        'line_subtotal' => 12.50,
+        'fulfillment_route' => 'KITCHEN',
+        'sent_to_production_at' => now(),
+    ]);
+
+    $job = PrintJob::create([
+        'job_kind' => PrintJob::KIND_SERVER_ORDER,
+        'printable_type' => OrderHeader::class,
+        'printable_id' => $order->id,
+        'printer_id' => $printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 4,
+        'requested_by_user_id' => $this->cashier->id,
+    ]);
+
+    $registry = Mockery::mock(PrinterAdapterRegistry::class);
+    $registry->shouldReceive('send')->once()->andReturn(PrintResult::ok('OK'));
+
+    $dispatchJob = new DispatchPrintJob($job->id);
+    $dispatchJob->handle($registry);
+
+    $event = AuditEvent::where('event_type', 'SERVER_ORDER_PRINTED')
+        ->where('order_header_id', $order->id)
+        ->first();
+
+    expect($event)->not->toBeNull()
+        ->and($event->actor_user_id)->toBe($this->cashier->id)
+        ->and($event->billing_group_id)->toBe($this->group->id);
 });

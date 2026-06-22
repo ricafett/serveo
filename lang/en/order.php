@@ -48,4 +48,6 @@ return [
     'save_without_production' => 'Save without production',
     'save_without_production_help' => 'Keep this order on the billing group without printing kitchen or bar tickets yet.',
     'saved_without_production_success' => 'Order saved without sending to production.',
+    'print_server_order' => 'Print server order',
+    'print_server_order_help' => 'Print a full reference copy of this order to the cashier printer when you submit it.',
 ];

@@ -4,6 +4,7 @@ namespace App\Domain\Printing;
 
 use App\Jobs\DispatchPrintJob;
 use App\Models\BillingDocument;
+use App\Models\OrderHeader;
 use App\Models\PrintJob;
 use App\Models\ProductionTicket;
 use App\Models\SaleDocument;
@@ -75,6 +76,25 @@ class PrintQueueService
             'printable_type' => SaleDocument::class,
             'printable_id' => $document->id,
             'printer_id' => $document->printer_id,
+            'status' => PrintJob::STATUS_PENDING,
+            'attempts' => 0,
+            'max_attempts' => 4,
+            'requested_by_user_id' => $actor?->id,
+            'locale' => config('app.locale', 'pt-PT'),
+        ]);
+
+        DispatchPrintJob::dispatch($job->id)->onQueue('prints')->afterCommit();
+
+        return $job;
+    }
+
+    public function enqueueServerOrder(OrderHeader $order, int $printerId, ?User $actor = null): PrintJob
+    {
+        $job = PrintJob::create([
+            'job_kind' => PrintJob::KIND_SERVER_ORDER,
+            'printable_type' => OrderHeader::class,
+            'printable_id' => $order->id,
+            'printer_id' => $printerId,
             'status' => PrintJob::STATUS_PENDING,
             'attempts' => 0,
             'max_attempts' => 4,

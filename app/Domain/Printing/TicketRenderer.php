@@ -4,6 +4,7 @@ namespace App\Domain\Printing;
 
 use App\Models\BillingDocument;
 use App\Models\DocumentPrintConfig;
+use App\Models\OrderHeader;
 use App\Models\OrderItem;
 use App\Models\ProductionTicket;
 use App\Models\SaleDocument;
@@ -344,6 +345,48 @@ class TicketRenderer
         $lines[] = str_repeat('-', $this->width());
         $left = sprintf('%2dx %s', $quantity, mb_strimwidth($itemName, 0, 28));
         $lines[] = mb_strimwidth($left, 0, $this->width());
+
+        return $this->wrap(implode("\n", $lines)."\n");
+    }
+
+    public function renderServerOrder(OrderHeader $order): string
+    {
+        $order->loadMissing(['billingGroup.occupiedZones.row.section', 'occupiedZone.row.section', 'items.menuItem', 'orderedBy']);
+
+        $lines = [];
+
+        $this->appendBrandingHeader($lines);
+
+        $lines[] = $this->center(__('ticket.server_order'));
+        $lines[] = str_repeat('=', $this->width());
+        $lines[] = __('ticket.group').': '.($order->billingGroup?->display_code ?? '-');
+
+        if ($order->occupiedZone) {
+            $lines[] = __('ticket.zone').': '.$order->occupiedZone->rangeLabel();
+        }
+
+        $lines[] = __('ticket.order_num').' #'.$order->id;
+        $lines[] = __('ticket.time').':  '.$this->localTime($order->ordered_at);
+
+        if ($order->orderedBy) {
+            $lines[] = __('ticket.server').': '.$order->orderedBy->name;
+        }
+
+        if ($order->notes) {
+            $lines[] = __('ticket.notes').': '.$order->notes;
+        }
+
+        $lines[] = str_repeat('-', $this->width());
+
+        foreach ($order->items as $item) {
+            $lines[] = sprintf('%2dx %s', $item->quantity, mb_strimwidth($this->buildItemName($item), 0, $this->width() - 4));
+
+            if ($item->note) {
+                $lines[] = '   -- '.$item->note;
+            }
+        }
+
+        $lines[] = str_repeat('=', $this->width());
 
         return $this->wrap(implode("\n", $lines)."\n");
     }

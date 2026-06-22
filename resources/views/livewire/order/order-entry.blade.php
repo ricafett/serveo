@@ -332,6 +332,16 @@
                         <textarea id="order-notes" wire:model="notes" rows="2" class="block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-base p-3"></textarea>
                     </div>
 
+                    @if($this->showServerOrderPreference())
+                        <label for="print-server-order" class="mt-4 flex items-start gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+                            <input id="print-server-order" type="checkbox" wire:model.live="printServerOrder" class="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800">
+                            <span>
+                                <span class="block font-medium text-gray-900 dark:text-white">{{ __('order.print_server_order') }}</span>
+                                <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('order.print_server_order_help') }}</span>
+                            </span>
+                        </label>
+                    @endif
+
                 </div>
             </div>
         </div>

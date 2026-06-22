@@ -29,6 +29,8 @@ class PrintJob extends Model
 
     public const KIND_SALE_RECEIPT = 'SALE_RECEIPT';
 
+    public const KIND_SERVER_ORDER = 'SERVER_ORDER';
+
     public const KIND_SALE_VOUCHER_BATCH = 'SALE_VOUCHER_BATCH';
 
     public const KIND_CASHIER_TOTALS = 'CASHIER_TOTALS';

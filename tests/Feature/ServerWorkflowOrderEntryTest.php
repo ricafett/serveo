@@ -4,10 +4,12 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Livewire\BillingGroup\BillingGroupDetail;
 use App\Livewire\Order\OrderEntry;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\OrderHeader;
 use App\Models\PrintJob;
+use App\Models\Printer;
 use App\Models\ProductionTicket;
 use App\Models\Row;
 use App\Models\Seat;
@@ -62,6 +64,10 @@ beforeEach(function () {
 
     $this->cashier = User::factory()->create(['username' => 'testcashier', 'is_active' => true]);
     $this->cashier->assignRole('CASHIER');
+    CashierPrinterAssignment::firstOrCreate(
+        ['user_id' => $this->cashier->id, 'printer_id' => Printer::firstOrFail()->id],
+        ['is_active' => true],
+    );
 
     $this->group = app(BillingGroupService::class)->open($this->session, $this->server);
     app(OccupancyService::class)->assignZone($this->group, $this->row, 1, 5, $this->server);
@@ -321,6 +327,32 @@ it('cashier can submit order via livewire', function () {
 
     expect(OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first()->ordered_by_user_id)
         ->toBe($this->cashier->id);
+});
+
+it('persists cashier server-order print preference', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->set('printServerOrder', true)
+        ->assertSet('printServerOrder', true);
+
+    expect($this->cashier->fresh()->print_server_order)->toBeTrue();
+});
+
+it('queues a server-order print job when cashier preference is enabled', function () {
+    $this->actingAs($this->cashier);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->set('printServerOrder', true)
+        ->call('submitOrder', [cartItem($this->kitchenItem->id, 1)])
+        ->assertSet('successMessage', 'Order submitted successfully.');
+
+    $order = OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first();
+
+    expect(PrintJob::where('job_kind', PrintJob::KIND_SERVER_ORDER)
+        ->where('printable_type', OrderHeader::class)
+        ->where('printable_id', $order->id)
+        ->exists())->toBeTrue();
 });
 
 it('saves order without sending it to production via livewire', function () {

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class OrderHeader extends Model
 {
@@ -35,5 +36,10 @@ class OrderHeader extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class)->orderBy('id');
+    }
+
+    public function printJobs(): MorphMany
+    {
+        return $this->morphMany(PrintJob::class, 'printable');
     }
 }

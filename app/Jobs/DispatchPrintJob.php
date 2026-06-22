@@ -9,6 +9,7 @@ use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
 use App\Models\CashierPrinterAssignment;
 use App\Models\DocumentPrintConfig;
+use App\Models\OrderHeader;
 use App\Models\PrintJob;
 use App\Models\Printer;
 use App\Models\PrinterRoute;
@@ -147,6 +148,7 @@ class DispatchPrintJob implements ShouldQueue
                 $printable instanceof ProductionTicket => $renderer->renderProductionTicket($printable),
                 $printable instanceof BillingDocument => $renderer->renderBill($printable),
                 $printable instanceof SaleDocument => $renderer->renderSaleDocument($printable),
+                $printable instanceof OrderHeader => $renderer->renderServerOrder($printable),
                 default => throw new \LogicException('Unsupported printable: ' . $printable::class),
             };
         } catch (Throwable $e) {
@@ -247,6 +249,18 @@ class DispatchPrintJob implements ShouldQueue
                         'service_session_id' => $printable->sale?->service_session_id,
                         'sale_id' => $printable->sale_id,
                         'sale_document_id' => $printable->id,
+                        'actor_user_id' => $job->requested_by_user_id,
+                    ],
+                );
+            } elseif ($printable instanceof OrderHeader) {
+                Audit::record(
+                    'SERVER_ORDER_PRINTED',
+                    "Pedido de servente impresso para o pedido #{$printable->id}",
+                    ['printer_id' => $printer->id, 'job_id' => $job->id],
+                    [
+                        'billing_group_id' => $printable->billing_group_id,
+                        'service_session_id' => $printable->billingGroup?->service_session_id,
+                        'order_header_id' => $printable->id,
                         'actor_user_id' => $job->requested_by_user_id,
                     ],
                 );
@@ -860,6 +874,13 @@ class DispatchPrintJob implements ShouldQueue
                     'trigger_cash_drawer' => false,
                     'branding_header' => DocumentPrintConfig::defaultBrandingHeader(),
                 ],
+            );
+        }
+
+        if ($printable instanceof OrderHeader) {
+            return DocumentPrintConfig::firstOrCreate(
+                ['document_type' => PrinterRoute::DOC_SERVER_ORDER, 'fulfillment_route' => null],
+                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
             );
         }
 

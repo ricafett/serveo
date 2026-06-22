@@ -6,6 +6,7 @@ use App\Domain\Audit\Audit;
 use App\Domain\ChecksPermissions;
 use App\Domain\Printing\PrintQueueService;
 use App\Models\BillingGroup;
+use App\Models\CashierPrinterAssignment;
 use App\Models\MenuItem;
 use App\Models\OccupiedZone;
 use App\Models\OrderHeader;
@@ -47,6 +48,7 @@ class OrderService
         ?OccupiedZone $zone = null,
         ?string $notes = null,
         ?string $idempotencyKey = null,
+        bool $printServerOrder = false,
     ): OrderHeader {
         return $this->createOrder(
             $group,
@@ -56,6 +58,7 @@ class OrderService
             $notes,
             $idempotencyKey,
             self::STATUS_SUBMITTED,
+            $printServerOrder,
         );
     }
 
@@ -78,6 +81,7 @@ class OrderService
             $notes,
             $idempotencyKey,
             self::STATUS_DRAFT,
+            false,
         );
     }
 
@@ -153,6 +157,7 @@ class OrderService
         ?string $notes,
         ?string $idempotencyKey,
         string $submissionStatus,
+        bool $printServerOrder,
     ): OrderHeader {
         $this->ensureCan($actor, 'order.create');
 
@@ -190,7 +195,7 @@ class OrderService
             }
         }
 
-        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes, $idempotencyKey, $submissionStatus, $isDraft) {
+        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes, $idempotencyKey, $submissionStatus, $isDraft, $printServerOrder) {
             try {
                 $header = OrderHeader::create([
                     'billing_group_id' => $group->id,
@@ -279,6 +284,10 @@ class OrderService
 
             if (! $isDraft) {
                 $this->queueProductionTickets($header, $group, $actor, $zone, collect($createdItems));
+
+                if ($printServerOrder) {
+                    $this->queueServerOrder($header, $actor);
+                }
             }
 
             Audit::record(
@@ -719,5 +728,31 @@ class OrderService
             ->value('route_ticket_number');
 
         return $number ?: ProductionTicket::nextRouteTicketNumber($item->header->billingGroup->service_session_id, $route);
+    }
+
+    private function queueServerOrder(OrderHeader $header, User $actor): void
+    {
+        $printerId = CashierPrinterAssignment::query()
+            ->where('user_id', $actor->id)
+            ->where('is_active', true)
+            ->value('printer_id');
+
+        if (! $printerId) {
+            throw new RuntimeException('No cashier printer is assigned to this user.');
+        }
+
+        $this->printQueue->enqueueServerOrder($header, $printerId, $actor);
+
+        Audit::record(
+            'SERVER_ORDER_QUEUED',
+            "Pedido de servente em fila para o pedido #{$header->id}",
+            [],
+            [
+                'billing_group_id' => $header->billing_group_id,
+                'service_session_id' => $header->billingGroup?->service_session_id,
+                'order_header_id' => $header->id,
+                'actor_user_id' => $actor->id,
+            ],
+        );
     }
 }

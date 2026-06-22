@@ -39,10 +39,13 @@ class OrderEntry extends Component
 
     public bool $isSubmitting = false;
 
+    public bool $printServerOrder = false;
+
     public function mount(int $billingGroupId): void
     {
         $this->billingGroupId = $billingGroupId;
         $this->idempotencyKey = (string) Str::uuid();
+        $this->printServerOrder = (bool) Auth::user()?->print_server_order;
 
         $this->defaultCategoryId = MenuCategory::where('is_active', true)->orderBy('sort_order')->value('id');
 
@@ -212,6 +215,7 @@ class OrderEntry extends Component
                     $zone,
                     $this->notes,
                     $this->idempotencyKey,
+                    $this->printServerOrder,
                 );
 
                 $this->successMessage = __('Order submitted successfully.');
@@ -244,5 +248,23 @@ class OrderEntry extends Component
     {
         return view('livewire.order.order-entry')
             ->layout('layouts.operational');
+    }
+
+    public function updatedPrintServerOrder(bool $value): void
+    {
+        $user = Auth::user();
+
+        if (! $user?->hasRole('CASHIER')) {
+            $this->printServerOrder = false;
+
+            return;
+        }
+
+        $user->forceFill(['print_server_order' => $value])->save();
+    }
+
+    public function showServerOrderPreference(): bool
+    {
+        return Auth::user()?->hasRole('CASHIER') ?? false;
     }
 }

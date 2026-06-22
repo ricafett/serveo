@@ -35,6 +35,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'preferred_language_code',
         'theme',
+        'print_server_order',
         'is_active',
         'last_login_at',
     ];
@@ -50,6 +51,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'print_server_order' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
