@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Domain\Audit\Audit;
 use App\Filament\Resources\MenuItemResource\Pages;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
@@ -12,6 +13,7 @@ use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
@@ -100,7 +102,56 @@ class MenuItemResource extends BaseResource
                     ->options(MenuCategory::query()->pluck('display_name', 'id')),
             ])
             ->actions([Actions\EditAction::make()])
-            ->bulkActions([Actions\DeleteBulkAction::make()]);
+            ->bulkActions([
+                Actions\BulkAction::make('enableSelected')
+                    ->label(__('app.enable_selected'))
+                    ->icon('heroicon-o-check-circle')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Collection $records): string => __('app.bulk_menu_item_confirmation', ['count' => $records->count()]))
+                    ->action(fn (Collection $records) => static::bulkUpdate($records, ['is_active' => true], 'MENU_ITEMS_BULK_ENABLED')),
+                Actions\BulkAction::make('disableSelected')
+                    ->label(__('app.disable_selected'))
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Collection $records): string => __('app.bulk_menu_item_confirmation', ['count' => $records->count()]))
+                    ->action(fn (Collection $records) => static::bulkUpdate($records, ['is_active' => false], 'MENU_ITEMS_BULK_DISABLED')),
+                Actions\BulkAction::make('enableSelectedVouchers')
+                    ->label(__('app.enable_selected_vouchers'))
+                    ->icon('heroicon-o-ticket')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Collection $records): string => __('app.bulk_menu_item_confirmation', ['count' => $records->count()]))
+                    ->action(fn (Collection $records) => static::bulkUpdate($records, ['is_voucher_enabled' => true], 'MENU_ITEMS_BULK_VOUCHERS_ENABLED')),
+                Actions\BulkAction::make('disableSelectedVouchers')
+                    ->label(__('app.disable_selected_vouchers'))
+                    ->icon('heroicon-o-no-symbol')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Collection $records): string => __('app.bulk_menu_item_confirmation', ['count' => $records->count()]))
+                    ->action(fn (Collection $records) => static::bulkUpdate($records, ['is_voucher_enabled' => false], 'MENU_ITEMS_BULK_VOUCHERS_DISABLED')),
+                Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    protected static function bulkUpdate(Collection $records, array $attributes, string $eventType): void
+    {
+        if ($records->isEmpty()) {
+            return;
+        }
+
+        MenuItem::query()
+            ->whereKey($records->modelKeys())
+            ->update($attributes);
+
+        Audit::record(
+            $eventType,
+            'Bulk menu item update',
+            [
+                'count' => $records->count(),
+                'menu_item_ids' => $records->modelKeys(),
+                'attributes' => $attributes,
+            ],
+        );
     }
 
     public static function getPages(): array
