@@ -50,14 +50,21 @@ class TicketRenderer
         $this->appendBrandingHeader($lines);
 
         $firstItem = $ticket->items->first();
-        $voidRoute = $firstItem?->fulfillment_route ?? $ticket->ticket_type;
+        $voidRoute = strtoupper($firstItem?->fulfillment_route ?? $ticket->ticket_type);
+        $routeHeader = $voidRoute;
+
+        if ($ticket->route_ticket_number !== null) {
+            $routeHeader .= ' #'.$ticket->route_ticket_number;
+        }
+
+        $lines[] = $this->center($routeHeader);
 
         if ($ticket->is_void_slip) {
             $isFullVoid = $firstItem?->header?->submission_status === 'VOIDED';
-            $prefix = $isFullVoid ? __('ticket.void_full').' - ' : __('ticket.void_partial').' - ';
-            $lines[] = $this->center('*** '.$prefix.strtoupper($voidRoute).' ***');
-        } else {
-            $lines[] = $this->center(strtoupper($ticket->ticket_type));
+            $this->appendDoubleSizeWrappedCentered(
+                $lines,
+                $this->buildVoidDisplayText($isFullVoid, $ticket->route_ticket_number)
+            );
         }
 
         if ($ticket->is_reprint) {
@@ -156,7 +163,6 @@ class TicketRenderer
             ->unique()
             ->values();
         $footerParts = [];
-        $footerParts[] = __('ticket.ticket_num').' #'.$ticket->displayTicketNumber();
         $footerParts[] = __('ticket.internal_ref').' #'.$ticket->id;
         if ($orderIds->isNotEmpty()) {
             $footerParts[] = __('ticket.order_num').' #'.$orderIds->join(', ');
@@ -449,9 +455,9 @@ class TicketRenderer
         $lines[] = str_repeat('=', $this->width());
 
         if (! empty($data['session_label'])) {
-            $lines[] = __('ticket.session') . ': ' . $data['session_label'];
+            $lines[] = __('ticket.session').': '.$data['session_label'];
         }
-        $lines[] = __('ticket.time') . ':  ' . $this->localTime(now());
+        $lines[] = __('ticket.time').':  '.$this->localTime(now());
 
         $lines[] = '';
         $lines[] = $this->center(__('ticket.cashier_breakdown'));
@@ -459,29 +465,29 @@ class TicketRenderer
 
         foreach ($data['cashiers'] ?? [] as $cashier) {
             $lines[] = $cashier['user_name'];
-            $lines[] = $this->row('  ' . __('ticket.totals_in'), number_format((float) $cashier['cash_in'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-            $lines[] = $this->row('  ' . __('ticket.totals_out'), number_format((float) $cashier['cash_out'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-            $lines[] = $this->row('  ' . __('ticket.totals_bill_payments'), number_format((float) $cashier['bill_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-            $lines[] = $this->row('  ' . __('ticket.totals_sale_payments'), number_format((float) $cashier['sale_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = $this->row('  '.__('ticket.totals_in'), number_format((float) $cashier['cash_in'], 2, ',', ' ').' '.__('ticket.currency'));
+            $lines[] = $this->row('  '.__('ticket.totals_out'), number_format((float) $cashier['cash_out'], 2, ',', ' ').' '.__('ticket.currency'));
+            $lines[] = $this->row('  '.__('ticket.totals_bill_payments'), number_format((float) $cashier['bill_payments'], 2, ',', ' ').' '.__('ticket.currency'));
+            $lines[] = $this->row('  '.__('ticket.totals_sale_payments'), number_format((float) $cashier['sale_payments'], 2, ',', ' ').' '.__('ticket.currency'));
             $lines[] = str_repeat('-', $this->width());
-            $lines[] = $this->row('  ' . __('ticket.totals_net'), number_format((float) $cashier['net'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+            $lines[] = $this->row('  '.__('ticket.totals_net'), number_format((float) $cashier['net'], 2, ',', ' ').' '.__('ticket.currency'));
             $lines[] = '';
         }
 
         $lines[] = str_repeat('=', $this->width());
         $lines[] = $this->center(__('ticket.session_summary'));
-        $lines[] = $this->row(__('ticket.totals_in'), number_format((float) $data['summary']['cash_in'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-        $lines[] = $this->row(__('ticket.totals_out'), number_format((float) $data['summary']['cash_out'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-        $lines[] = $this->row(__('ticket.totals_net_cash'), number_format((float) $data['summary']['net_cash_movement'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-        $lines[] = $this->row(__('ticket.totals_bill_payments'), number_format((float) $data['summary']['bill_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-        $lines[] = $this->row(__('ticket.totals_sale_payments'), number_format((float) $data['summary']['sale_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
-        $lines[] = $this->row(__('ticket.totals_total_payments'), number_format((float) $data['summary']['total_payments'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_in'), number_format((float) $data['summary']['cash_in'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_out'), number_format((float) $data['summary']['cash_out'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_net_cash'), number_format((float) $data['summary']['net_cash_movement'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_bill_payments'), number_format((float) $data['summary']['bill_payments'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_sale_payments'), number_format((float) $data['summary']['sale_payments'], 2, ',', ' ').' '.__('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_total_payments'), number_format((float) $data['summary']['total_payments'], 2, ',', ' ').' '.__('ticket.currency'));
         $lines[] = str_repeat('=', $this->width());
-        $lines[] = $this->row(__('ticket.totals_overall_balance'), number_format((float) $data['summary']['overall_balance'], 2, ',', ' ') . ' ' . __('ticket.currency'));
+        $lines[] = $this->row(__('ticket.totals_overall_balance'), number_format((float) $data['summary']['overall_balance'], 2, ',', ' ').' '.__('ticket.currency'));
         $lines[] = str_repeat('=', $this->width());
         $lines[] = $this->center(__('ticket.no_fiscal'));
 
-        return $this->wrap(implode("\n", $lines) . "\n");
+        return $this->wrap(implode("\n", $lines)."\n");
     }
 
     /**
@@ -499,9 +505,9 @@ class TicketRenderer
         $lines[] = str_repeat('=', $this->width());
 
         if (! empty($data['session_label'])) {
-            $lines[] = __('ticket.session') . ': ' . $data['session_label'];
+            $lines[] = __('ticket.session').': '.$data['session_label'];
         }
-        $lines[] = __('ticket.time') . ':  ' . $this->localTime(now());
+        $lines[] = __('ticket.time').':  '.$this->localTime(now());
 
         $lines[] = '';
         $lines[] = $this->center(__('ticket.items_sold_excl_modifiers'));
@@ -511,7 +517,7 @@ class TicketRenderer
             $qty = (int) $item['total_qty'];
             $name = $item['menu_item_name'];
             if (! empty($item['variant_name'])) {
-                $name .= ' - ' . $item['variant_name'];
+                $name .= ' - '.$item['variant_name'];
             }
             $left = sprintf('%3dx  %s', $qty, mb_strimwidth($name, 0, 36));
             $lines[] = $left;
@@ -526,7 +532,7 @@ class TicketRenderer
         $lines[] = str_repeat('=', $this->width());
         $lines[] = $this->center(__('ticket.no_fiscal'));
 
-        return $this->wrap(implode("\n", $lines) . "\n");
+        return $this->wrap(implode("\n", $lines)."\n");
     }
 
     private function buildItemName(OrderItem $item): string
@@ -606,6 +612,42 @@ class TicketRenderer
         return "\x1B\x45\x01".$text."\x1B\x45\x00";
     }
 
+    /**
+     * Wrap text in ESC/POS double-width + double-height on/off commands.
+     */
+    private function doubleSize(string $text): string
+    {
+        return "\x1D\x21\x11".$text."\x1D\x21\x00";
+    }
+
+    private function appendDoubleSizeWrappedCentered(array &$lines, string $text): void
+    {
+        $wrapped = wordwrap($text, $this->doubleSizeWidth(), "\n", true);
+
+        foreach (explode("\n", $wrapped) as $line) {
+            $lines[] = $this->doubleSize($this->centerScaled($line, 2));
+        }
+    }
+
+    private function buildVoidDisplayText(bool $isFullVoid, ?int $routeTicketNumber): string
+    {
+        $voidLabel = trim(__('ticket.void'));
+        $stateLabel = trim($isFullVoid ? __('ticket.void_full') : __('ticket.void_partial'));
+        $stateLabel = trim(str_replace($voidLabel, '', $stateLabel), " -\t\n\r\0\x0B");
+
+        if ($stateLabel === '') {
+            $stateLabel = trim($isFullVoid ? __('ticket.void_full') : __('ticket.void_partial'));
+        }
+
+        $text = trim($voidLabel.' '.$stateLabel);
+
+        if ($routeTicketNumber !== null) {
+            $text .= ' #'.$routeTicketNumber;
+        }
+
+        return $text;
+    }
+
     private function wrap(string $payload): string
     {
         $result = '';
@@ -634,6 +676,23 @@ class TicketRenderer
         $pad = (int) floor(($this->width() - $len) / 2);
 
         return str_repeat(' ', $pad).$text;
+    }
+
+    private function centerScaled(string $text, int $scaleX): string
+    {
+        $displayWidth = mb_strlen($text) * $scaleX;
+        if ($displayWidth >= $this->width()) {
+            return $text;
+        }
+
+        $pad = (int) floor(($this->width() - $displayWidth) / 2);
+
+        return str_repeat(' ', $pad).$text;
+    }
+
+    private function doubleSizeWidth(): int
+    {
+        return max(1, intdiv($this->width(), 2));
     }
 
     private function row(string $left, string $right): string

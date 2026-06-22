@@ -5,14 +5,15 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
 use App\Domain\Printing\TicketRenderer;
-use App\Models\BillingDocument;
 use App\Models\CashierPrinterAssignment;
 use App\Models\DocumentPrintConfig;
 use App\Models\FulfillmentRoute;
 use App\Models\MenuItem;
+use App\Models\MenuItemVariant;
 use App\Models\Printer;
 use App\Models\ProductionTicket;
 use App\Models\Row;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -59,7 +60,7 @@ it('DocumentPrintConfig enforces unique document_type + fulfillment_route', func
         'document_type' => 'PRODUCTION_TICKET',
         'fulfillment_route' => 'UNIQUE_CHECK',
     ]);
-})->throws(\Illuminate\Database\UniqueConstraintViolationException::class);
+})->throws(UniqueConstraintViolationException::class);
 
 it('DocumentPrintConfig active scope filters inactive rows', function () {
     DocumentPrintConfig::create([
@@ -164,6 +165,84 @@ it('repeats items when production ticket config has group_items=false', function
         ->and(substr_count($output, 'Bacalhau'))->toBe(3);
 });
 
+it('shows the route ticket number in the production ticket header instead of the footer', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    $ticket = ProductionTicket::where('ticket_type', 'KITCHEN')->firstOrFail();
+
+    $config = DocumentPrintConfig::where('document_type', 'PRODUCTION_TICKET')
+        ->where('fulfillment_route', 'KITCHEN')
+        ->firstOrFail();
+
+    $renderer = new TicketRenderer(documentConfig: $config);
+    $output = $renderer->renderProductionTicket($ticket->load('items.header'));
+
+    expect($output)->toContain('KITCHEN #'.$ticket->route_ticket_number)
+        ->and($output)->not->toContain(__('ticket.ticket_num').' #'.$ticket->route_ticket_number)
+        ->and($output)->toContain(__('ticket.internal_ref').' #'.$ticket->id);
+});
+
+it('does not fall back to the production ticket id when no route ticket number exists', function () {
+    $ticket = ProductionTicket::create([
+        'service_session_id' => $this->session->id,
+        'billing_group_id' => $this->group->id,
+        'printer_id' => Printer::firstOrFail()->id,
+        'ticket_type' => 'KITCHEN',
+        'ticket_sequence_route' => 'KITCHEN',
+        'route_ticket_number' => null,
+        'ticket_status' => 'PENDING',
+        'requested_at' => now(),
+        'is_void_slip' => false,
+        'created_by_user_id' => $this->server->id,
+    ]);
+
+    $config = DocumentPrintConfig::where('document_type', 'PRODUCTION_TICKET')
+        ->where('fulfillment_route', 'KITCHEN')
+        ->firstOrFail();
+
+    $renderer = new TicketRenderer(documentConfig: $config);
+    $output = $renderer->renderProductionTicket($ticket);
+
+    expect($output)->toContain('KITCHEN')
+        ->and($output)->not->toContain('KITCHEN #'.$ticket->id)
+        ->and($output)->not->toContain(__('ticket.ticket_num').' #'.$ticket->id)
+        ->and($output)->toContain(__('ticket.internal_ref').' #'.$ticket->id);
+});
+
+it('renders void text in double size and keeps the route line normal size', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    $ticket = ProductionTicket::where('ticket_type', 'KITCHEN')->firstOrFail();
+    $orderItem = $ticket->items()->firstOrFail();
+
+    app(OrderService::class)->voidItem($orderItem, $this->server, 'Wrong item');
+
+    $voidTicket = ProductionTicket::where('is_void_slip', true)->latest('id')->firstOrFail();
+
+    $config = DocumentPrintConfig::where('document_type', 'PRODUCTION_TICKET')
+        ->where('fulfillment_route', 'KITCHEN')
+        ->firstOrFail();
+
+    $renderer = new TicketRenderer(charWidth: 20, documentConfig: $config);
+    $output = $renderer->renderProductionTicket($voidTicket->load('items.header'));
+
+    expect($output)->toContain('KITCHEN #'.$voidTicket->route_ticket_number)
+        ->and($output)->toContain("\x1D\x21\x11")
+        ->and($output)->toContain('VOID')
+        ->and($output)->toContain('FULL')
+        ->and($output)->toContain('#'.$voidTicket->route_ticket_number)
+        ->and($output)->not->toContain(__('ticket.ticket_num').' #'.$voidTicket->route_ticket_number)
+        ->and($output)->toContain(__('ticket.internal_ref').' #'.$voidTicket->id);
+});
+
 // ─── TicketRenderer: group_items for bills ──────────────────────────────
 
 it('groups identical bill items across orders when group_items=true', function () {
@@ -222,7 +301,7 @@ it('shows variant and modifier when config does not ignore them', function () {
     $vinhoItem = MenuItem::where('display_name', 'Vinho copo')->first();
 
     // Create variants for the test fixture item
-    \App\Models\MenuItemVariant::firstOrCreate(
+    MenuItemVariant::firstOrCreate(
         ['menu_item_id' => $vinhoItem->id, 'display_name' => 'Casa'],
         ['sort_order' => 1, 'is_active' => true],
     );
@@ -248,7 +327,7 @@ it('shows variant and modifier when config does not ignore them', function () {
 it('hides variant when ignore_variants=true', function () {
     $vinhoItem = MenuItem::where('display_name', 'Vinho copo')->first();
 
-    \App\Models\MenuItemVariant::firstOrCreate(
+    MenuItemVariant::firstOrCreate(
         ['menu_item_id' => $vinhoItem->id, 'display_name' => 'Casa'],
         ['sort_order' => 1, 'is_active' => true],
     );
