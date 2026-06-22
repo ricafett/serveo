@@ -315,11 +315,15 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         $documents = SaleDocument::whereIn('id', $documentIds)->get();
+        $documentConfig = $documents->isNotEmpty()
+            ? $this->resolveDocumentConfig($documents->first())
+            : null;
         $payloads = [];
         $renderer = new TicketRenderer(
             charWidth: $printer->print_char_width ?? 48,
             beginSpace: $printer->print_begin_space ?? 0,
             endSpace: 2,
+            documentConfig: $documentConfig,
         );
 
         foreach ($documents as $document) {
@@ -331,6 +335,16 @@ class DispatchPrintJob implements ShouldQueue
                     'last_error' => 'Render failure for doc #'.$document->id.': '.$e->getMessage(),
                 ]);
                 return;
+            }
+        }
+
+        if ($documentConfig?->trigger_cash_drawer && $job->requested_by_user_id) {
+            $cashierAssignment = CashierPrinterAssignment::where('user_id', $job->requested_by_user_id)
+                ->where('is_active', true)
+                ->first();
+            if ($cashierAssignment) {
+                OpenCashDrawerJob::dispatch($cashierAssignment->printer_id, $job->requested_by_user_id)
+                    ->onQueue('prints');
             }
         }
 
@@ -843,6 +857,7 @@ class DispatchPrintJob implements ShouldQueue
                     'ignore_variants' => true,
                     'ignore_modifiers' => true,
                     'ignore_item_notes' => true,
+                    'trigger_cash_drawer' => false,
                 ],
             );
         }

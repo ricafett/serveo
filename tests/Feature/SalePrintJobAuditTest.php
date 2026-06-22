@@ -3,8 +3,10 @@
 use App\Domain\Printing\PrintResult;
 use App\Domain\Printing\PrinterAdapterRegistry;
 use App\Jobs\DispatchPrintJob;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\AuditEvent;
 use App\Models\CashierPrinterAssignment;
+use App\Models\DocumentPrintConfig;
 use App\Models\MenuItem;
 use App\Models\PrintJob;
 use App\Models\Printer;
@@ -13,6 +15,7 @@ use App\Models\SaleDocument;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -181,4 +184,130 @@ it('prints voucher batch documents individually without using duplicate-copy bat
     expect($job->refresh()->status)->toBe(PrintJob::STATUS_PRINTED)
         ->and($documents->every(fn (SaleDocument $document) => $document->fresh()->document_status === 'PRINTED'))
         ->toBeTrue();
+});
+
+it('triggers the cash drawer once before voucher batch printing when enabled', function () {
+    Auth::login($this->cashier);
+    Queue::fake();
+
+    DocumentPrintConfig::updateOrCreate(
+        ['document_type' => DocumentPrintConfig::DOC_SALE_VOUCHER, 'fulfillment_route' => null],
+        ['group_items' => false, 'ignore_variants' => true, 'ignore_modifiers' => true, 'ignore_item_notes' => true, 'trigger_cash_drawer' => true, 'is_active' => true],
+    );
+
+    $documents = collect([
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0100',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0101',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+    ]);
+
+    $job = PrintJob::create([
+        'job_kind' => PrintJob::KIND_SALE_VOUCHER_BATCH,
+        'printable_type' => SaleDocument::class,
+        'printable_id' => 0,
+        'printer_id' => $this->printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 4,
+        'requested_by_user_id' => $this->cashier->id,
+        'payload' => ['document_ids' => $documents->pluck('id')->all()],
+    ]);
+
+    $registry = Mockery::mock(PrinterAdapterRegistry::class);
+    $registry->shouldReceive('sendPayloadBatch')
+        ->once()
+        ->withArgs(function (Printer $printer, array $payloads) use ($documents) {
+            Queue::assertPushed(OpenCashDrawerJob::class, 1);
+
+            return $printer->is($this->printer)
+                && count($payloads) === $documents->count();
+        })
+        ->andReturn(PrintResult::ok('OK'));
+
+    (new DispatchPrintJob($job->id))->handle($registry);
+
+    Queue::assertPushed(OpenCashDrawerJob::class, function (OpenCashDrawerJob $drawerJob) {
+        return $drawerJob->printerId === $this->printer->id
+            && $drawerJob->actorId === $this->cashier->id;
+    });
+
+    expect($job->fresh()->status)->toBe(PrintJob::STATUS_PRINTED)
+        ->and($documents->every(fn (SaleDocument $document) => $document->fresh()->document_status === 'PRINTED'))
+        ->toBeTrue();
+});
+
+it('does not trigger the cash drawer for voucher batch printing when disabled', function () {
+    Auth::login($this->cashier);
+    Queue::fake();
+
+    DocumentPrintConfig::updateOrCreate(
+        ['document_type' => DocumentPrintConfig::DOC_SALE_VOUCHER, 'fulfillment_route' => null],
+        ['group_items' => false, 'ignore_variants' => true, 'ignore_modifiers' => true, 'ignore_item_notes' => true, 'trigger_cash_drawer' => false, 'is_active' => true],
+    );
+
+    $documents = collect([
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0200',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+        SaleDocument::create([
+            'sale_id' => $this->sale->id,
+            'sale_item_id' => $this->saleItem->id,
+            'printer_id' => $this->printer->id,
+            'document_type' => SaleDocument::TYPE_VOUCHER,
+            'document_status' => 'GENERATED',
+            'document_number' => 'V-TEST-0201',
+            'quantity' => 1,
+            'requested_at' => now(),
+            'created_by_user_id' => $this->cashier->id,
+        ]),
+    ]);
+
+    $job = PrintJob::create([
+        'job_kind' => PrintJob::KIND_SALE_VOUCHER_BATCH,
+        'printable_type' => SaleDocument::class,
+        'printable_id' => 0,
+        'printer_id' => $this->printer->id,
+        'status' => PrintJob::STATUS_PENDING,
+        'attempts' => 0,
+        'max_attempts' => 4,
+        'requested_by_user_id' => $this->cashier->id,
+        'payload' => ['document_ids' => $documents->pluck('id')->all()],
+    ]);
+
+    $registry = Mockery::mock(PrinterAdapterRegistry::class);
+    $registry->shouldReceive('sendPayloadBatch')
+        ->once()
+        ->andReturn(PrintResult::ok('OK'));
+
+    (new DispatchPrintJob($job->id))->handle($registry);
+
+    Queue::assertNotPushed(OpenCashDrawerJob::class);
+    expect($job->fresh()->status)->toBe(PrintJob::STATUS_PRINTED);
 });
