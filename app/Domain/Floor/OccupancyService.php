@@ -46,6 +46,7 @@ class OccupancyService
         return DB::transaction(function () use ($group, $row, $startSeq, $endSeq, $actor, $deliveryCenterLabel, $assignedServer) {
             $conflict = OccupiedZone::where('row_id', $row->id)
                 ->where('is_open', true)
+                ->whereHas('billingGroup', fn ($query) => $query->where('service_session_id', $group->service_session_id))
                 ->where('start_seat_pair_sequence', '<=', $endSeq)
                 ->where('end_seat_pair_sequence', '>=', $startSeq)
                 ->lockForUpdate()

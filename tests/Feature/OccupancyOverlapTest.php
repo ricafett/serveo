@@ -4,6 +4,7 @@ use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Floor\ZoneOverlapException;
 use App\Models\Row;
+use App\Models\ServiceSession;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -40,6 +41,37 @@ it('allows reusing range after release', function () {
     $new = app(OccupancyService::class)->assignZone($g2, $this->row, 4, 6, $this->server);
 
     expect($new->is_open)->toBeTrue();
+});
+
+it('ignores open zones from a different service session when checking overlap', function () {
+    $currentGroup = app(BillingGroupService::class)->open($this->session, $this->server);
+
+    $closedSession = ServiceSession::create([
+        'venue_id' => $this->session->venue_id,
+        'session_type' => 'DINNER',
+        'session_label' => 'Closed session',
+        'starts_at' => now()->subDay(),
+        'status' => 'CLOSED',
+    ]);
+
+    $oldGroup = createBillingGroup($closedSession, $this->server);
+
+    \App\Models\OccupiedZone::create([
+        'billing_group_id' => $oldGroup->id,
+        'row_id' => $this->row->id,
+        'start_seat_pair_sequence' => 1,
+        'end_seat_pair_sequence' => 3,
+        'default_delivery_mode' => 'CENTER',
+        'opened_at' => now()->subDay(),
+        'is_open' => true,
+        'created_by_user_id' => $oldGroup->opened_by_user_id,
+        'server_id' => $this->server->id,
+    ]);
+
+    $zone = app(OccupancyService::class)->assignZone($currentGroup, $this->row, 1, 3, $this->server);
+
+    expect($zone->is_open)->toBeTrue()
+        ->and($zone->billing_group_id)->toBe($currentGroup->id);
 });
 
 it('rejects inverted ranges', function () {

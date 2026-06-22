@@ -100,6 +100,97 @@ it('does not persist an orphan billing group when zone overlaps via Livewire flo
     expect(OccupiedZone::count())->toBe($zonesBefore);
 });
 
+it('rejects floor modal submission when a once-free range is claimed before submit', function () {
+    $this->actingAs($this->server);
+
+    $component = Livewire::test(FloorIndex::class)
+        ->assertSee('TESTT101');
+
+    $existingGroup = app(BillingGroupService::class)->open($this->session, $this->server);
+    app(OccupancyService::class)->assignZone($existingGroup, $this->row, 1, 3, $this->server);
+
+    $countBefore = BillingGroup::count();
+    $zonesBefore = OccupiedZone::count();
+
+    $component
+        ->call('selectPair', $this->row->id, 1)
+        ->set('name', 'Stale Snapshot Group')
+        ->set('statusCode', 'ACTIVE')
+        ->set('zoneSeatCount', 3)
+        ->set('zoneEndSeq', 3)
+        ->call('createBillingGroup')
+        ->assertSee('Zone overlap');
+
+    expect(BillingGroup::count())->toBe($countBefore);
+    expect(OccupiedZone::count())->toBe($zonesBefore);
+});
+
+it('allows floor modal creation when only an old session has an overlapping open zone', function () {
+    $this->actingAs($this->server);
+
+    $closedSession = ServiceSession::create([
+        'venue_id' => $this->venue->id,
+        'session_type' => 'DINNER',
+        'session_label' => 'Closed session with lingering zone',
+        'starts_at' => now()->subDay(),
+        'status' => 'CLOSED',
+    ]);
+
+    $closedGroup = createBillingGroup($closedSession, $this->server);
+    OccupiedZone::create([
+        'billing_group_id' => $closedGroup->id,
+        'row_id' => $this->row->id,
+        'start_seat_pair_sequence' => 1,
+        'end_seat_pair_sequence' => 3,
+        'default_delivery_mode' => 'CENTER',
+        'opened_at' => now()->subDay(),
+        'is_open' => true,
+        'created_by_user_id' => $closedGroup->opened_by_user_id,
+        'server_id' => $this->server->id,
+    ]);
+
+    $countBefore = BillingGroup::count();
+    $zonesBefore = OccupiedZone::count();
+
+    Livewire::test(FloorIndex::class)
+        ->assertSee('TESTT101')
+        ->call('selectPair', $this->row->id, 1)
+        ->set('name', 'Current Session Group')
+        ->set('statusCode', 'ACTIVE')
+        ->set('zoneSeatCount', 3)
+        ->set('zoneEndSeq', 3)
+        ->call('createBillingGroup');
+
+    expect(BillingGroup::count())->toBe($countBefore + 1);
+    expect(OccupiedZone::count())->toBe($zonesBefore + 1);
+});
+
+it('rejects range expansion when another group claims part of the expanded range before submit', function () {
+    $this->actingAs($this->server);
+
+    $component = Livewire::test(FloorIndex::class)
+        ->call('selectPair', $this->row->id, 4)
+        ->assertSet('zoneStartSeq', 4)
+        ->assertSet('zoneEndSeq', 4);
+
+    $existingGroup = app(BillingGroupService::class)->open($this->session, $this->server);
+    app(OccupancyService::class)->assignZone($existingGroup, $this->row, 5, 6, $this->server);
+
+    $countBefore = BillingGroup::count();
+    $zonesBefore = OccupiedZone::count();
+
+    $component
+        ->set('name', 'Expanded Stale Range Group')
+        ->set('statusCode', 'ACTIVE')
+        ->set('zoneSeatCount', 3)
+        ->set('zoneEndSeq', 6)
+        ->call('createBillingGroup')
+        ->assertSee('Zone overlap');
+
+    expect(BillingGroup::count())->toBe($countBefore);
+    expect(OccupiedZone::count())->toBe($zonesBefore);
+});
+
 it('successfully creates a billing group with an occupied zone via Livewire when no overlap', function () {
     $this->actingAs($this->server);
 
