@@ -58,6 +58,44 @@ it('records an audit event for every order submission', function () {
     expect(AuditEvent::where('event_type', 'ORDER_SUBMITTED')->count())->toBe(1);
 });
 
+it('saves a draft order without queuing production tickets or print jobs', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $header = app(OrderService::class)->saveDraft($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 2],
+    ], $this->zone);
+
+    expect($header->submission_status)->toBe('DRAFT')
+        ->and($header->items)->toHaveCount(1)
+        ->and($header->items->first()->sent_to_production_at)->toBeNull();
+
+    expect(ProductionTicket::where('billing_group_id', $this->group->id)->count())->toBe(0)
+        ->and(PrintJob::count())->toBe(0)
+        ->and(AuditEvent::where('event_type', 'ORDER_DRAFT_SAVED')->where('order_header_id', $header->id)->exists())->toBeTrue();
+});
+
+it('submits a saved draft order to production later', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $barItem = MenuItem::where('display_name', 'Vinho copo')->first();
+
+    $header = app(OrderService::class)->saveDraft($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+        ['menu_item_id' => $barItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    $submitted = app(OrderService::class)->submitDraft($header->fresh(), $this->server);
+
+    expect($submitted->submission_status)->toBe('SUBMITTED');
+    expect($submitted->items->every(fn ($item) => $item->sent_to_production_at !== null))->toBeTrue();
+
+    $tickets = ProductionTicket::where('billing_group_id', $this->group->id)->get();
+
+    expect($tickets)->toHaveCount(2)
+        ->and($tickets->pluck('ticket_type')->sort()->values()->all())->toBe(['BAR', 'KITCHEN'])
+        ->and(PrintJob::count())->toBeGreaterThanOrEqual(2)
+        ->and(AuditEvent::where('event_type', 'ORDER_SUBMITTED')->where('order_header_id', $header->id)->count())->toBe(1);
+});
+
 // ------------------------------------------------------------------
 // Idempotency / duplicate submission prevention
 // ------------------------------------------------------------------

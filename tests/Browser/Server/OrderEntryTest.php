@@ -225,3 +225,36 @@ test('order entry can restore a draft cart from session storage', function () {
         expect($quantity[0])->toBe(2);
     });
 });
+
+test('server can save order without production and submit it later', function () {
+    $menuItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    $this->browse(function (Browser $browser) use ($menuItem) {
+        $browser->driver->manage()->deleteAllCookies();
+
+        $browser->visit('/login')
+            ->waitForText('Sign In', 5)
+            ->type('username', $this->server->username)
+            ->type('password', 'secret')
+            ->press('Sign In')
+            ->waitForText('Dashboard', 5);
+
+        clearWebStorage($browser);
+
+        $browser->visit("/orders/new/{$this->group->id}")
+            ->waitForText('Order Entry', 5)
+            ->press($menuItem->category->display_name)
+            ->waitForText($menuItem->display_name, 5)
+            ->press($menuItem->display_name)
+            ->pause(500)
+            ->click('@order-submit-options')
+            ->waitForText('Save without production', 5)
+            ->click('@save-order-without-production')
+            ->waitForText('Order saved without sending to production.', 20)
+            ->visit("/billing-groups/{$this->group->id}")
+            ->waitForText('Saved', 10)
+            ->press('Send to production')
+            ->waitForText('Saved order sent to production.', 20)
+            ->waitForText('Submitted', 10);
+    });
+});

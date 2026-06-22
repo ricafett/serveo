@@ -338,19 +338,60 @@
 
         {{-- Submit button: fixed above nav on mobile, inline on desktop --}}
         <div class="sm:static sm:mt-4 sm:bg-transparent sm:border-0 sm:p-0 fixed bottom-14 left-0 right-0 px-4 py-3 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 z-30">
-            <button
-                type="button"
-                @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name, note: i.note }; }))"
-                :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
-                wire:target="submitOrder"
-                wire:loading.attr="disabled"
-                class="w-full flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {{ __('order.submit') }}
-                <template x-if="cartItemCount > 0">
-                    <span class="ml-2 text-sm opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ' €)'"></span>
-                </template>
-            </button>
+            <div class="flex gap-2" x-data="{ submitMenuOpen: false }" @click.outside="submitMenuOpen = false">
+                <button
+                    type="button"
+                    @click="cart.length && $wire.call('submitOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name, note: i.note }; }))"
+                    :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
+                    wire:target="submitOrder,saveOrder"
+                    wire:loading.attr="disabled"
+                    class="flex-1 flex justify-center items-center rounded-lg bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 min-h-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {{ __('order.submit') }}
+                    <template x-if="cartItemCount > 0">
+                        <span class="ml-2 text-sm opacity-75" x-text="'(' + cartItemCount + ' · ' + cartTotal.toFixed(2) + ' €)'"></span>
+                    </template>
+                </button>
+
+                <div class="relative">
+                    <button
+                        type="button"
+                        dusk="order-submit-options"
+                        @click="submitMenuOpen = !submitMenuOpen"
+                        :disabled="{{ $this->group?->is_closed ? 'true' : 'false' }} || cart.length === 0"
+                        wire:target="submitOrder,saveOrder"
+                        wire:loading.attr="disabled"
+                        class="flex items-center justify-center rounded-lg bg-primary-700 px-3 py-3 text-white shadow-sm hover:bg-primary-600 min-h-[48px] min-w-[48px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="{{ __('order.more_submit_actions') }}"
+                    >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+
+                    <div
+                        x-show="submitMenuOpen"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute bottom-full right-0 mb-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                        style="display: none;"
+                    >
+                        <button
+                            type="button"
+                            dusk="save-order-without-production"
+                            @click="submitMenuOpen = false; cart.length && $wire.call('saveOrder', cart.map(function(i) { return { menu_item_id: i.menu_item_id, quantity: i.quantity, variant_name: i.variant_name, modifier_name: i.modifier_name, note: i.note }; }))"
+                            class="block w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                        >
+                            <div class="font-medium">{{ __('order.save_without_production') }}</div>
+                            <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ __('order.save_without_production_help') }}</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

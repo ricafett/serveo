@@ -44,4 +44,8 @@ return [
     'restore_draft_body' => 'You have :count items from your previous visit. Restore them?',
     'restore_draft' => 'Restore',
     'start_new' => 'Start new',
+    'more_submit_actions' => 'More order actions',
+    'save_without_production' => 'Save without production',
+    'save_without_production_help' => 'Keep this order on the billing group without printing kitchen or bar tickets yet.',
+    'saved_without_production_success' => 'Order saved without sending to production.',
 ];

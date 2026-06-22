@@ -24,6 +24,10 @@ class OrderService
 {
     use ChecksPermissions;
 
+    private const STATUS_DRAFT = 'DRAFT';
+
+    private const STATUS_SUBMITTED = 'SUBMITTED';
+
     public function __construct(private readonly PrintQueueService $printQueue) {}
 
     /**
@@ -44,10 +48,64 @@ class OrderService
         ?string $notes = null,
         ?string $idempotencyKey = null,
     ): OrderHeader {
+        return $this->createOrder(
+            $group,
+            $actor,
+            $lines,
+            $zone,
+            $notes,
+            $idempotencyKey,
+            self::STATUS_SUBMITTED,
+        );
+    }
+
+    /**
+     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null, note?:string|null}>  $lines
+     */
+    public function saveDraft(
+        BillingGroup $group,
+        User $actor,
+        array $lines,
+        ?OccupiedZone $zone = null,
+        ?string $notes = null,
+        ?string $idempotencyKey = null,
+    ): OrderHeader {
+        return $this->createOrder(
+            $group,
+            $actor,
+            $lines,
+            $zone,
+            $notes,
+            $idempotencyKey,
+            self::STATUS_DRAFT,
+        );
+    }
+
+    public function submitDraft(OrderHeader $header, User $actor): OrderHeader
+    {
         $this->ensureCan($actor, 'order.create');
-        if (empty($lines)) {
+
+        $header->loadMissing([
+            'billingGroup.serviceSession',
+            'occupiedZone',
+            'items.menuItem.category',
+        ]);
+
+        if ($header->submission_status !== self::STATUS_DRAFT) {
+            throw new RuntimeException('Only saved orders can be submitted to production.');
+        }
+
+        if ($header->items->isEmpty()) {
             throw new RuntimeException('Cannot submit an empty order.');
         }
+
+        $group = $header->billingGroup;
+        if (! $group) {
+            throw new RuntimeException('Billing group not found.');
+        }
+
+        $zone = $header->occupiedZone;
+
         if ($group->is_closed) {
             throw new RuntimeException('Cannot order on a closed billing group.');
         }
@@ -58,10 +116,73 @@ class OrderService
             throw new RuntimeException('Occupied zone does not belong to this billing group.');
         }
 
+        return DB::transaction(function () use ($header, $actor, $group, $zone) {
+            $header->items->each(function (OrderItem $item) {
+                $item->update(['sent_to_production_at' => now()]);
+            });
+
+            $this->queueProductionTickets($header, $group, $actor, $zone, $header->items);
+
+            $header->update(['submission_status' => self::STATUS_SUBMITTED]);
+
+            Audit::record(
+                'ORDER_SUBMITTED',
+                "Pedido #{$header->id} submetido para grupo {$group->display_code} (".count($header->items).') linhas)',
+                ['line_count' => count($header->items), 'from_draft' => true],
+                [
+                    'billing_group_id' => $group->id,
+                    'service_session_id' => $group->service_session_id,
+                    'occupied_zone_id' => $zone?->id,
+                    'order_header_id' => $header->id,
+                    'actor_user_id' => $actor->id,
+                ],
+            );
+
+            return $header->refresh();
+        });
+    }
+
+    /**
+     * @param  array<int, array{menu_item_id:int, quantity:int, delivery_seat_pair_id?:int|null, variant_name?:string|null, modifier_name?:string|null, note?:string|null}>  $lines
+     */
+    private function createOrder(
+        BillingGroup $group,
+        User $actor,
+        array $lines,
+        ?OccupiedZone $zone,
+        ?string $notes,
+        ?string $idempotencyKey,
+        string $submissionStatus,
+    ): OrderHeader {
+        $this->ensureCan($actor, 'order.create');
+
+        if (empty($lines)) {
+            throw new RuntimeException('Cannot submit an empty order.');
+        }
+
+        if (! in_array($submissionStatus, [self::STATUS_DRAFT, self::STATUS_SUBMITTED], true)) {
+            throw new RuntimeException('Invalid order submission status.');
+        }
+
+        $isDraft = $submissionStatus === self::STATUS_DRAFT;
+
+        if ($group->is_closed) {
+            throw new RuntimeException('Cannot order on a closed billing group.');
+        }
+
+        if (! $group->serviceSession?->isOpen()) {
+            throw new RuntimeException('No open service session. Operations require an active session.');
+        }
+
+        if ($zone && $zone->billing_group_id !== $group->id) {
+            throw new RuntimeException('Occupied zone does not belong to this billing group.');
+        }
+
         // Idempotency check: if a key is provided, return the existing order instead of creating a duplicate.
         if ($idempotencyKey !== null) {
             $existing = OrderHeader::where('billing_group_id', $group->id)
                 ->where('idempotency_key', $idempotencyKey)
+                ->where('submission_status', $submissionStatus)
                 ->first();
 
             if ($existing) {
@@ -69,14 +190,14 @@ class OrderService
             }
         }
 
-        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes, $idempotencyKey) {
+        return DB::transaction(function () use ($group, $actor, $lines, $zone, $notes, $idempotencyKey, $submissionStatus, $isDraft) {
             try {
                 $header = OrderHeader::create([
                     'billing_group_id' => $group->id,
                     'occupied_zone_id' => $zone?->id,
                     'ordered_by_user_id' => $actor->id,
                     'ordered_at' => now(),
-                    'submission_status' => 'SUBMITTED',
+                    'submission_status' => $submissionStatus,
                     'notes' => $notes,
                     'idempotency_key' => $idempotencyKey,
                 ]);
@@ -85,6 +206,7 @@ class OrderService
                 // between our pre-check and the insert. Return the existing order.
                 return OrderHeader::where('billing_group_id', $group->id)
                     ->where('idempotency_key', $idempotencyKey)
+                    ->where('submission_status', $submissionStatus)
                     ->firstOrFail();
             }
 
@@ -146,7 +268,7 @@ class OrderService
                     'fulfillment_route' => $menuItem->category?->route_type ?? 'NONE',
                     'delivery_seat_pair_id' => $deliveryPairId,
                     'delivery_reference_label' => $deliveryLabel,
-                    'sent_to_production_at' => now(),
+                    'sent_to_production_at' => $isDraft ? null : now(),
                     'variant_name' => $variantName,
                     'modifier_name' => $modifierName,
                     'note' => $line['note'] ?? null,
@@ -155,53 +277,18 @@ class OrderService
                 $createdItems[] = $item;
             }
 
-            // Group by route and create production tickets.
-            $byRoute = collect($createdItems)->groupBy('fulfillment_route');
-            foreach ($byRoute as $route => $items) {
-                if ($route === 'NONE') {
-                    continue;
-                }
-                $printer = $this->resolvePrinterForRoute($group, $route, PrinterRoute::DOC_PRODUCTION_TICKET);
-                if (! $printer) {
-                    throw new RuntimeException("No printer route configured for {$route}.");
-                }
-
-                $ticket = ProductionTicket::create([
-                    'service_session_id' => $group->service_session_id,
-                    'billing_group_id' => $group->id,
-                    'occupied_zone_id' => $zone?->id,
-                    'printer_id' => $printer->id,
-                    'ticket_type' => $route,
-                    'ticket_status' => 'PENDING',
-                    'delivery_reference_label' => $deliveryLabel ?? null,
-                    'requested_at' => now(),
-                    'is_void_slip' => false,
-                    'is_reprint' => false,
-                    'created_by_user_id' => $actor->id,
-                ]);
-                $ticket->items()->sync(collect($items)->pluck('id'));
-
-                $this->printQueue->enqueueProductionTicket($ticket, $actor);
-
-                Audit::record(
-                    'PRODUCTION_TICKET_QUEUED',
-                    "Ticket {$route} #{$ticket->id} criado para grupo {$group->display_code}",
-                    ['route' => $route, 'lines' => count($items)],
-                    [
-                        'billing_group_id' => $group->id,
-                        'service_session_id' => $group->service_session_id,
-                        'occupied_zone_id' => $zone?->id,
-                        'production_ticket_id' => $ticket->id,
-                        'order_header_id' => $header->id,
-                        'actor_user_id' => $actor->id,
-                    ],
-                );
+            if (! $isDraft) {
+                $this->queueProductionTickets($header, $group, $actor, $zone, collect($createdItems));
             }
 
             Audit::record(
-                'ORDER_SUBMITTED',
-                "Pedido #{$header->id} submetido para grupo {$group->display_code} ({".count($createdItems).' linhas)',
-                ['line_count' => count($createdItems)],
+                $isDraft ? 'ORDER_DRAFT_SAVED' : 'ORDER_SUBMITTED',
+                $isDraft
+                    ? "Pedido #{$header->id} guardado sem envio para produção"
+                    : "Pedido #{$header->id} submetido para grupo {$group->display_code} ({".count($createdItems).' linhas)',
+                $isDraft
+                    ? ['line_count' => count($createdItems)]
+                    : ['line_count' => count($createdItems)],
                 [
                     'billing_group_id' => $group->id,
                     'service_session_id' => $group->service_session_id,
@@ -213,6 +300,61 @@ class OrderService
 
             return $header->refresh();
         });
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, OrderItem>  $items
+     */
+    private function queueProductionTickets(
+        OrderHeader $header,
+        BillingGroup $group,
+        User $actor,
+        ?OccupiedZone $zone,
+        \Illuminate\Support\Collection $items,
+    ): void {
+        $byRoute = $items->groupBy('fulfillment_route');
+
+        foreach ($byRoute as $route => $routeItems) {
+            if ($route === 'NONE') {
+                continue;
+            }
+
+            $printer = $this->resolvePrinterForRoute($group, $route, PrinterRoute::DOC_PRODUCTION_TICKET);
+            if (! $printer) {
+                throw new RuntimeException("No printer route configured for {$route}.");
+            }
+
+            $ticket = ProductionTicket::create([
+                'service_session_id' => $group->service_session_id,
+                'billing_group_id' => $group->id,
+                'occupied_zone_id' => $zone?->id,
+                'printer_id' => $printer->id,
+                'ticket_type' => $route,
+                'ticket_status' => 'PENDING',
+                'delivery_reference_label' => $routeItems->first()?->delivery_reference_label,
+                'requested_at' => now(),
+                'is_void_slip' => false,
+                'is_reprint' => false,
+                'created_by_user_id' => $actor->id,
+            ]);
+            $ticket->items()->sync($routeItems->pluck('id'));
+
+            $this->printQueue->enqueueProductionTicket($ticket, $actor);
+
+            Audit::record(
+                'PRODUCTION_TICKET_QUEUED',
+                "Ticket {$route} #{$ticket->id} criado para grupo {$group->display_code}",
+                ['route' => $route, 'lines' => $routeItems->count()],
+                [
+                    'billing_group_id' => $group->id,
+                    'service_session_id' => $group->service_session_id,
+                    'occupied_zone_id' => $zone?->id,
+                    'production_ticket_id' => $ticket->id,
+                    'order_header_id' => $header->id,
+                    'actor_user_id' => $actor->id,
+                ],
+            );
+        }
     }
 
     /**

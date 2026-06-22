@@ -2,6 +2,7 @@
 
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
+use App\Livewire\BillingGroup\BillingGroupDetail;
 use App\Livewire\Order\OrderEntry;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
@@ -320,4 +321,39 @@ it('cashier can submit order via livewire', function () {
 
     expect(OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first()->ordered_by_user_id)
         ->toBe($this->cashier->id);
+});
+
+it('saves order without sending it to production via livewire', function () {
+    $this->actingAs($this->server);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('saveOrder', [cartItem($this->kitchenItem->id, 1)])
+        ->assertSet('successMessage', 'Order saved without sending to production.');
+
+    $order = OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first();
+
+    expect($order->submission_status)->toBe('DRAFT')
+        ->and($order->items)->toHaveCount(1)
+        ->and($order->items->first()->sent_to_production_at)->toBeNull();
+
+    expect(ProductionTicket::where('billing_group_id', $this->group->id)->count())->toBe(0);
+});
+
+it('submits a saved order from billing group detail', function () {
+    $this->actingAs($this->server);
+
+    Livewire::test(OrderEntry::class, ['billingGroupId' => $this->group->id])
+        ->call('saveOrder', [
+            cartItem($this->kitchenItem->id, 1),
+            cartItem($this->barItem->id, 1),
+        ]);
+
+    $order = OrderHeader::where('billing_group_id', $this->group->id)->latest('id')->first();
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->call('submitSavedOrder', $order->id)
+        ->assertSet('successMessage', 'Saved order sent to production.');
+
+    expect($order->fresh()->submission_status)->toBe('SUBMITTED');
+    expect(ProductionTicket::where('billing_group_id', $this->group->id)->count())->toBe(2);
 });

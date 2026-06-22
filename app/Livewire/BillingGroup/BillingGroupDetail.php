@@ -455,6 +455,35 @@ class BillingGroupDetail extends Component
         $this->redirect(route('orders.new', ['billingGroupId' => $this->group->id]), navigate: true);
     }
 
+    public function submitSavedOrder(int $orderId): void
+    {
+        if ($this->isSubmitting) {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->successMessage = null;
+
+        $order = OrderHeader::with(['billingGroup.serviceSession', 'occupiedZone', 'items.menuItem.category'])->findOrFail($orderId);
+
+        if ($order->billing_group_id !== $this->group?->id) {
+            return;
+        }
+
+        try {
+            $this->isSubmitting = true;
+
+            app(OrderService::class)->submitDraft($order, Auth::user());
+
+            $this->successMessage = __('billing.saved_order_submitted');
+            $this->loadGroup();
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSubmitting = false;
+        }
+    }
+
     // ------------------------------------------------------------------
     // Delivery toggles
     // ------------------------------------------------------------------

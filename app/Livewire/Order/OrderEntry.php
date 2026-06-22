@@ -130,6 +130,16 @@ class OrderEntry extends Component
 
     public function submitOrder(array $cart = []): void
     {
+        $this->persistOrder($cart, true);
+    }
+
+    public function saveOrder(array $cart = []): void
+    {
+        $this->persistOrder($cart, false);
+    }
+
+    private function persistOrder(array $cart, bool $sendToProduction): void
+    {
         // Prevent concurrent submissions from the same component instance.
         if ($this->isSubmitting) {
             return;
@@ -194,16 +204,30 @@ class OrderEntry extends Component
                 'note' => $item['note'] ?? null,
             ])->all();
 
-            app(OrderService::class)->submit(
-                $group,
-                Auth::user(),
-                $lines,
-                $zone,
-                $this->notes,
-                $this->idempotencyKey,
-            );
+            if ($sendToProduction) {
+                app(OrderService::class)->submit(
+                    $group,
+                    Auth::user(),
+                    $lines,
+                    $zone,
+                    $this->notes,
+                    $this->idempotencyKey,
+                );
 
-            $this->successMessage = __('Order submitted successfully.');
+                $this->successMessage = __('Order submitted successfully.');
+            } else {
+                app(OrderService::class)->saveDraft(
+                    $group,
+                    Auth::user(),
+                    $lines,
+                    $zone,
+                    $this->notes,
+                    $this->idempotencyKey,
+                );
+
+                $this->successMessage = __('order.saved_without_production_success');
+            }
+
             $this->notes = null;
             $this->selectedDeliveryPairId = null;
             $this->idempotencyKey = (string) Str::uuid();
