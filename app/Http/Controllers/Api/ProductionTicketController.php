@@ -21,6 +21,8 @@ class ProductionTicketController extends ApiController
         return $this->success([
             'productionTicketId' => $productionTicket->id,
             'ticketType' => $productionTicket->ticket_type,
+            'ticketSequenceRoute' => $productionTicket->ticket_sequence_route,
+            'routeTicketNumber' => $productionTicket->route_ticket_number,
             'ticketStatus' => $productionTicket->ticket_status,
             'billingGroupId' => $productionTicket->billing_group_id,
             'occupiedZoneId' => $productionTicket->occupied_zone_id,
@@ -54,6 +56,8 @@ class ProductionTicketController extends ApiController
                 'occupied_zone_id' => $productionTicket->occupied_zone_id,
                 'printer_id' => $productionTicket->printer_id,
                 'ticket_type' => $productionTicket->ticket_type,
+                'ticket_sequence_route' => $productionTicket->ticket_sequence_route,
+                'route_ticket_number' => $productionTicket->route_ticket_number,
                 'ticket_status' => 'PENDING',
                 'delivery_reference_label' => $productionTicket->delivery_reference_label,
                 'requested_at' => now(),

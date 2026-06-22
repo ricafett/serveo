@@ -155,7 +155,8 @@ class TicketRenderer
             ->unique()
             ->values();
         $footerParts = [];
-        $footerParts[] = __('ticket.ticket_num').' #'.$ticket->id;
+        $footerParts[] = __('ticket.ticket_num').' #'.$ticket->displayTicketNumber();
+        $footerParts[] = __('ticket.internal_ref').' #'.$ticket->id;
         if ($orderIds->isNotEmpty()) {
             $footerParts[] = __('ticket.order_num').' #'.$orderIds->join(', ');
         }

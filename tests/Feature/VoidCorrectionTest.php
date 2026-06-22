@@ -67,6 +67,24 @@ it('routes void slip to same destination as original', function () {
     expect($voidTicket->printer_id)->toBe($originalTicket->printer_id);
 });
 
+it('keeps the original route ticket number on a void slip', function () {
+    $kitchenItem = $this->header->items->firstWhere('fulfillment_route', 'KITCHEN');
+
+    app(OrderService::class)->voidItem($kitchenItem, $this->server, 'No longer needed');
+
+    $voidTicket = ProductionTicket::where('billing_group_id', $this->group->id)
+        ->where('is_void_slip', true)
+        ->first();
+
+    $originalTicket = ProductionTicket::where('billing_group_id', $this->group->id)
+        ->where('is_void_slip', false)
+        ->where('ticket_type', 'KITCHEN')
+        ->first();
+
+    expect($voidTicket->ticket_sequence_route)->toBe('KITCHEN')
+        ->and($voidTicket->route_ticket_number)->toBe($originalTicket->route_ticket_number);
+});
+
 it('updates order header status to PARTIALLY_VOIDED when some items remain', function () {
     $item = $this->header->items->first();
     app(OrderService::class)->voidItem($item, $this->server, 'Mistake');

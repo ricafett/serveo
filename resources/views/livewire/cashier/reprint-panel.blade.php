@@ -77,7 +77,7 @@
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div>
                                 <div class="text-base font-medium text-gray-900 dark:text-white">
-                                    #{{ $ticket->id }} · {{ $ticket->ticket_type }}
+                                    #{{ $ticket->displayTicketNumber() }} · {{ $ticket->ticket_sequence_route ?? $ticket->ticket_type }}
                                     @if($ticket->is_reprint)
                                         <span class="text-sm text-amber-600 dark:text-amber-400">({{ __('cashier.reprint') }})</span>
                                     @endif

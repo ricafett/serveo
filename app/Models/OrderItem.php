@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class OrderItem extends Model
 {
@@ -42,6 +43,11 @@ class OrderItem extends Model
     public function deliveredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'delivered_by_user_id');
+    }
+
+    public function productionTickets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductionTicket::class, 'production_ticket_items');
     }
 
     public function isVoided(): bool

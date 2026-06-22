@@ -330,6 +330,8 @@ class OrderService
                 'occupied_zone_id' => $zone?->id,
                 'printer_id' => $printer->id,
                 'ticket_type' => $route,
+                'ticket_sequence_route' => $route,
+                'route_ticket_number' => ProductionTicket::nextRouteTicketNumber($group->service_session_id, $route),
                 'ticket_status' => 'PENDING',
                 'delivery_reference_label' => $routeItems->first()?->delivery_reference_label,
                 'requested_at' => now(),
@@ -555,6 +557,8 @@ class OrderService
                         'occupied_zone_id' => $header->occupied_zone_id,
                         'printer_id' => $printer->id,
                         'ticket_type' => 'VOID',
+                        'ticket_sequence_route' => $route,
+                        'route_ticket_number' => $this->originalRouteTicketNumber($routeItems->first(), $route),
                         'ticket_status' => 'PENDING',
                         'requested_at' => now(),
                         'is_void_slip' => true,
@@ -645,6 +649,8 @@ class OrderService
                 'occupied_zone_id' => $header->occupied_zone_id,
                 'printer_id' => $printer->id,
                 'ticket_type' => 'VOID',
+                'ticket_sequence_route' => $item->fulfillment_route,
+                'route_ticket_number' => $this->originalRouteTicketNumber($item, $item->fulfillment_route),
                 'ticket_status' => 'PENDING',
                 'requested_at' => now(),
                 'is_void_slip' => true,
@@ -703,5 +709,15 @@ class OrderService
             ->first();
 
         return $route?->printer;
+    }
+
+    private function originalRouteTicketNumber(OrderItem $item, string $route): int
+    {
+        $number = $item->productionTickets()
+            ->where('is_void_slip', false)
+            ->where('ticket_sequence_route', $route)
+            ->value('route_ticket_number');
+
+        return $number ?: ProductionTicket::nextRouteTicketNumber($item->header->billingGroup->service_session_id, $route);
     }
 }

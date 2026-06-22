@@ -12,6 +12,7 @@ return [
     'delivery' => 'Delivery',
     'time' => 'Time',
     'ticket_num' => 'Ticket',
+    'internal_ref' => 'Ref',
     'internal_bill' => 'INTERNAL BILL',
     'document' => 'Document',
     'subtotal' => 'SUBTOTAL',

@@ -11,7 +11,7 @@ class ProductionTicket extends Model
 {
     protected $fillable = [
         'service_session_id', 'billing_group_id', 'occupied_zone_id',
-        'printer_id', 'ticket_type', 'ticket_status',
+        'printer_id', 'ticket_type', 'ticket_sequence_route', 'route_ticket_number', 'ticket_status',
         'delivery_reference_label', 'printed_at', 'requested_at',
         'reprint_of_ticket_id', 'is_void_slip', 'is_reprint',
         'created_by_user_id',
@@ -22,6 +22,7 @@ class ProductionTicket extends Model
         'printed_at' => 'datetime',
         'is_void_slip' => 'boolean',
         'is_reprint' => 'boolean',
+        'route_ticket_number' => 'integer',
     ];
 
     public function billingGroup(): BelongsTo
@@ -67,5 +68,18 @@ class ProductionTicket extends Model
         }
 
         return $this->ticket_type;
+    }
+
+    public static function nextRouteTicketNumber(int $serviceSessionId, string $route): int
+    {
+        return (int) static::query()
+            ->where('service_session_id', $serviceSessionId)
+            ->where('ticket_sequence_route', $route)
+            ->max('route_ticket_number') + 1;
+    }
+
+    public function displayTicketNumber(): int
+    {
+        return $this->route_ticket_number ?: $this->id;
     }
 }

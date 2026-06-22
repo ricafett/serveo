@@ -37,6 +37,34 @@ it('creates a kitchen and a bar production ticket and queues print jobs', functi
     expect(PrintJob::count())->toBeGreaterThanOrEqual(2);
 });
 
+it('assigns route-scoped ticket numbers per production route', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+    $barItem = MenuItem::where('display_name', 'Vinho copo')->first();
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+        ['menu_item_id' => $barItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    $kitchenTickets = ProductionTicket::where('billing_group_id', $this->group->id)
+        ->where('ticket_type', 'KITCHEN')
+        ->orderBy('id')
+        ->get();
+    $barTickets = ProductionTicket::where('billing_group_id', $this->group->id)
+        ->where('ticket_type', 'BAR')
+        ->orderBy('id')
+        ->get();
+
+    expect($kitchenTickets->pluck('route_ticket_number')->all())->toBe([1, 2])
+        ->and($kitchenTickets->pluck('ticket_sequence_route')->unique()->all())->toBe(['KITCHEN'])
+        ->and($barTickets->pluck('route_ticket_number')->all())->toBe([1])
+        ->and($barTickets->pluck('ticket_sequence_route')->unique()->all())->toBe(['BAR']);
+});
+
 it('rejects ordering on a closed billing group', function () {
     $this->group->update(['is_closed' => true, 'closed_at' => now()]);
 

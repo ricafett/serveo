@@ -151,7 +151,9 @@ it('reprints ticket from reprint panel', function () {
         ->assertSet('successMessage', 'Ticket reprint sent to printer.');
 
     $reprints = ProductionTicket::where('billing_group_id', $this->group->id)->where('is_reprint', true)->get();
-    expect($reprints)->toHaveCount(1);
+    expect($reprints)->toHaveCount(1)
+        ->and($reprints->first()->route_ticket_number)->toBe($ticket->route_ticket_number)
+        ->and($reprints->first()->ticket_sequence_route)->toBe($ticket->ticket_sequence_route);
 });
 
 // ------------------------------------------------------------------

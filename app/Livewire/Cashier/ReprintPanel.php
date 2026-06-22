@@ -106,6 +106,8 @@ class ReprintPanel extends Component
                 'occupied_zone_id' => $original->occupied_zone_id,
                 'printer_id' => $original->printer_id,
                 'ticket_type' => $original->ticket_type,
+                'ticket_sequence_route' => $original->ticket_sequence_route,
+                'route_ticket_number' => $original->route_ticket_number,
                 'ticket_status' => 'PENDING',
                 'delivery_reference_label' => $original->delivery_reference_label,
                 'requested_at' => now(),
