@@ -5,6 +5,7 @@ namespace App\Domain\Billing;
 use App\Domain\Audit\Audit;
 use App\Domain\ChecksPermissions;
 use App\Domain\Printing\PrintQueueService;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
@@ -178,6 +179,14 @@ class BillingService
                     'actor_user_id' => $cashier->id,
                 ],
             );
+
+            $printer = $this->resolveCashierPrinter($cashier);
+
+            if ($printer) {
+                OpenCashDrawerJob::dispatch($printer->id, $cashier->id)
+                    ->onQueue('prints')
+                    ->afterCommit();
+            }
 
             return $payment;
         });

@@ -4,7 +4,9 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
+use App\Livewire\BillingGroup\BillingGroupDetail;
 use App\Livewire\Cashier\ReprintPanel;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
 use App\Models\BillingGroup;
 use App\Models\CashierPrinterAssignment;
@@ -23,6 +25,7 @@ use Database\Seeders\CoreSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\DemoTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -206,6 +209,24 @@ it('cashier can submit an order from order entry', function () {
 
     expect(BillingGroup::find($this->group->id)->orderHeaders()->latest('id')->first()->ordered_by_user_id)
         ->toBe($this->cashier->id);
+});
+
+it('cashier recording payment from billing group detail queues cash drawer opening', function () {
+    Queue::fake();
+    $this->actingAs($this->cashier);
+
+    Livewire::test(BillingGroupDetail::class, ['id' => $this->group->id])
+        ->set('paymentAmount', 5.00)
+        ->set('paymentLabel', 'Cash')
+        ->call('recordPayment')
+        ->assertSet('successMessage', 'Payment recorded.');
+
+    Queue::assertPushed(OpenCashDrawerJob::class, function (OpenCashDrawerJob $job) {
+        return $job->actorId === $this->cashier->id
+            && $job->printerId === CashierPrinterAssignment::where('user_id', $this->cashier->id)
+                ->where('is_active', true)
+                ->value('printer_id');
+    });
 });
 
 it('allows admin to access cashier screens', function () {

@@ -4,6 +4,7 @@ use App\Domain\Billing\BillingService;
 use App\Domain\Floor\BillingGroupService;
 use App\Domain\Floor\OccupancyService;
 use App\Domain\Orders\OrderService;
+use App\Jobs\OpenCashDrawerJob;
 use App\Models\BillingDocument;
 use App\Models\BillingStatus;
 use App\Models\CashierPrinterAssignment;
@@ -11,6 +12,7 @@ use App\Models\MenuItem;
 use App\Models\Printer;
 use App\Models\PrintJob;
 use App\Models\Row;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->session = bootScenario();
@@ -81,4 +83,28 @@ it('zone release is idempotent', function () {
     app(OccupancyService::class)->releaseZone($this->zone->refresh(), $this->cashier);
 
     expect($this->zone->refresh()->is_open)->toBeFalse();
+});
+
+it('recording a payment queues the cash drawer opening for the cashier printer', function () {
+    Queue::fake();
+
+    app(BillingService::class)->recordPayment($this->group, $this->cashier, 10.00, 'Numerário');
+
+    Queue::assertPushed(OpenCashDrawerJob::class, function (OpenCashDrawerJob $job) {
+        return $job->actorId === $this->cashier->id
+            && $job->printerId === CashierPrinterAssignment::where('user_id', $this->cashier->id)
+                ->where('is_active', true)
+                ->value('printer_id');
+    });
+});
+
+it('recording a payment still succeeds when the cashier has no printer assignment', function () {
+    Queue::fake();
+
+    CashierPrinterAssignment::where('user_id', $this->cashier->id)->delete();
+
+    $payment = app(BillingService::class)->recordPayment($this->group, $this->cashier, 10.00, 'Numerário');
+
+    expect($payment->exists)->toBeTrue();
+    Queue::assertNotPushed(OpenCashDrawerJob::class);
 });
