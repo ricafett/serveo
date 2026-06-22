@@ -353,11 +353,17 @@ class DispatchPrintJob implements ShouldQueue
         }
 
         if ($documentConfig?->trigger_cash_drawer && $job->requested_by_user_id) {
-            $cashierAssignment = CashierPrinterAssignment::where('user_id', $job->requested_by_user_id)
-                ->where('is_active', true)
-                ->first();
-            if ($cashierAssignment) {
-                OpenCashDrawerJob::dispatch($cashierAssignment->printer_id, $job->requested_by_user_id)
+            $drawerResult = $registry->openCashDrawer($printer);
+
+            if ($drawerResult->success) {
+                Audit::record(
+                    'CASH_DRAWER_OPENED',
+                    "Cash drawer opened via printer #{$printer->id} ({$printer->name})",
+                    ['printer_id' => $printer->id],
+                    ['actor_user_id' => $job->requested_by_user_id],
+                );
+            } elseif (! $drawerResult->contended) {
+                OpenCashDrawerJob::dispatch($printer->id, $job->requested_by_user_id)
                     ->onQueue('prints');
             }
         }

@@ -233,24 +233,24 @@ it('triggers the cash drawer once before voucher batch printing when enabled', f
     ]);
 
     $registry = Mockery::mock(PrinterAdapterRegistry::class);
+    $registry->shouldReceive('openCashDrawer')
+        ->once()
+        ->ordered()
+        ->withArgs(fn (Printer $printer) => $printer->is($this->printer))
+        ->andReturn(PrintResult::ok('Drawer opened'));
     $registry->shouldReceive('sendPayloadBatch')
         ->once()
-        ->withArgs(function (Printer $printer, array $payloads) use ($documents) {
-            Queue::assertPushed(OpenCashDrawerJob::class, 1);
-
-            return $printer->is($this->printer)
-                && count($payloads) === $documents->count();
-        })
+        ->ordered()
+        ->withArgs(fn (Printer $printer, array $payloads) => $printer->is($this->printer)
+            && count($payloads) === $documents->count())
         ->andReturn(PrintResult::ok('OK'));
 
     (new DispatchPrintJob($job->id))->handle($registry);
 
-    Queue::assertPushed(OpenCashDrawerJob::class, function (OpenCashDrawerJob $drawerJob) {
-        return $drawerJob->printerId === $this->printer->id
-            && $drawerJob->actorId === $this->cashier->id;
-    });
+    Queue::assertNotPushed(OpenCashDrawerJob::class);
 
     expect($job->fresh()->status)->toBe(PrintJob::STATUS_PRINTED)
+        ->and(AuditEvent::where('event_type', 'CASH_DRAWER_OPENED')->exists())->toBeTrue()
         ->and($documents->every(fn (SaleDocument $document) => $document->fresh()->document_status === 'PRINTED'))
         ->toBeTrue();
 });
