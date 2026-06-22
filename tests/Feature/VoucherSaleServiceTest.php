@@ -9,6 +9,7 @@ use App\Models\PrintJob;
 use App\Models\Printer;
 use App\Models\Sale;
 use App\Models\SaleDocument;
+use App\Domain\Printing\TicketRenderer;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
@@ -99,4 +100,29 @@ it('rejects menu items that are not voucher enabled', function () {
         18.00,
         'Cash',
     );
+});
+
+it('renders branding headers on voucher and receipt documents', function () {
+    $sale = app(VoucherSaleService::class)->complete(
+        $this->session,
+        $this->cashier,
+        [['menu_item_id' => $this->voucherItem->id, 'quantity' => 1]],
+        18.00,
+        'Cash',
+        printReceipt: true,
+    );
+
+    $voucher = $sale->documents()->where('document_type', SaleDocument::TYPE_VOUCHER)->firstOrFail();
+    $receipt = $sale->documents()->where('document_type', SaleDocument::TYPE_RECEIPT)->firstOrFail();
+
+    $voucherConfig = DocumentPrintConfig::where('document_type', DocumentPrintConfig::DOC_SALE_VOUCHER)->firstOrFail();
+    $receiptConfig = DocumentPrintConfig::where('document_type', DocumentPrintConfig::DOC_SALE_RECEIPT)->firstOrFail();
+
+    $voucherOutput = new TicketRenderer(documentConfig: $voucherConfig)->renderSaleDocument($voucher);
+    $receiptOutput = new TicketRenderer(documentConfig: $receiptConfig)->renderSaleDocument($receipt);
+
+    expect($voucherConfig->branding_header)->toBe(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($receiptConfig->branding_header)->toBe(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($voucherOutput)->toContain(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($receiptOutput)->toContain(DocumentPrintConfig::defaultBrandingHeader());
 });

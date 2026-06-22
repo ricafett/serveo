@@ -334,3 +334,52 @@ it('returns item fulfillment_route for void slips', function () {
 
     expect($voidTicket->effectiveFulfillmentRoute())->toBe('KITCHEN');
 });
+
+it('renders branding headers on production tickets, bills, reprints, and void slips by default', function () {
+    $kitchenItem = MenuItem::where('display_name', 'Bacalhau')->first();
+
+    app(OrderService::class)->submit($this->group, $this->server, [
+        ['menu_item_id' => $kitchenItem->id, 'quantity' => 1],
+    ], $this->zone);
+
+    $ticket = ProductionTicket::where('ticket_type', 'KITCHEN')->firstOrFail();
+    $bill = app(BillingService::class)->generateInternalBill($this->group->refresh(), $this->cashier);
+
+    $voidItem = $ticket->items()->first();
+    app(OrderService::class)->voidItem($voidItem, $this->server, 'Test');
+    $voidTicket = ProductionTicket::where('is_void_slip', true)->latest('id')->firstOrFail();
+
+    $reprint = ProductionTicket::create([
+        'service_session_id' => $ticket->service_session_id,
+        'billing_group_id' => $ticket->billing_group_id,
+        'occupied_zone_id' => $ticket->occupied_zone_id,
+        'printer_id' => $ticket->printer_id,
+        'ticket_type' => $ticket->ticket_type,
+        'ticket_sequence_route' => $ticket->ticket_sequence_route,
+        'route_ticket_number' => $ticket->route_ticket_number,
+        'ticket_status' => 'PENDING',
+        'requested_at' => now(),
+        'reprint_of_ticket_id' => $ticket->id,
+        'is_void_slip' => false,
+        'is_reprint' => true,
+        'created_by_user_id' => $this->server->id,
+    ]);
+    $reprint->items()->sync($ticket->items->pluck('id'));
+
+    $ticketConfig = DocumentPrintConfig::where('document_type', DocumentPrintConfig::DOC_PRODUCTION_TICKET)
+        ->where('fulfillment_route', 'KITCHEN')
+        ->firstOrFail();
+    $billConfig = DocumentPrintConfig::where('document_type', DocumentPrintConfig::DOC_BILL)
+        ->whereNull('fulfillment_route')
+        ->firstOrFail();
+
+    $renderer = new TicketRenderer(documentConfig: $ticketConfig);
+    $billRenderer = new TicketRenderer(documentConfig: $billConfig);
+
+    expect($ticketConfig->branding_header)->toBe(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($billConfig->branding_header)->toBe(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($renderer->renderProductionTicket($ticket))->toContain(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($renderer->renderProductionTicket($voidTicket))->toContain(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($renderer->renderProductionTicket($reprint))->toContain(DocumentPrintConfig::defaultBrandingHeader())
+        ->and($billRenderer->renderBill($bill))->toContain(DocumentPrintConfig::defaultBrandingHeader());
+});

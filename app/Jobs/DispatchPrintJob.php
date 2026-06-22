@@ -416,7 +416,7 @@ class DispatchPrintJob implements ShouldQueue
         // Resolve document config
         $documentConfig = DocumentPrintConfig::firstOrCreate(
             ['document_type' => PrinterRoute::DOC_CASHIER_TOTALS, 'fulfillment_route' => null],
-            ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false],
+            ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
         );
 
         $renderer = new TicketRenderer(
@@ -539,7 +539,7 @@ class DispatchPrintJob implements ShouldQueue
 
         $documentConfig = DocumentPrintConfig::firstOrCreate(
             ['document_type' => PrinterRoute::DOC_SESSION_TOTALS, 'fulfillment_route' => null],
-            ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false],
+            ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'trigger_cash_drawer' => false, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
         );
 
         $renderer = new TicketRenderer(
@@ -657,7 +657,7 @@ class DispatchPrintJob implements ShouldQueue
 
         $documentConfig = DocumentPrintConfig::firstOrCreate(
             ['document_type' => PrinterRoute::DOC_INVENTORY_MOVEMENTS, 'fulfillment_route' => null],
-            ['group_items' => true, 'ignore_variants' => false, 'ignore_modifiers' => true, 'ignore_item_notes' => true, 'trigger_cash_drawer' => false],
+            ['group_items' => true, 'ignore_variants' => false, 'ignore_modifiers' => true, 'ignore_item_notes' => true, 'trigger_cash_drawer' => false, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
         );
 
         $renderer = new TicketRenderer(
@@ -840,7 +840,7 @@ class DispatchPrintJob implements ShouldQueue
         if ($printable instanceof BillingDocument) {
             return DocumentPrintConfig::firstOrCreate(
                 ['document_type' => PrinterRoute::DOC_BILL, 'fulfillment_route' => null],
-                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => true],
+                ['group_items' => false, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => true, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
             );
         }
 
@@ -858,6 +858,7 @@ class DispatchPrintJob implements ShouldQueue
                     'ignore_modifiers' => true,
                     'ignore_item_notes' => true,
                     'trigger_cash_drawer' => false,
+                    'branding_header' => DocumentPrintConfig::defaultBrandingHeader(),
                 ],
             );
         }

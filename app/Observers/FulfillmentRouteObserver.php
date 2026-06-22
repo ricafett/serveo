@@ -15,7 +15,7 @@ class FulfillmentRouteObserver
     {
         DocumentPrintConfig::firstOrCreate(
             ['document_type' => 'PRODUCTION_TICKET', 'fulfillment_route' => $route->code],
-            ['group_items' => true, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false],
+            ['group_items' => true, 'ignore_variants' => false, 'ignore_modifiers' => false, 'ignore_item_notes' => false, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
         );
     }
 

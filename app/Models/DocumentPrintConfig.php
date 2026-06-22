@@ -43,4 +43,9 @@ class DocumentPrintConfig extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public static function defaultBrandingHeader(): string
+    {
+        return mb_strtoupper((string) config('app.name', 'Serveo'));
+    }
 }

@@ -133,7 +133,12 @@ class VoucherSaleService
 
             $voucherConfig = DocumentPrintConfig::firstOrCreate(
                 ['document_type' => DocumentPrintConfig::DOC_SALE_VOUCHER, 'fulfillment_route' => null],
-                ['group_items' => false, 'ignore_variants' => true, 'ignore_modifiers' => true, 'trigger_cash_drawer' => false, 'is_active' => true],
+                ['group_items' => false, 'ignore_variants' => true, 'ignore_modifiers' => true, 'trigger_cash_drawer' => false, 'is_active' => true, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
+            );
+
+            DocumentPrintConfig::firstOrCreate(
+                ['document_type' => DocumentPrintConfig::DOC_SALE_RECEIPT, 'fulfillment_route' => null],
+                ['group_items' => true, 'ignore_variants' => true, 'ignore_modifiers' => true, 'trigger_cash_drawer' => false, 'is_active' => true, 'branding_header' => DocumentPrintConfig::defaultBrandingHeader()],
             );
 
             $allVoucherIds = [];
