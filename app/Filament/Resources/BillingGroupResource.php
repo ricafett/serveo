@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Domain\Audit\Audit;
+use App\Filament\Resources\BillingGroupResource\RelationManagers\BillingDocumentsRelationManager;
 use App\Filament\Resources\BillingGroupResource\Pages;
 use App\Models\BillingGroup;
 use App\Models\BillingStatus;
@@ -179,6 +180,13 @@ class BillingGroupResource extends BaseResource
             'create' => Pages\CreateBillingGroup::route('/create'),
             'edit' => Pages\EditBillingGroup::route('/{record}/edit'),
             'view' => Pages\ViewBillingGroup::route('/{record}/view'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            BillingDocumentsRelationManager::class,
         ];
     }
 }

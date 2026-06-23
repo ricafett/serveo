@@ -6,6 +6,9 @@ use App\Domain\Audit\Audit;
 use App\Filament\Resources\BillingGroupResource;
 use App\Models\BillingGroup;
 use App\Models\OccupiedZone;
+use App\Models\OrderHeader;
+use App\Models\OrderItem;
+use App\Models\PaymentRecord;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
@@ -65,6 +68,89 @@ class ViewBillingGroup extends ViewRecord
                             ])
                             ->columns(4),
                     ]),
+
+                Section::make(__('app.totals'))
+                    ->schema([
+                        Components\TextEntry::make('charges_total')
+                            ->label(__('billing.charges'))
+                            ->state(fn (BillingGroup $record): string => number_format($record->chargesTotal(), 2).' €'),
+                        Components\TextEntry::make('paid_total')
+                            ->label(__('billing.paid'))
+                            ->state(fn (BillingGroup $record): string => number_format($record->paymentsTotal(), 2).' €'),
+                        Components\TextEntry::make('balance_total')
+                            ->label(__('app.balance'))
+                            ->state(fn (BillingGroup $record): string => number_format($record->balance(), 2).' €'),
+                    ])
+                    ->columns(3),
+
+                Section::make(__('billing.orders'))
+                    ->schema([
+                        Components\RepeatableEntry::make('orderHeaders')
+                            ->label('')
+                            ->contained(false)
+                            ->schema([
+                                Components\TextEntry::make('ordered_at')
+                                    ->label(__('app.opened_at'))
+                                    ->dateTime(),
+                                Components\TextEntry::make('orderedBy.name')
+                                    ->label(__('app.user')),
+                                Components\TextEntry::make('occupiedZone.range_label')
+                                    ->label(__('app.range'))
+                                    ->state(fn (OrderHeader $record): string => $record->occupiedZone?->rangeLabel() ?? '—'),
+                                Components\TextEntry::make('submission_status')
+                                    ->label(__('app.status'))
+                                    ->badge(),
+                                Components\RepeatableEntry::make('items')
+                                    ->label(__('app.items'))
+                                    ->contained(false)
+                                    ->schema([
+                                        Components\TextEntry::make('menuItem.display_name')
+                                            ->label(__('billing.item'))
+                                            ->state(fn (OrderItem $record): string => $record->menuItem?->display_name ?? '#'.$record->menu_item_id),
+                                        Components\TextEntry::make('quantity')
+                                            ->label(__('billing.qty')),
+                                        Components\TextEntry::make('unit_price')
+                                            ->label(__('cashier.amount'))
+                                            ->state(fn (OrderItem $record): string => number_format((float) $record->unit_price, 2).' €'),
+                                        Components\TextEntry::make('line_subtotal')
+                                            ->label(__('billing.subtotal'))
+                                            ->state(fn (OrderItem $record): string => number_format((float) $record->line_subtotal, 2).' €'),
+                                        Components\IconEntry::make('voided_at')
+                                            ->label(__('billing.voided'))
+                                            ->boolean()
+                                            ->state(fn (OrderItem $record): bool => $record->voided_at !== null),
+                                    ])
+                                    ->columns(5),
+                            ])
+                            ->columns(4),
+                    ])
+                    ->collapsed()
+                    ->visible(fn (BillingGroup $record): bool => $record->orderHeaders()->exists()),
+
+                Section::make(__('billing.payments'))
+                    ->schema([
+                        Components\RepeatableEntry::make('paymentRecords')
+                            ->label('')
+                            ->contained(false)
+                            ->schema([
+                                Components\TextEntry::make('recorded_at')
+                                    ->label(__('app.date'))
+                                    ->dateTime(),
+                                Components\TextEntry::make('amount')
+                                    ->label(__('cashier.amount'))
+                                    ->state(fn (PaymentRecord $record): string => number_format((float) $record->amount, 2).' €'),
+                                Components\TextEntry::make('payment_label')
+                                    ->label(__('cashier.payment_method')),
+                                Components\TextEntry::make('recordedBy.name')
+                                    ->label(__('app.user')),
+                                Components\IconEntry::make('is_voided')
+                                    ->label(__('billing.voided'))
+                                    ->boolean(),
+                            ])
+                            ->columns(5),
+                    ])
+                    ->collapsed()
+                    ->visible(fn (BillingGroup $record): bool => $record->paymentRecords()->exists()),
             ]);
     }
 
