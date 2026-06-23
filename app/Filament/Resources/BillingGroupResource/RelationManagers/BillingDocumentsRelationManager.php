@@ -78,8 +78,6 @@ class BillingDocumentsRelationManager extends RelationManager
                     ->label(__('cashier.reprint'))
                     ->icon('heroicon-o-printer')
                     ->color('gray')
-                    ->requiresConfirmation()
-                    ->modalHeading(__('cashier.reprint'))
                     ->visible(fn (BillingDocument $record): bool => Auth::user()?->can('billing_document.reprint', $record) ?? false)
                     ->action(function (BillingDocument $record): void {
                         app(BillingService::class)->reprintBill($record, Auth::user());

@@ -103,9 +103,11 @@ class ViewBillingGroup extends ViewRecord
                                 Components\RepeatableEntry::make('items')
                                     ->label(__('app.items'))
                                     ->contained(false)
+                                    ->columnSpanFull()
                                     ->schema([
                                         Components\TextEntry::make('menuItem.display_name')
                                             ->label(__('billing.item'))
+                                            ->columnSpan(2)
                                             ->state(fn (OrderItem $record): string => $record->menuItem?->display_name ?? '#'.$record->menu_item_id),
                                         Components\TextEntry::make('quantity')
                                             ->label(__('billing.qty')),
@@ -122,7 +124,7 @@ class ViewBillingGroup extends ViewRecord
                                     ])
                                     ->columns(5),
                             ])
-                            ->columns(4),
+                            ->columns(3),
                     ])
                     ->collapsed()
                     ->visible(fn (BillingGroup $record): bool => $record->orderHeaders()->exists()),
